@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "io.github.hosmim_et_hatzir.twa",
-        "sha256_cert_fingerprints": ["76:CC:5C:FD:22:69:D2:FE:0D:8E:BF:1F:90:31:33:D5:26:A6:9E:CC:49:A9:C8:4D:41:AE:4A:78:1B:A8:54:3A"]
-      }
-    }]

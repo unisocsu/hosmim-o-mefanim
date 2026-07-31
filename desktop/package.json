@@ -1,0 +1,33 @@
+{
+  "name": "hosmim-et-hatzir",
+  "productName": "חוסמים את הציר",
+  "version": "1.0.0",
+  "description": "סימולטור הפגנות סאטירי — משחק עצמאי ללא רשת",
+  "main": "main.js",
+  "author": "hosmim-et-hatzir",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "io.github.hosmim-et-hatzir",
+    "productName": "חוסמים את הציר",
+    "files": [
+      "main.js",
+      "app/**/*"
+    ],
+    "compression": "maximum",
+    "win": {
+      "target": "portable",
+      "icon": "build/icon.png"
+    },
+    "portable": {
+      "artifactName": "חוסמים את הציר.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3"
+  }
+}

@@ -15,24 +15,14 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
-<!-- Google AdSense -->
-<meta name="google-adsense-account" content="ca-pub-9798634643270442">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9798634643270442" crossorigin="anonymous"></script>
-<script>
-  // Ad Placement API — פרסומת אינטרסטיציאל בסוף הפגנה
-  window.adsbygoogle = window.adsbygoogle || [];
-  window.adBreak = function(o){ try{ window.adsbygoogle.push(o); }catch(e){ if(o&&o.adBreakDone) o.adBreakDone({}); } };
-  window.adConfig = function(o){ try{ window.adsbygoogle.push(o); }catch(e){} };
-  try{ adConfig({ preloadAdBreaks:'on', sound:'on' }); }catch(e){}
-</script>
 <!-- תצוגת קישור (וואטסאפ/פייסבוק/טוויטר) -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="חוסמים את הציר">
-<meta property="og:url" content="https://hosmim-et-hatzir.github.io/">
+<meta property="og:site_name" content="חוסמים את הצירים — או מפנים אותם">
+<meta property="og:url" content="https://beniabot.github.io/hosmim-o-mefanim/">
 <meta property="og:title" content="חוסמים את הציר — סימולטור הפגנות">
 <meta property="og:description" content="בנו מחסומים, הציבו אברכים, וחסמו את הציר! משחק אסטרטגיה סאטירי בזמן אמת — הפלג הירושלמי.">
-<meta property="og:image" content="https://hosmim-et-hatzir.github.io/og.jpg?v=1">
-<meta property="og:image:secure_url" content="https://hosmim-et-hatzir.github.io/og.jpg?v=1">
+<meta property="og:image" content="https://beniabot.github.io/hosmim-o-mefanim/og.jpg?v=1">
+<meta property="og:image:secure_url" content="https://beniabot.github.io/hosmim-o-mefanim/og.jpg?v=1">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -41,10 +31,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="חוסמים את הציר — סימולטור הפגנות">
 <meta name="twitter:description" content="בנו מחסומים, הציבו אברכים, וחסמו את הציר!">
-<meta name="twitter:image" content="https://hosmim-et-hatzir.github.io/og.jpg?v=1">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<meta name="twitter:image" content="https://beniabot.github.io/hosmim-o-mefanim/og.jpg?v=1">
+<script src="three.min.js"></script>
+<link href="fonts.css" rel="stylesheet">
 <style>
   :root{
     --paper:#f3ecd8; --ink:#161310; --gold:#c9a227; --red:#c0392b; --green:#1d7a46;
@@ -76,6 +65,11 @@
     background:var(--ink);color:var(--paper);border:none;border-radius:3px;
     box-shadow:3px 3px 0 rgba(0,0,0,.35);transition:transform .08s}
   .btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(1px)}
+  .siderow{display:flex;gap:8px}
+  .siderow .btn{margin:5px 0;flex:1;font-size:clamp(14px,3vw,19px);opacity:.5}
+  .siderow .btn.active{opacity:1;box-shadow:0 0 0 3px var(--ink),3px 3px 0 rgba(0,0,0,.35)}
+  .maprow .btn{opacity:.55}
+  .maprow .btn.active{opacity:1;box-shadow:0 0 0 3px var(--ink),3px 3px 0 rgba(0,0,0,.35)}
   .btn.sec{background:transparent;color:var(--ink);border:3px solid var(--ink);box-shadow:none;font-size:18px;padding:9px}
   .maprow{display:flex;gap:8px;margin-top:4px}
   .maprow .btn{font-size:15px;padding:9px 4px;margin:0;flex:1}
@@ -131,6 +125,12 @@
   #camBtns{position:fixed;bottom:10px;left:10px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
   #camBtns .tool{min-width:0;padding:7px 9px;font-size:12.5px}
   #selInfo{position:fixed;bottom:88px;right:50%;transform:translateX(50%);display:none;pointer-events:none}
+  #minimap{position:fixed;top:42px;left:10px;z-index:22;border:2px solid rgba(255,255,255,.3);border-radius:6px;
+    background:rgba(10,8,20,.75);pointer-events:auto;cursor:pointer;display:none}
+  #pauseOv{position:fixed;inset:0;z-index:70;background:rgba(10,8,20,.62);display:flex;align-items:center;justify-content:center}
+  #pauseOv.hidden{display:none}
+  .budgetFlash{animation:bPulse .55s}
+  @keyframes bPulse{40%{transform:scale(1.22)}100%{transform:scale(1)}}
   #selModeBtn{position:fixed;bottom:10px;right:10px;pointer-events:auto;display:none}
   #selModeBtn.on{background:#1d7a46;border-color:#9fe3bb}
   #toast{position:fixed;top:120px;right:50%;transform:translateX(50%);z-index:30;pointer-events:none;
@@ -163,33 +163,6 @@
   .confetti{position:fixed;top:-20px;font-size:22px;z-index:60;animation:fall linear forwards;pointer-events:none}
   @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
-  /* אינטרסטיציאל פרסומת מסך-מלא */
-  #houseAdOverlay{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}
-  #houseAdOverlay.hidden{display:none}
-  #houseAdOverlay .adItem{display:none;align-items:center;justify-content:center;width:100%;height:100%}
-  #houseAdOverlay .adItem.show{display:flex}
-  #adMort{cursor:pointer}
-  #houseAdOverlay img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
-  /* טופס השארת פרטים (לידים) */
-  #leadForm{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.74);display:flex;align-items:center;justify-content:center;padding:16px}
-  #leadForm.hidden{display:none}
-  .leadCard{position:relative;width:min(420px,94vw);max-height:92vh;overflow:auto;background:#fffdf6;border-radius:16px;padding:22px 20px 20px;box-shadow:0 14px 50px rgba(0,0,0,.55);text-align:right;direction:rtl}
-  .leadCard h2{margin:0 0 4px;font-size:21px;color:#15315c}
-  .lfSub{margin:0 0 14px;color:#6b6256;font-size:14px}
-  .leadCard input,.leadCard textarea{width:100%;box-sizing:border-box;margin-bottom:10px;padding:11px 13px;border:1.5px solid #d8cdb6;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:#222}
-  .leadCard input:focus,.leadCard textarea:focus{outline:none;border-color:#c79a3a;box-shadow:0 0 0 3px rgba(199,154,58,.2)}
-  .leadCard textarea{resize:vertical;min-height:64px}
-  .lfBtn{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(180deg,#c0392b,#9d1f1f);color:#fff;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit}
-  .lfBtn:hover{filter:brightness(1.08)} .lfBtn:disabled{opacity:.6;cursor:default}
-  .lfMsg{min-height:18px;margin-bottom:8px;font-size:14px;font-weight:700;color:#9d1f1f}
-  .lfMsg.ok{color:#1c7c3a}
-  .leadX{position:absolute;top:8px;left:10px;width:32px;height:32px;border-radius:50%;border:none;background:#eee;color:#444;font-size:17px;font-weight:700;cursor:pointer;line-height:1}
-  #houseAdClose{position:fixed;top:14px;right:16px;z-index:10000;width:46px;height:46px;border-radius:50%;
-    border:2px solid rgba(255,255,255,.9);background:rgba(0,0,0,.55);color:#fff;font-size:23px;font-weight:700;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;
-    box-shadow:0 2px 10px rgba(0,0,0,.5)}
-  #houseAdClose:hover{background:rgba(0,0,0,.85);transform:scale(1.06)}
-
   @media (max-width:640px){
     .chip{font-size:12px;padding:5px 9px}
     #ticker{font-size:12px;height:30px}
@@ -211,6 +184,7 @@
     #selModeBtn{bottom:auto;top:106px;right:5px}
     #selInfo{bottom:auto;top:152px}
     #toolbar{gap:5px;bottom:6px;max-width:99vw}
+    #minimap{display:none !important}   /* במובייל אין מקום — מתנגש בכפתורי המצלמה */
   }
 </style>
 </head>
@@ -232,60 +206,19 @@
     <div class="kol">קול קורא!!!</div>
     <h1 class="logo">חוסמים את הציר</h1>
     <div class="sub">סימולטור הפגנות &middot; צאו והגנו על כבוד שמיים בצמתים המרכזיים</div>
+    <div class="siderow">
+      <button class="btn sec sideBtn active" data-side="peeps">🎩 צד המפגינים</button>
+      <button class="btn sec sideBtn" data-side="police">🚔 צד המשטרה</button>
+    </div>
     <button class="btn" id="btnStart">התחל הפגנה</button>
     <div class="maprow">
-      <button class="btn sec mapBtn" data-map="0">צומת בר אילן</button>
+      <button class="btn sec mapBtn active" data-map="0">צומת בר אילן</button>
       <button class="btn sec mapBtn" data-map="1">כביש 4</button>
       <button class="btn sec mapBtn" data-map="2">גשר המיתרים</button>
     </div>
     <button class="btn sec" id="btnFame" style="margin-top:14px">היכל התהילה</button>
     <button class="btn sec" id="btnHow">הוראות</button>
     <div class="note">משחק סאטירי. בלי אלימות גרפית. הזהירות קודמת לכל — מי שנכנס לכביש מול רכב קרוב, נפצע ומוריד נקודות!</div>
-    <!-- פרסומת בית — זירת האדריכלות (באנר ישיר, רספונסיבי, מובייל/מחשב) -->
-    <div id="adSlot" style="margin-top:14px">
-      <a href="https://www.ziratadrichalut.co.il/find-designer" target="_blank" rel="noopener sponsored"
-         style="display:block;border-radius:12px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.4);line-height:0">
-        <picture>
-          <source media="(max-width:600px)" srcset="ad-mobile.jpg">
-          <img src="ad-desktop.jpg" alt="זירת האדריכלות — קבלו 3 הצעות ממעצבות פנים מקצועיות, ללא עלות"
-               loading="lazy" style="width:100%;height:auto;display:block">
-        </picture>
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- ======== אינטרסטיציאל פרסומת מסך-מלא (מתחלף: אדריכלות / משכנתא) ======== -->
-<div id="houseAdOverlay" class="hidden">
-  <button id="houseAdClose" aria-label="סגור פרסומת" onclick="document.getElementById('houseAdOverlay').classList.add('hidden')">✕</button>
-  <!-- אדריכלות — קישור חיצוני לאתר -->
-  <a id="adArch" class="adItem" href="https://www.ziratadrichalut.co.il/find-designer" target="_blank" rel="noopener sponsored">
-    <picture>
-      <source media="(max-width:600px)" srcset="ad-mobile.jpg">
-      <img src="ad-desktop.jpg" alt="זירת האדריכלות — קבלו 3 הצעות ממעצבות פנים מקצועיות, ללא עלות">
-    </picture>
-  </a>
-  <!-- משכנתא — פותח טופס השארת פרטים -->
-  <div id="adMort" class="adItem" role="button" tabindex="0" onclick="openLeadForm('mortgage')">
-    <picture>
-      <source media="(max-width:600px)" srcset="ad2-mobile.jpg">
-      <img src="ad2-desktop.jpg" alt="ישראל גולדשמיד — משכנתא בקלות. הבנק סירב? יש פתרון, יש דרך">
-    </picture>
-  </div>
-</div>
-
-<!-- ======== טופס השארת פרטים (לידים) ======== -->
-<div id="leadForm" class="hidden" data-src="mortgage">
-  <div class="leadCard">
-    <button class="leadX" aria-label="סגור" onclick="closeLeadForm()">✕</button>
-    <h2 id="lfTitle">השארת פרטים — ייעוץ משכנתא</h2>
-    <p class="lfSub">מלאו פרטים ונחזור אליכם בהקדם 🙏</p>
-    <input id="lfName" type="text" placeholder="שם מלא *" autocomplete="name">
-    <input id="lfPhone" type="tel" placeholder="פלאפון *" inputmode="tel" autocomplete="tel">
-    <input id="lfEmail" type="email" placeholder="כתובת מייל *" inputmode="email" autocomplete="email">
-    <textarea id="lfStory" rows="3" placeholder="הסיפור בקצרה (אופציונלי)"></textarea>
-    <div id="lfMsg" class="lfMsg"></div>
-    <button id="lfSubmit" class="lfBtn" onclick="submitLead()">שליחה »</button>
   </div>
 </div>
 
@@ -302,6 +235,13 @@
       <tr><td><b>קליק ימני + גרירה</b></td><td>הזזת מצלמה</td></tr>
       <tr><td><b>גלגלת / Alt+גרירה</b></td><td>זום / סיבוב מצלמה</td></tr>
     </table>
+    <h3>מקלדת (מחשב)</h3>
+    <table>
+      <tr><td><b>חיצים / WASD</b></td><td>הזזת מצלמה · Q/E סיבוב · ‎+/-‎ זום</td></tr>
+      <tr><td><b>רווח / P / Esc</b></td><td>הפסקה (Esc קודם מנקה בחירה)</td></tr>
+      <tr><td><b>ספרות 1–7</b></td><td>הפעלת הכלים לפי סדרם · L שכיבה · K קימה · M השתקה</td></tr>
+      <tr><td><b>Tab / F11</b></td><td>מיני-מפה / מסך מלא</td></tr>
+    </table>
     <h3>שליטה (מגע)</h3>
     <table>
       <tr><td><b>אצבע אחת</b></td><td>סיבוב מצלמה (או בחירה — במצב בחירה)</td></tr>
@@ -313,12 +253,24 @@
       <tr><td><b>בחור ישיבה</b></td><td>מהיר וזריז, אבל בורח ראשון מהמים</td></tr>
       <tr><td><b>אברך ותיק</b></td><td>עוגן החסימה — פי 3 זמן לפנות, עמיד למים רגילים</td></tr>
       <tr><td><b>עסקן עם פלאפון</b></td><td>"יש לי אישור!" — מנטרל שוטר לוויכוח של 15 שניות</td></tr>
+      <tr><td><b>📸 צלם</b></td><td>הילת תקשורת — שוטרים לידו תופסים וגוררים לאט בהרבה (עד 2 בשטח)</td></tr>
     </table>
     <h3>ההסלמה</h3>
     נהגים זועמים ← משטרה ← פרשים ← מכת"זית (מים ← מים כחולים ← בואש).
     שימו לב למד המיכל: כשהמכת"זית מתמלאת — חלון זהב לחזור לכביש!
     <h3>ניקוד</h3>
     +10 לשנייה על כל רכב תקוע &middot; ‎+100‎ לכל מפגין ששרד &middot; ‎-200‎ על נפגע &middot; ‎-20‎ על בורח.
+    <h3>🚔 צד המשטרה</h3>
+    בוחרים "צד המשטרה" בתפריט: המפגינים מגיעים בגלים אוטומטיים, ואתם מנהלים את
+    הפינוי מהתקציב — ניידת (300), פרשים (500), מגפון פיזור (250), גרר לרכב עם
+    צמודים (600) ומכת"זית (1500). קליק על הכביש מציב דגל ריכוז שהשוטרים
+    מתעדפים. ניקוד: פינוי ‎+60‎ (חוזר — ‎+30‎, ובפעם השנייה המפגין נשבר והולך)
+    &middot; הברחה במים ‎+30‎ &middot; ציר פתוח ‎+10‎/ש' &middot; נפגע מרכב ‎-200‎.
+    זהירות: 6+ מפגינים על הכביש 90 שניות ברציפות — הצומת אבוד והמבצע נכשל!
+    ולקראת גל 3 — ביקורת המפכ"ל: ציר פתוח = בונוס משולש.
+    <b>פיקוד ישיר:</b> גררו מלבן לבחירת שוטרים וקליק על הכביש שולח אותם לשם;
+    בלי בחירה — הקליק מציב דגל ריכוז שגם המכת"זית מכוונת אליו ("ריכוז אש").
+    🕵 בלש סמוי (700) מסתנן מחופש ומבצע מעצר בזק בלב ההפגנה.
     <button class="btn" id="btnHowBack" style="margin-top:14px">חזרה</button>
   </div>
 </div>
@@ -330,6 +282,7 @@
     <div class="sub">גדולי החוסמים לדורותיהם — מאה הגדולים</div>
     <div id="fameBody" style="max-height:46vh;overflow-y:auto"></div>
     <button class="btn" id="btnFameBack" style="margin-top:14px">חזרה</button>
+    <button class="btn sec" id="btnFameReset" style="margin-top:8px;font-size:16px">🗑 איפוס הספר</button>
   </div>
 </div>
 
@@ -422,10 +375,12 @@
     <h1 class="logo" style="font-size:32px" id="sumTitle">ההפגנה הסתיימה</h1>
     <div class="sub" id="sumSub"></div>
     <div class="sumGrid">
-      <div class="cell"><b id="sumScore">0</b><span>ניקוד כולל</span></div>
-      <div class="cell"><b id="sumJam">0</b><span>שיא אורך פקק (ק"מ)</span></div>
-      <div class="cell"><b id="sumTime">0:00</b><span>זמן חסימה</span></div>
-      <div class="cell"><b id="sumSurv">0</b><span>מפגינים ששרדו (‎+100‎)</span></div>
+      <div class="cell"><b id="sumScore">0</b><span id="sumScoreL">ניקוד כולל</span></div>
+      <div class="cell"><b id="sumJam">0</b><span id="sumJamL">שיא אורך פקק (ק"מ)</span></div>
+      <div class="cell"><b id="sumTime">0:00</b><span id="sumTimeL">זמן חסימה</span></div>
+      <div class="cell"><b id="sumSurv">0</b><span id="sumSurvL">מפגינים ששרדו (‎+100‎)</span></div>
+      <div class="cell"><b id="sumInj">0</b><span>נפצעו מרכב (‎-200‎)</span></div>
+      <div class="cell"><b id="sumFled">0</b><span id="sumFledL">ברחו מהמים (‎-20‎)</span></div>
     </div>
     <button class="btn" id="btnNext">לשלב הבא</button>
     <button class="btn sec" id="btnFinish">סיים ושמור בהיכל התהילה</button>
@@ -436,7 +391,7 @@
 <div id="hud">
   <div id="ticker"><span class="dot">🔴</span><span id="tickerText">מבזק: מתיחות בצומת...</span></div>
   <div id="topRight">
-    <div class="chip"><div id="score">0</div><div style="font-size:11px;text-align:center">נקודות</div></div>
+    <div class="chip"><div id="score">0</div><div id="scoreLbl" style="font-size:11px;text-align:center">נקודות</div></div>
     <div class="chip" id="peepCount" style="font-size:13px">מפגינים: 0</div>
   </div>
   <div id="topCenter">
@@ -458,8 +413,16 @@
         <button class="tool" id="tBochur">🎩 בחור ישיבה<small>זימון — 50 נק'</small></button>
         <button class="tool" id="tAvrech">🧔 אברך ותיק<small>זימון — 150 נק'</small></button>
         <button class="tool" id="tAskan">📱 עסקן<small>זימון — 250 נק'</small></button>
+        <button class="tool" id="tBus">🚌 הסעות מאורגנות<small>8 ישר ליעד — 800 נק'</small></button>
+        <button class="tool" id="tZalam">📸 צלם<small>מאט מעצרים — 400 נק'</small></button>
       </div>
     </div>
+    <button class="tool pTool" id="pCruiser" style="display:none">🚔 ניידת<small>3 שוטרים — 300</small></button>
+    <button class="tool pTool" id="pHorse" style="display:none">🐎 פרשים<small>זוג — 500</small></button>
+    <button class="tool pTool" id="pCannon" style="display:none">🚛 מכת"זית<small>אחת — 1500</small></button>
+    <button class="tool pTool" id="pTow" style="display:none">🪝 גרר<small>מפנה רכב צמוד — 600</small></button>
+    <button class="tool pTool" id="pMeg" style="display:none">📢 מגפון<small>פיזור אזורי — 250</small></button>
+    <button class="tool pTool" id="pDet" style="display:none">🕵 בלש סמוי<small>מעצר בזק — 700</small></button>
     <button class="tool" id="tLie">🛏 שכיבה<small>לנבחרים</small></button>
     <button class="tool" id="tStand">🧍 קימה<small>ושחרור מרכב</small></button>
     <button class="tool warn" id="tEnd">🏁 סיום הפגנה<small>וסיכום</small></button>
@@ -473,6 +436,23 @@
   <div id="selInfo" class="chip">נבחרו: 0</div>
   <button class="tool" id="selModeBtn">☝ מצב בחירה</button>
 </div>
+<canvas id="minimap" width="230" height="76"></canvas>
+<!-- ======== הפסקה ======== -->
+<div id="pauseOv" class="hidden">
+  <div class="paper" style="max-width:390px">
+    <h1 class="logo" style="font-size:34px">הפסקה</h1>
+    <div class="sub">ההפגנה מחכה לך</div>
+    <button class="btn" id="pauseResume">המשך</button>
+    <button class="btn sec" id="pauseRestart">התחל את המפה מחדש</button>
+    <button class="btn sec" id="pauseQuit">יציאה לתפריט</button>
+    <div style="margin:8px 0 2px;font-weight:700">🔊 עוצמת צליל
+      <input type="range" id="volSlider" min="0" max="100" value="100"
+             style="width:62%;vertical-align:middle;direction:ltr"></div>
+    <div class="note">רווח/P/Esc — הפסקה · Tab — מיני-מפה (קליק עליה מזיז מצלמה) ·
+      חיצים/WASD — מצלמה · Q/E — סיבוב · ‎+/-‎ — זום · ספרות — כלים ·
+      Ctrl+A — לבחור הכל · L שכיבה · K קימה · M השתקה</div>
+  </div>
+</div>
 <div id="toast"></div>
 <div id="selrect"></div>
 <canvas id="c"></canvas>
@@ -483,6 +463,11 @@
    קובץ יחיד, Three.js r128
    ========================================================================= */
 'use strict';
+// שומר סף: בלי three.js אין משחק — עדיף הודעה ברורה מספינר נצחי
+if(!window.THREE){
+  document.getElementById('loadMsg').textContent='שגיאה: ספריית התלת-ממד (three.min.js) לא נטענה. רעננו את הדף.';
+  throw new Error('THREE missing');
+}
 
 /* ---------------- כלי עזר ---------------- */
 const rnd=(a=1,b)=> b===undefined? Math.random()*a : a+Math.random()*(b-a);
@@ -499,14 +484,14 @@ const G={
   scene:null, camera:null, renderer:null, world:null, dyn:null,
   peeps:[], cars:[], cops:[], horses:[], drivers:[], bubbles:[], fx:[],
   cannon:null, train:null,
-  selected:new Set(),
-  score:0, escTime:0, gameTime:0, blockTimePeak:0, jamPeak:0,
-  wave:0, stage:0, running:false, paused:false,
+  selected:new Set(), selCops:new Set(),
+  score:0, escTime:0, gameTime:0, jamPeak:0,
+  wave:0, stage:0, running:false,
   shofarUsed:false, bagT:0, runovers:0, fled:0,
   laneDefs:[], roadLen:200, roadHalfW:5, sidewalkZ:7,
   spawnTimers:[], muted:false, totalBlockTime:0,
-  newsExtra:[], camMode:'top', followPt:new THREE.Vector3(),
-  startScore:0
+  camMode:'top', followPt:new THREE.Vector3(),
+  side:'peeps'   // 'peeps' = מפגינים (קלאסי) | 'police' = מפקד המשטרה
 };
 const MAPS=[
   {name:'צומת בר אילן, ירושלים', speed:12, lanes:1, sign:'בר אילן'},
@@ -608,6 +593,11 @@ const BGM={
     if(!this.el||G.muted) return;
     try{ this.el.currentTime=0; const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
   },
+  resume(){   // המשך מהנקודה הנוכחית — לביטול השתקה, בלי להתחיל מההתחלה
+    this.init();
+    if(!this.el||G.muted) return;
+    try{ const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+  },
   stop(){ if(this.el){ try{ this.el.pause(); }catch(e){} } }
 };
 
@@ -618,40 +608,26 @@ const COPS={
   prime(){ this.init(); if(!this.el||this.primed) return; this.primed=true;   // שחרור אודיו במובייל בתוך מחוות הלחיצה
     try{ this.el.muted=true; const p=this.el.play(); if(p&&p.then) p.then(()=>{ try{this.el.pause(); this.el.currentTime=0; this.el.muted=false;}catch(e){} }).catch(()=>{ try{this.el.muted=false;}catch(e){} }); }catch(e){} },
   play(){ this.init(); if(!this.el||G.muted) return; try{ this.el.muted=false; this.el.currentTime=0; const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} },
+  resume(){ if(!this.el||G.muted||this.el.ended) return; try{ const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} },
   stop(){ if(this.el){ try{ this.el.pause(); }catch(e){} } }
 };
 
 /* =========================================================================
-   שמירה — טבלת שיאים עולמית משותפת (Netlify Function + Blobs)
-   נפילה ל-localStorage אם אין רשת/שרת
+   שמירה — טבלת שיאים מקומית (localStorage בלבד, ללא רשת)
    ========================================================================= */
 const Fame={
-  KEY:'hosmim-et-hatzir-hof', API:'https://hosmim-scores.pages.dev/api/leaderboard', mem:[], shared:false,
+  KEY:'hosmim-et-hatzir-hof', mem:[],
   _cache(list){ this.mem=list.slice(); try{ localStorage.setItem(this.KEY,JSON.stringify(list)); }catch(e){} },
   _local(){
     try{ const s=localStorage.getItem(this.KEY); if(s){ const p=JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
     return this.mem.slice();
   },
   async load(){
-    try{
-      const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),6000);
-      const r=await fetch(this.API,{cache:'no-store',signal:ctrl.signal}); clearTimeout(t);
-      if(r.ok){ const list=await r.json(); if(Array.isArray(list)){ this.shared=true; this._cache(list); return list; } }
-    }catch(e){}
-    this.shared=false;
     return this._local();
   },
   async submit(name,score){
     score=Math.max(0,Math.round(score)||0);
     const entry={name:String(name).slice(0,20)||'אלמוני',score};
-    try{
-      const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),8000);
-      const r=await fetch(this.API,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({...entry, token:G.playToken||null}),signal:ctrl.signal}); clearTimeout(t);
-      if(r.ok){ const list=await r.json(); if(Array.isArray(list)){ this.shared=true; this._cache(list); return list; } }
-    }catch(e){}
-    // נפילה מקומית
-    this.shared=false;
     const list=this._local();
     list.push({...entry,date:new Date().toLocaleDateString('he-IL')});
     list.sort((a,b)=>b.score-a.score);
@@ -661,7 +637,8 @@ const Fame={
     const list=await this.load();
     let r=1; for(const e of list) if(e.score>=score) r++;
     return (list.length<100||r<=100)? r : 0;
-  }
+  },
+  clear(){ this.mem=[]; try{ localStorage.removeItem(this.KEY); }catch(e){} }
 };
 
 /* =========================================================================
@@ -904,6 +881,9 @@ const TEX={
 };
 
 /* ---------------- חומרים וגיאומטריות משותפים ---------------- */
+// טקסטורות שילוט קבועות (מונית/אגד/משטרה) — התוכן זהה בכל קריאה, נשמרות פעם אחת
+const _texShared={};
+function TEXC(n){ return _texShared[n]||(_texShared[n]=TEX[n]()); }
 const _matCache={};
 function MAT(hex,opts){
   const key=hex+(opts?JSON.stringify(opts):'');
@@ -949,9 +929,11 @@ function initThree(){
   G.renderer.toneMappingExposure=.92;
   G.scene=new THREE.Scene();
   G.scene.fog=new THREE.Fog(0xa86f4d,85,300);
-  G.camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.5,700);
+  // שומר aspect: חלון 0×0 בזמן טעינה (iframe נסתר וכד') נותן 0/0=NaN שמרעיל את כל מטריצת ההקרנה
+  const safeAspect=()=>{ const a=innerWidth/innerHeight; return isFinite(a)&&a>0?a:16/9; };
+  G.camera=new THREE.PerspectiveCamera(55,safeAspect(),.5,700);
   addEventListener('resize',()=>{
-    G.camera.aspect=innerWidth/innerHeight; G.camera.updateProjectionMatrix();
+    G.camera.aspect=safeAspect(); G.camera.updateProjectionMatrix();
     G.renderer.setSize(innerWidth,innerHeight);
   });
   // מפת סביבה (PMREM) — השתקפויות שקיעה אמיתיות על פח הרכבים
@@ -1173,13 +1155,23 @@ function mkRoadBase(p,map){
 /* =========================================================================
    שלוש המפות
    ========================================================================= */
+function disposeDeep(root){
+  // שחרור GPU של עולם שלם. גיאומטריות/חומרים משותפים (GEO/MAT) נטענים מחדש
+  // אוטומטית ברינדור הבא — זול; הטקסטורות הן הזיכרון האמיתי.
+  if(!root) return;
+  root.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    const ms=Array.isArray(o.material)?o.material:(o.material?[o.material]:[]);
+    for(const m of ms){ if(m.map&&m.map.dispose) m.map.dispose(); m.dispose(); }
+  });
+}
 function clearWorld(){
-  if(G.world) G.scene.remove(G.world);
-  if(G.dyn) G.scene.remove(G.dyn);
+  if(G.world){ G.scene.remove(G.world); disposeDeep(G.world); }
+  if(G.dyn){ G.scene.remove(G.dyn); disposeDeep(G.dyn); }
   G.world=new THREE.Group(); G.dyn=new THREE.Group();
   G.scene.add(G.world); G.scene.add(G.dyn);
   G.peeps=[]; G.cars=[]; G.cops=[]; G.horses=[]; G.drivers=[]; G.bubbles=[]; G.fx=[];
-  G.cannon=null; G.train=null; G.selected.clear();
+  G.cannon=null; G.train=null; G.selected.clear(); G.selCops.clear();
 }
 
 function buildMap(i){
@@ -1465,7 +1457,7 @@ function mkCarMesh(type){
     addWheelSet(g,[[1.36,-.78],[1.36,.78],[-1.36,-.78],[-1.36,.78]],.33,.24);
     if(type==='taxi'){
       const sign=new THREE.Group();
-      const st=TEX.taxi();
+      const st=TEXC('taxi');
       const s1=texPlane(.8,.32,st); s1.position.z=.012; sign.add(s1);
       const s2=texPlane(.8,.32,st); s2.rotation.y=Math.PI; s2.position.z=-.012; sign.add(s2);
       const sb=new THREE.Mesh(GEO.box,M_TRIM); sb.scale.set(.85,.3,.1); sign.add(sb);
@@ -1473,7 +1465,7 @@ function mkCarMesh(type){
     }
     if(type==='police'){
       const stripe=addM(GEO.box,paintM(0x0a3a8c),0,.66,0); stripe.scale.set(4.3,.22,w+.16); stripe.castShadow=false;
-      const pt=TEX.police();
+      const pt=TEXC('police');
       [-1,1].forEach(s=>{const e=texPlane(1.5,.38,pt); e.rotation.y=s>0?0:Math.PI; e.position.set(.2,.62,s*(w/2+.1)); bodyG.add(e);});
       const bar=addM(GEO.box,M_TRIM,-.2,1.42,0); bar.scale.set(1.1,.1,.42); bar.castShadow=false;
       const rl=new THREE.Mesh(GEO.box,new THREE.MeshStandardMaterial({color:0xff2222,emissive:0xff2222,emissiveIntensity:1.5}));
@@ -1599,7 +1591,7 @@ function mkCarMesh(type){
     const skirt=addM(GEO.box,paintM(0x00833e),0,.72,0); skirt.scale.set(11.3,.55,w+.16); skirt.castShadow=false;
     const route=addM(GEO.box,new THREE.MeshStandardMaterial({color:0xfff7c2,emissive:0xffefa0,emissiveIntensity:1.2}),5.78,2.72,0);
     route.scale.set(.06,.28,1.3); route.castShadow=false;
-    const et=TEX.egged();
+    const et=TEXC('egged');
     [-1,1].forEach(s=>{const e=texPlane(.9,.9,et); e.rotation.y=s>0?0:Math.PI; e.position.set(2.6,1.5,s*(w/2+.14)); bodyG.add(e);});
     g.userData.tails=addLamps(bodyG,len,w,.8);
     addWheelSet(g,[[3.5,-1.06],[3.5,1.06],[-3.5,-1.06],[-3.5,1.06]],.46,.32);
@@ -1619,7 +1611,7 @@ function mkCarMesh(type){
     const chassis=addM(GEO.box,M_TRIM,-.4,.7,0); chassis.scale.set(7.6,.5,2.2);
     const tankGeo=getGeo('mahTank',()=>{ const t=new THREE.CylinderGeometry(1.05,1.05,4.7,18); t.rotateZ(Math.PI/2); return t; });
     addM(tankGeo,paint,-.85,1.85,0);
-    const pt=TEX.police();
+    const pt=TEXC('police');
     [-1,1].forEach(s=>{const e=texPlane(2.4,.6,pt); e.rotation.y=s>0?0:Math.PI; e.position.set(-.9,1.85,s*1.08); bodyG.add(e);});
     const tur=new THREE.Group();
     tur.add(cyl(.5,.5,0x2b2f36));
@@ -1802,11 +1794,16 @@ function updateTrain(dt){
   const wasBlocked=t.blocked;
   t.blocked=(t.v<.2 && gap<25);
   if(t.blocked&&!wasBlocked){
+    $('trainBonus').textContent=G.side==='police'
+      ? '🚋 הרכבת הקלה חסומה — פנו את המסילה!'
+      : '🚋 הרכבת הקלה נעצרה! בונוס ענק!';
     $('trainBonus').style.display='block';
-    newsFlash('🚋 דרמה: הרכבת הקלה נעצרה על גשר המיתרים! בונוס ענק!');
+    newsFlash(G.side==='police'
+      ? '🚋 הרכבת הקלה נעצרה על גשר המיתרים — פנו את המסילה מיד!'
+      : '🚋 דרמה: הרכבת הקלה נעצרה על גשר המיתרים! בונוס ענק!');
     AUDIO.ding();
   }
-  if(!t.blocked) $('trainBonus').style.display='none';
+  if(!t.blocked&&$('trainBonus').style.display!=='none') $('trainBonus').style.display='none';
   t.obj.position.set(t.s,0,0);
   if(t.s>G.roadLen/2+30){ G.dyn.remove(t.obj); G.train=null; G.trainTimer=rnd(30,50); $('trainBonus').style.display='none'; }
 }
@@ -1814,14 +1811,20 @@ function updateTrain(dt){
 /* ---------------- דריסה (לא גרפי, מינוס נקודות) ---------------- */
 function runOver(peep,car){
   if(peep.state==='hit') return;
+  detach(peep);              // משחרר את הרכב שהוא נצמד אליו — אחרת יקפא לנצח
   peep.state='hit'; peep.hitT=.9;
   G.selected.delete(peep); peep.ring.visible=false;
   addScore(-200);
   G.runovers++;
   AUDIO.oy(); AUDIO.thud();
   starsFx(peep.obj.position.clone().setY(2));
-  toast('מפגין נפצע! הזהירות קודמת לכל! ‎-200‎','bad');
-  newsFlash('🔴 מבזק: מפגין נפצע קל בצומת — מד"א במקום');
+  if(G.side==='police'){
+    toast('תחקיר מח"ש: מפגין נפצע מרכב — ‎-200‎ מהתקציב','bad');
+    newsFlash('🔴 מבזק: מפגין נפצע בצומת — ביקורת ציבורית על המשטרה');
+  }else{
+    toast('מפגין נפצע! הזהירות קודמת לכל! ‎-200‎','bad');
+    newsFlash('🔴 מבזק: מפגין נפצע קל בצומת — מד"א במקום');
+  }
 }
 
 /* =========================================================================
@@ -1976,19 +1979,28 @@ function mkFigure(o){
 const UNIT_STATS={
   bochur:{speed:4.4, grabMul:1,   fleeW:[.5,.78,.97], label:'בחור ישיבה', cost:50},
   avrech:{speed:2.4, grabMul:3,   fleeW:[0,.5,.93],  label:'אברך ותיק', cost:150},
-  askan: {speed:3.2, grabMul:1.2, fleeW:[.3,.6,.95], label:'עסקן',      cost:250}
+  askan: {speed:3.2, grabMul:1.2, fleeW:[.3,.6,.95], label:'עסקן',      cost:250},
+  zalam: {speed:3.4, grabMul:1.4, fleeW:[.2,.5,.9],  label:'צלם',       cost:400}
 };
+// הילת התקשורת של הצלם: שוטר בקרבתו תופס וגורר לאט — "מצלמים אותך!"
+function zalamNear(x,z){
+  for(const p of G.peeps)
+    if(p.typeKey==='zalam'&&!['flee','hit','dragged'].includes(p.state)
+       &&dist2(p.obj.position.x,p.obj.position.z,x,z)<64) return true;
+  return false;
+}
 function mkPeep(typeKey,x,z){
   const st=UNIT_STATS[typeKey];
   const beardC= typeKey==='avrech'?0xb9b9b9 : typeKey==='askan'?0x4a3826 : 0x2e2118;
   const fig=mkFigure({
-    coat: typeKey==='askan'?0x23232a:0x141417,
-    hat:'fedora', smallHat:typeKey==='bochur',
+    coat: typeKey==='askan'?0x23232a: typeKey==='zalam'?0x2e4a52 :0x141417,
+    hat:'fedora', smallHat:typeKey==='bochur'||typeKey==='zalam',
     longCoat:typeKey==='avrech',
-    beard:(typeKey!=='bochur'||Math.random()<.4)?beardC:null,
+    beard: typeKey==='zalam'?null:((typeKey!=='bochur'||Math.random()<.4)?beardC:null),
     beardBig:typeKey==='avrech',
-    peyot:true,
-    phone:typeKey==='askan', glasses:typeKey==='askan'
+    peyot:typeKey!=='zalam',   // צלם עיתונות — מראה אחר
+    phone:typeKey==='askan'||typeKey==='zalam',   // אצל הצלם זו המצלמה
+    glasses:typeKey==='askan'||typeKey==='zalam'
   });
   const root=fig.root, inner=fig.inner;
   // ציציות מציצות מתחת לז'קט
@@ -2010,7 +2022,7 @@ function mkPeep(typeKey,x,z){
     parts:fig.parts,
     state:'idle', target:null, phase:rnd(0,6), ring,
     recoverT:0, attachCar:null, dragger:null, hitT:0, stain:0,
-    shoutT:0, argueT:0, argueCD:0, helpT:0,
+    shoutT:0, argueT:0, argueCD:0,
     onRoad(){ const p=this.obj.position; return Math.abs(p.z)<G.roadHalfW-.2 && Math.abs(p.x)<G.roadLen/2; },
     selectable(){ return !['dragged','recover','flee','hit'].includes(this.state); }
   };
@@ -2019,10 +2031,12 @@ function mkPeep(typeKey,x,z){
   return peep;
 }
 function removePeep(p){
+  detach(p);
   G.selected.delete(p);
   G.dyn.remove(p.obj);
   const i=G.peeps.indexOf(p); if(i>=0) G.peeps.splice(i,1);
   p.mats.forEach(m=>m.dispose());
+  p.ring.material.dispose();
 }
 
 /* ---------------- שוטר / נהג ---------------- */
@@ -2037,7 +2051,7 @@ function mkDriverFig(){
     pants:pick([0x33415e,0x2c2c30,0x5a5248]),
     hat:Math.random()<.4?'kippa':null, shirt:false
   });
-  return {root:fig.root,inner:fig.inner,parts:fig.parts};
+  return {root:fig.root,inner:fig.inner,parts:fig.parts,mats:fig.mats};
 }
 /* ---------------- סוס ופרש ---------------- */
 function mkHorse(){
@@ -2247,7 +2261,7 @@ function detach(p){
 function makeFlee(p){
   if(p.state==='flee'||p.state==='hit') return;
   detach(p);
-  p.state='flee'; addScore(-20); G.fled++;
+  p.state='flee'; addScore(G.side==='police'?30:-20); G.fled++;
   G.selected.delete(p); p.ring.visible=false;
   p.target={x:(p.obj.position.x>=0?1:-1)*(G.roadLen/2+10), z:(Math.random()<.5?-1:1)*(G.roadHalfW+4.5)};
   say(p.obj,pick(['אוי גוואלד!','רחמנא ליצלן!','ברחו!!']),2);
@@ -2332,6 +2346,11 @@ function updatePeeps(dt,now){
     }
     if(p.wetCD>0) p.wetCD-=dt;
     if(p.argueCD>0) p.argueCD-=dt;
+    if(p.cowT>0) p.cowT-=dt;
+    if(p.horseCD>0) p.horseCD-=dt;
+    // עומד באמצע הכביש = חוסם: בלי זה מפגין ששוחרר מגרר/דחיפה על הכביש
+    // נשאר 'idle' — בלתי-נראה לשוטרים ולדירקטור אבל חוסם תנועה
+    if(p.state==='idle'&&p.onRoad()) p.state='blocking';
     animHumanoid(p.parts,mode,p.phase,now);
     if(p.typeKey==='askan'&&p.parts.phone&&mode!=='lie'){
       p.parts.armR.rotation.x=-2.3; p.parts.armR.rotation.z=-.35;
@@ -2365,9 +2384,10 @@ function spawnDriver(car){
 }
 function removeDriver(d,instant){
   G.dyn.remove(d.obj);
-  if(d.pushP&&d.pushP.state==='pushed') d.pushP.state='blocking';
+  if(d.pushP&&d.pushP.state==='pushed') d.pushP.state=d.pushP.onRoad()?'blocking':'idle';
   if(d.car) d.car.driver=null;
   const i=G.drivers.indexOf(d); if(i>=0)G.drivers.splice(i,1);
+  if(d.fig.mats) d.fig.mats.forEach(m=>m.dispose());
 }
 function moveFig(d,tx,tz,speed,dt){
   const pos=d.obj.position, dx=tx-pos.x,dz=tz-pos.z,dd=Math.hypot(dx,dz);
@@ -2437,7 +2457,7 @@ function updateDrivers(dt,now){
         const p=d.pushP;
         if(!p||p.state!=='pushed'){ d.state='return'; break; }
         if(friendsNear(p,6)>=3){                        // החברים הגיעו!
-          say(d.obj,'אוי לא...',1.6); p.state='blocking'; d.pushP=null; d.state='return';
+          say(d.obj,'אוי לא...',1.6); p.state=p.onRoad()?'blocking':'idle'; d.pushP=null; d.state='return';
           break;
         }
         const tz=sidewalkZ(p.obj.position.z);
@@ -2462,25 +2482,31 @@ function updateDrivers(dt,now){
 /* =========================================================================
    משטרה — שוטרים גוררים
    ========================================================================= */
+function spawnCruiser(){
+  const ci=G.copCars.length;
+  const side=ci%2===0?1:-1;
+  const g=mkCarMesh('police');
+  const parkX=18+ci*9;
+  g.position.set(G.roadLen/2+18+ci*8,0,side*(G.roadHalfW+2.2));
+  g.rotation.y=Math.PI;
+  G.dyn.add(g);
+  G.copCars.push({obj:g,parkX,parked:false,flash:g.userData.flash,side});
+}
 function spawnPolice(){
   AUDIO.siren(true);
   newsFlash('🔴 המשטרה: "נערכים לפיזור ההפגנה בצומת"');
-  [1,-1].forEach((side,ci)=>{
-    const g=mkCarMesh('police');
-    const parkX=18+ci*14;
-    g.position.set(G.roadLen/2+18+ci*10,0,side*(G.roadHalfW+2.2));
-    g.rotation.y=Math.PI;
-    G.dyn.add(g);
-    const cruiser={obj:g,parkX,parked:false,flash:g.userData.flash,side};
-    G.copCars.push(cruiser);
-  });
+  spawnCruiser(); spawnCruiser();
 }
 function spawnCopsFromCruiser(cr){
   for(let k=0;k<3;k++){
     const fig=mkCopFig();
     fig.root.position.set(cr.obj.position.x+rnd(-1,1),0,cr.obj.position.z+rnd(-.5,.5));
     G.dyn.add(fig.root);
-    G.cops.push({fig,obj:fig.root,parts:fig.parts,state:'seek',target:null,grabT:0,
+    // טבעת בחירה — במצב משטרה השחקן בוחר ומפקד על שוטרים
+    const ring=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:0x4d90ff,transparent:true,opacity:.9}));
+    ring.rotation.x=-Math.PI/2; ring.position.y=.04; ring.scale.set(1.5,1.5,1); ring.visible=false;
+    fig.root.add(ring);
+    G.cops.push({fig,obj:fig.root,parts:fig.parts,ring,state:'seek',target:null,grabT:0,
       frozenT:0,phase:0,home:{x:cr.obj.position.x,z:cr.obj.position.z},argueT:0});
   }
 }
@@ -2502,16 +2528,21 @@ function updateCops(dt,now){
   }
   for(const cop of G.cops){
     let mode='idle';
+    if(cop.ring) cop.ring.visible=G.selCops.has(cop);
     if(cop.frozenT>0){ cop.frozenT-=dt; animHumanoid(cop.parts,'idle',0,now); continue; }
     switch(cop.state){
       case 'seek':{
         let best=1e9,t=null;
+        const R=G.rally, O=cop.orderPt;   // פקודה אישית גוברת על דגל הריכוז
         for(const p of G.peeps){
           if(!copValidTarget(p)) continue;
-          const dd=dist2(p.obj.position.x,p.obj.position.z,cop.obj.position.x,cop.obj.position.z);
+          let dd=dist2(p.obj.position.x,p.obj.position.z,cop.obj.position.x,cop.obj.position.z);
+          if(O){ if(dist2(p.obj.position.x,p.obj.position.z,O.x,O.z)>144) continue; }   // רק מטרות סביב היעד שהוקצה
+          else if(R&&dist2(p.obj.position.x,p.obj.position.z,R.x,R.z)<196) dd*=.15;
           if(dd<best){best=dd;t=p;}
         }
         if(t){ cop.target=t; t.copLock=cop; cop.state='walk'; }
+        else if(O){ mode='walk'; if(moveFig(cop,O.x,O.z,3.0,dt)) mode='idle'; }   // מתייצב ושומר על הנקודה
         else { mode='walk'; if(moveFig(cop,cop.home.x,cop.home.z,2.6,dt)) mode='idle'; }
         break;}
       case 'walk':{
@@ -2522,12 +2553,16 @@ function updateCops(dt,now){
         mode='run';
         if(moveFig(cop,p.obj.position.x+.5,p.obj.position.z,3.2,dt)){
           if(p.typeKey==='askan'&&p.argueCD<=0&&p.state!=='lying'){
-            cop.state='argue'; cop.argueT=15; p.state='argue'; p.argueT=15; p.argueCD=40;
+            cop.state='argue'; cop.argueT=15; p.state='argue'; p.argueT=15;
+            p.argueCD=G.side==='police'?9999:40;   // מול המפקד — "יש לי אישור" עובד פעם אחת
             say(p.obj,'יש לי אישור!',3);
-            setTimeout(()=>{ if(cop.state==='argue') say(cop.obj,'אדוני, פנה את הציר!',3); },1600);
+            const rid=G.runId;
+            gameTimeout(()=>{ if(G.runId===rid&&cop.state==='argue') say(cop.obj,'אדוני, פנה את הציר!',3); },1600);
           }else{
             cop.state='grab';
-            cop.grabT=1.6*p.st.grabMul*(p.state==='lying'?2:1);
+            const zn=zalamNear(cop.obj.position.x,cop.obj.position.z);
+            cop.grabT=1.6*p.st.grabMul*(p.state==='lying'?2:1)*(zn?1.7:1);
+            if(zn&&Math.random()<.35) say(p.obj,'תצלם! תצלם!',1.6);
           }
         }
         break;}
@@ -2537,7 +2572,8 @@ function updateCops(dt,now){
         if(cop.argueT<=0||!cop.target||!G.peeps.includes(cop.target)){
           if(cop.target&&G.peeps.includes(cop.target)){
             cop.state='grab';
-            cop.grabT=1.6*cop.target.st.grabMul*(cop.target.state==='lying'?2:1);
+            cop.grabT=1.6*cop.target.st.grabMul*(cop.target.state==='lying'?2:1)
+                      *(zalamNear(cop.obj.position.x,cop.obj.position.z)?1.7:1);
           }else{ cop.state='seek'; cop.target=null; }
         } else if(Math.random()<dt*.4) say(cop.obj===undefined?cop.fig.root:cop.obj,pick(['להתפנות מיד!','זה צו חוקי!','אדוני!!']),2);
         break;}
@@ -2563,12 +2599,25 @@ function updateCops(dt,now){
         if(!p||!G.peeps.includes(p)){ cop.target=null; cop.state='seek'; break; }
         mode='walk';
         const tz=sidewalkZ(cop.obj.position.z||1);
-        const done=moveFig(cop,cop.obj.position.x,tz+Math.sign(tz)*1.2,1.3,dt);
+        const done=moveFig(cop,cop.obj.position.x,tz+Math.sign(tz)*1.2,
+          zalamNear(cop.obj.position.x,cop.obj.position.z)?0.8:1.3,dt);   // מצלמים — גוררים בעדינות
         p.obj.position.set(cop.obj.position.x-.4,0,cop.obj.position.z-.6*Math.sign(tz));
         p.phase+=dt*2;
         if(done||Math.abs(cop.obj.position.z)>G.roadHalfW+2.2){
-          p.state='recover'; p.recoverT=10; p.dragger=null; p.copLock=null;
-          say(p.obj,pick(['עוד נשוב!','זה לא נגמר!']),2);
+          p.dragger=null; p.copLock=null;
+          if(G.side==='police'){
+            p.dragN=(p.dragN||0)+1;
+            addScore(p.dragN>=2?30:60);   // פינוי חוזר שווה פחות
+          }
+          if(G.side==='police'&&p.dragN>=2){
+            // בפעם השנייה — נשבר והולך הביתה (שחיקה אמיתית; בלי בונוס הברחה)
+            p.state='flee'; G.selected.delete(p); p.ring.visible=false;
+            p.target={x:(p.obj.position.x>=0?1:-1)*(G.roadLen/2+10), z:(Math.random()<.5?-1:1)*(G.roadHalfW+4.5)};
+            say(p.obj,pick(['נמאס לי, אני הביתה!','די, נשבר לי!']),2);
+          }else{
+            p.state='recover'; p.recoverT=10;
+            say(p.obj,pick(['עוד נשוב!','זה לא נגמר!']),2);
+          }
           cop.target=null; cop.state='seek';
         }
         break;}
@@ -2581,9 +2630,10 @@ function detachFromLie(p){ detach(p); }
 /* =========================================================================
    פרשים
    ========================================================================= */
-function spawnHorses(){
+function spawnHorses(n){
+  n=n||3;
   newsFlash('🔴 פרשי משטרה נכנסים לזירת ההפגנה');
-  for(let k=0;k<3;k++){
+  for(let k=0;k<n;k++){
     const h=mkHorse();
     h.root.position.set(-G.roadLen/2-12-k*8,0,G.laneDefs[k%G.laneDefs.length].z);
     G.dyn.add(h.root);
@@ -2609,11 +2659,13 @@ function updateHorses(dt,now){
     const lim=G.roadLen/2-4;   // היפוך כיוון רק כשמגיעים לקצה בכיוון הנסיעה (לא בלידה מחוץ למסך)
     if(h.dir>0 && h.obj.position.x>lim){ h.dir=-1; h.waitT=rnd(1,3); }
     else if(h.dir<0 && h.obj.position.x<-lim){ h.dir=1; h.waitT=rnd(1,3); }
-    // AI פחד — עומדים בורחים, שוכבים וצמודים לא מושפעים
+    // AI פחד — עומדים בורחים; שוכבים נשברים ב-60% לכל מעבר; צמודים לא מושפעים
     for(const p of G.peeps){
-      if(!['blocking','moving','idle','helping'].includes(p.state)) continue;
-      if(!p.onRoad()) continue;
+      if(!['blocking','moving','idle','helping','lying'].includes(p.state)) continue;
+      if(!p.onRoad()||p.horseCD>0) continue;
       if(dist2(p.obj.position.x,p.obj.position.z,h.obj.position.x,h.obj.position.z)<36){
+        p.horseCD=2;   // ניסיון הפחדה אחד לכל מעבר סוס
+        if(p.state==='lying'&&Math.random()>=.6) continue;
         p.state='panic'; p.attachPending=null;
         p.target={x:p.obj.position.x+rnd(-3,3),z:sidewalkZ(p.obj.position.z)+Math.sign(p.obj.position.z||1)*rnd(0,2)};
         if(Math.random()<.4) say(p.obj,pick(['אִיייי!','סוס!!','שמע ישראל!']),1.6);
@@ -2652,8 +2704,12 @@ function spawnCannon(){
 function updateTankHUD(){
   const c=G.cannon; if(!c) return;
   const lv=CANNON_LEVELS[c.level-1];
+  // נקרא כל פריים בזמן ריסוס — כותבים ל-DOM רק כשמשהו באמת השתנה
+  const key=(c.refillT>0?'r':'t'+c.level)+'|'+Math.round((c.refillT>0?(1-c.refillT/15):c.tank/25)*100);
+  if(key===G._tankKey) return;
+  G._tankKey=key;
   if(c.refillT>0){
-    $('tankLabel').textContent=`מיכל המכת"זית — ממלא! (חלון זהב!)`;
+    $('tankLabel').textContent=G.side==='police'?'מיכל המכת"זית — ממלא!':`מיכל המכת"זית — ממלא! (חלון זהב!)`;
     $('tankBar').style.width=((1-c.refillT/15)*100)+'%';
     $('tankBar').style.background='linear-gradient(90deg,#ffd34d,#ff9a3c)';
   }else{
@@ -2662,9 +2718,9 @@ function updateTankHUD(){
     $('tankBar').style.background=lv.css;
   }
 }
+const _nozV=new THREE.Vector3(), _midV=new THREE.Vector3();   // וקטורי עזר — בלי הקצאות פר-פריים
 function cannonNozzle(){
-  const c=G.cannon, v=new THREE.Vector3(-1.2,3.6,0);
-  return v.applyMatrix4(c.obj.matrixWorld);
+  return _nozV.set(-1.2,3.6,0).applyMatrix4(G.cannon.obj.matrixWorld);
 }
 function updateCannon(dt,now){
   const c=G.cannon; if(!c) return;
@@ -2680,24 +2736,33 @@ function updateCannon(dt,now){
   // מילוי / ריקון
   if(c.refillT>0){
     c.refillT-=dt; c.pts.visible=false; AUDIO.spray(false);
-    if(c.refillT<=0){ c.tank=25; toast('המיכל התמלא — המכת"זית חוזרת לפעולה!','bad'); }
+    if(c.refillT<=0){ c.tank=25; toast('המיכל התמלא — המכת"זית חוזרת לפעולה!',G.side==='police'?'good':'bad'); }
     updateTankHUD(); return;
   }
-  // בחירת מטרה — המפגין הקרוב ביותר על הכביש
+  // בחירת מטרה — הקרוב לדגל הריכוז (מצב משטרה, "ריכוז אש") או למכת"זית עצמה
   let best=1e9,t=null;
+  const RC=(G.side==='police'&&G.rally)?G.rally:null;
   for(const p of G.peeps){
-    if(!p.onRoad()||p.state==='hit'||p.state==='flee') continue;
-    const dd=dist2(p.obj.position.x,p.obj.position.z,c.obj.position.x,c.obj.position.z);
+    if(!p.onRoad()||['hit','flee','dragged','pushed'].includes(p.state)) continue;   // לא לנעול על מטרות שאסור לפגוע בהן
+    const dd=RC
+      ? dist2(p.obj.position.x,p.obj.position.z,RC.x,RC.z)
+      : dist2(p.obj.position.x,p.obj.position.z,c.obj.position.x,c.obj.position.z);
     if(dd<best){best=dd;t=p;}
   }
-  if(!t||best>3600){ c.pts.visible=false; AUDIO.spray(false); return; }
+  if(t&&dist2(t.obj.position.x,t.obj.position.z,c.obj.position.x,c.obj.position.z)>3600) t=null;   // מחוץ לטווח התותח
+  if(!t){ c.pts.visible=false; AUDIO.spray(false); return; }
   // ריסוס!
   c.tank-=dt; c.sprayLvlT+=dt;
-  if(c.tank<=0){ c.refillT=15; toast('המיכל ריק! 15 שניות — חלון זהב לחזור לכביש!','good'); AUDIO.ding(); updateTankHUD(); return; }
+  if(c.tank<=0){ c.refillT=15;
+    toast(G.side==='police'?'המיכל ריק! 15 שניות מילוי — עמדו בפרץ':'המיכל ריק! 15 שניות — חלון זהב לחזור לכביש!',G.side==='police'?'bad':'good');
+    AUDIO.ding(); updateTankHUD(); return; }
   if(c.sprayLvlT>40&&c.level<3){
     c.level++; c.sprayLvlT=0;
     c.pts.material.color.setHex(CANNON_LEVELS[c.level-1].color);
-    toast(c.level===2?'המשטרה עברה למים כחולים!':'בואש!!! תברחו!!','bad');
+    toast(G.side==='police'
+      ? (c.level===2?'עוברים למים כחולים — סימון מפגינים':'בואש הופעל — פיזור מיידי!')
+      : (c.level===2?'המשטרה עברה למים כחולים!':'בואש!!! תברחו!!'),
+      G.side==='police'?'good':'bad');
     newsFlash(c.level===2?'🔴 המשטרה מתיזה מים כחולים לסימון מפגינים':'🔴 ריח הבואש מורגש עד שכונת גאולה');
   }
   updateTankHUD();
@@ -2710,7 +2775,7 @@ function updateCannon(dt,now){
   // חלקיקים לאורך קשת
   c.pts.visible=true;
   const posAttr=c.pts.geometry.attributes.position;
-  const mid=new THREE.Vector3((noz.x+c.impact.x)/2,Math.max(noz.y,4.5)+3,(noz.z+c.impact.z)/2);
+  const mid=_midV.set((noz.x+c.impact.x)/2,Math.max(noz.y,4.5)+3,(noz.z+c.impact.z)/2);
   for(let i=0;i<c.ptData.length;i++){
     const d=c.ptData[i]; d.t+=dt*1.8; if(d.t>1)d.t-=1;
     const a=d.t, inv=1-a;
@@ -2726,7 +2791,7 @@ function updateCannon(dt,now){
     c.hitT=.14;
     const lv=CANNON_LEVELS[c.level-1];
     for(const p of G.peeps){
-      if(p.state==='hit'||p.state==='flee') continue;
+      if(['hit','flee','dragged','pushed'].includes(p.state)) continue;   // נגררים/נדחפים — בידי שוטר/נהג
       if(dist2(p.obj.position.x,p.obj.position.z,c.impact.x,c.impact.z)>6.5) continue;
       if(p.wetCD>0) continue;
       p.wetCD=1;
@@ -2749,20 +2814,24 @@ function updateCannon(dt,now){
     }
   }
 }
+let _stinkTex=null;   // הגרדיאנט זהה בכל פעם — טקסטורה משותפת אחת במקום canvas חדש לכל ענן
 function stinkFx(pos){
   if(Math.random()>.25) return;
-  const spr=spriteFromCanvas((x,w,h)=>{
-    const g=x.createRadialGradient(64,64,8,64,64,60);
+  if(!_stinkTex){
+    const c=document.createElement('canvas'); c.width=128; c.height=128;
+    const x=c.getContext('2d'), g=x.createRadialGradient(64,64,8,64,64,60);
     g.addColorStop(0,'rgba(150,165,60,.55)'); g.addColorStop(1,'rgba(120,140,40,0)');
     x.fillStyle=g; x.fillRect(0,0,128,128);
-  });
+    _stinkTex=new THREE.CanvasTexture(c);
+  }
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:_stinkTex,transparent:true,depthTest:false}));
   spr.position.set(pos.x+rnd(-1,1),1.5,pos.z+rnd(-1,1)); spr.scale.set(3,3,1);
   G.dyn.add(spr);
   let t=0;
   G.fx.push({update(dt){
     t+=dt; spr.position.y+=dt*.5; const s=3+t*2.5; spr.scale.set(s,s,1);
     spr.material.opacity=clamp(.8-t*.4,0,1);
-    if(t>2){ G.dyn.remove(spr); spr.material.map.dispose(); spr.material.dispose(); return false; }
+    if(t>2){ G.dyn.remove(spr); spr.material.dispose(); return false; }   // המפה משותפת — לא לשחרר
     return true;
   }});
 }
@@ -2796,8 +2865,9 @@ function updateWaves(dt){
   if(G.bagT>0) G.bagT-=dt;   // טיימר הגנת שקיות הניילון
   if(countStopped()>0||G.peeps.some(p=>p.onRoad())){ G.escTime+=dt; G.protestStarted=true; }
   G.totalBlockTime=G.escTime;
+  if(G.side==='police') return;   // ההסלמה בידי השחקן; גלי המפגינים והתווית — ב-updateDirector
   let w=0;
-  for(let i=0;i<WAVES.length;i++) if(G.escTime>=WAVES[i].t) w=i+1;
+  if(G.protestStarted) for(let i=0;i<WAVES.length;i++) if(G.escTime>=WAVES[i].t) w=i+1;
   if(w>G.wave){
     G.wave=w;
     if(w===2){ spawnPolice(); COPS.play(); }   // גל השוטרים — מנגן את הסאונד
@@ -2807,8 +2877,256 @@ function updateWaves(dt){
   }
   const cur=WAVES[Math.max(0,w-1)], next=WAVES[w];
   let txt='שלב: '+(w>0?cur.name:'התארגנות');
-  if(next) txt+=` (עוד ${Math.max(0,Math.ceil(next.t-G.escTime))} שנ' לבא)`;
-  $('waveName').textContent=txt;
+  if(next&&w>0) txt+=` (עוד ${Math.max(0,Math.ceil(next.t-G.escTime))} שנ' לבא)`;
+  if(txt!==G._waveTxt){ G._waveTxt=txt; $('waveName').textContent=txt; }
+}
+
+/* =========================================================================
+   מצב משטרה — גלי מפגינים אוטונומיים + כלי המפקד
+   ========================================================================= */
+const PWAVES=[
+  {delay:6,  mix:['bochur','bochur','bochur','bochur','bochur','bochur','avrech','avrech']},
+  {delay:35, mix:['bochur','bochur','bochur','bochur','avrech','avrech','avrech','askan']},
+  {delay:40, mix:['bochur','bochur','bochur','bochur','bochur','avrech','avrech','avrech','askan','askan']},
+  {delay:45, mix:['bochur','bochur','bochur','bochur','bochur','bochur','avrech','avrech','avrech','avrech','askan','askan']}
+];
+function ensureRallyFlag(){
+  if(G.rallyFlag) return G.rallyFlag;
+  const g=new THREE.Group();
+  const pole=new THREE.Mesh(GEO.box,MAT(0x8a8f96)); pole.scale.set(.06,2.2,.06);
+  pole.position.y=1.1; pole.castShadow=false; g.add(pole);
+  const flag=new THREE.Mesh(GEO.box,new THREE.MeshBasicMaterial({color:0x4488ff}));
+  flag.scale.set(.75,.45,.03); flag.position.set(.42,1.85,0); flag.castShadow=false; g.add(flag);
+  G.dyn.add(g); G.rallyFlag=g;
+  return g;
+}
+function updateDirector(dt){
+  const D=G.pw; if(!D) return;
+  if(G.megCD>0) G.megCD=Math.max(0,G.megCD-dt);
+  if(G.rally){
+    G.rally.t-=dt;
+    if(G.rallyFlag&&G.rallyFlag.visible) G.rallyFlag.children[1].rotation.y=Math.sin(G.gameTime*4)*.3;
+    if(G.rally.t<=0){ G.rally=null; if(G.rallyFlag) G.rallyFlag.visible=false; }
+  }
+  // שיגור גלים
+  if(D.idx<PWAVES.length){
+    D.timer-=dt;
+    if(D.timer<=0){
+      const wv=PWAVES[D.idx], rid=G.runId;
+      newsFlash(`🔴 גל מפגינים ${D.idx+1}/${PWAVES.length} יוצא מהסמטאות אל הציר!`);
+      wv.mix.forEach((tk,i)=>{
+        gameTimeout(()=>{
+          if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
+          const al=pick(G.alleys);
+          const p=mkPeep(tk,al.x+rnd(-2,2),al.z+rnd(-1,1));
+          p.ai=true; p.state='moving';
+          p.target={x:rnd(-G.roadLen*.22,G.roadLen*.22), z:rnd(-G.roadHalfW+1,G.roadHalfW-1)};
+        },i*650);
+      });
+      D.idx++;
+      if(D.idx<PWAVES.length) D.timer=PWAVES[D.idx].delay;
+      if(D.idx===3&&D.visitAt===undefined) D.visitAt=G.gameTime+rnd(8,20);   // ביקורת המפכ"ל לקראת הגל השלישי
+    }
+  }
+  // ביקורת המפכ"ל — חלון בונוס/קנס
+  if(D.visitAt!==undefined&&!D.visit&&!D.visitDone&&G.gameTime>=D.visitAt){
+    D.visit={t:20};
+    newsFlash('🔴 המפכ"ל בדרך לצומת — הציר חייב להיות פתוח!');
+    toast('ביקורת המפכ"ל! 20 שניות — ציר פתוח = בונוס משולש','good');
+  }
+  if(D.visit){
+    D.visit.t-=dt;
+    if(D.visit.t<=0){
+      // בורחים/נגררים לא נספרים כחסימה — אלה הצלחות של המפקד
+      const blocked=G.peeps.some(p=>p.onRoad()&&!['flee','hit','dragged'].includes(p.state))||countStopped()>0;
+      if(blocked){ addScore(-150); toast('המפכ"ל נתקע בפקק! ‎-150‎','bad');
+        newsFlash('🔴 המפכ"ל נתקע בפקק בדרך לצומת — מחדל'); }
+      else{ addScore(200); toast('המפכ"ל עבר בציר פתוח! ‎+200‎','good');
+        newsFlash('🟢 המפכ"ל עבר בציר פתוח — צל"ש למפקד'); }
+      D.visit=null; D.visitDone=true;
+    }
+  }
+  // התנהגות אוטונומית — כל 2.5 שניות מקבלים "החלטות"
+  D.aiT-=dt;
+  if(D.aiT<=0){
+    D.aiT=2.5;
+    for(const p of G.peeps){
+      if(!p.ai) continue;
+      if(p.state==='blocking'&&p.onRoad()){
+        if(p.typeKey!=='askan'&&Math.random()<.15){ detach(p); p.state='lying'; p.target=null; }
+        else if(Math.random()<.15&&!p.attachCar){
+          let best=null,bd=64;   // הצמדות לרכב עומד קרוב
+          for(const c of G.cars){
+            if(c.v>.4) continue;
+            const dd=dist2(p.obj.position.x,p.obj.position.z,c.obj.position.x,c.obj.position.z);
+            if(dd<bd){bd=dd;best=c;}
+          }
+          if(best){
+            // מכסת 3 כולל אלה שכבר בדרך; יעד באגף הרכב (כמו commandAttach) — יעד במרכז לא מושג
+            const k=best.attached.length+G.peeps.filter(q=>q.attachPending===best).length;
+            if(k<3){
+              const side=(k%2===0)?1:-1, along=-best.len/2+1+Math.floor(k/2)*1.1;
+              const lx=best.lane? best.lane.dir*along : along;
+              p.attachPending=best; p.state='moving';
+              p.target={x:best.obj.position.x+lx, z:best.obj.position.z+side*1.45};
+            }
+          }
+        }
+      }else if((p.state==='idle'||p.state==='blocking')&&!p.onRoad()&&!(p.cowT>0)&&Math.random()<.5){
+        p.state='moving';   // מתאוששים (ומי שנתקע על המדרכה) חוזרים לכביש
+        p.target={x:rnd(-G.roadLen*.2,G.roadLen*.2), z:rnd(-G.roadHalfW+1,G.roadHalfW-1)};
+      }
+    }
+  }
+  // לחץ אובדן שליטה: 6+ על הכביש ברציפות (גרירה פעילה לא נספרת — היא הצלחה)
+  const onN=G.peeps.filter(p=>p.onRoad()&&p.state!=='dragged').length;
+  if(onN>=6) D.overT+=dt; else D.overT=Math.max(0,D.overT-dt*2);
+  if(D.overT<50) D.warned=false;
+  if(D.overT>=60&&!D.warned){
+    D.warned=true;
+    toast('⚠️ הצומת יוצא משליטה! לפנות את הכביש — 30 שניות','bad');
+    newsFlash('🔴 מפקדת המחוז: "אם הציר לא ייפתח — המבצע ייכשל"');
+  }
+  if(D.overT>=90){ endStage('overrun'); return; }
+  // תווית שלב
+  let wt;
+  if(D.idx===0) wt=`שלב: המפגינים מתארגנים (${Math.max(1,Math.ceil(D.timer))} שנ')`;
+  else if(D.idx<PWAVES.length) wt=`שלב: גל ${D.idx}/${PWAVES.length} (הבא בעוד ${Math.max(1,Math.ceil(D.timer))} שנ')`;
+  else wt=`שלב: הגל האחרון — לפנות את הציר!`;
+  if(D.visit) wt+=` 🎖 המפכ"ל: ${Math.ceil(D.visit.t)} שנ'`;
+  if(D.overT>=60) wt+=` ⚠️ ${Math.ceil(90-D.overT)}`;
+  if(wt!==G._waveTxt){ G._waveTxt=wt; $('waveName').textContent=wt; }
+  // ניצחון: כל הגלים שוגרו וכל מפגין הוסר/בורח (שחיקת הגרירה-הכפולה מבטיחה התכנסות)
+  if(D.idx>=PWAVES.length&&D.timer<=0){
+    const active=G.peeps.some(p=>!['flee','hit'].includes(p.state));
+    D.winT=active?0:D.winT+dt;
+    if(D.winT>=4) endStage('cleared');
+  }
+}
+function ptCruiser(){
+  if(!G.running||G.score<300) return;
+  addScore(-300);
+  if(!G.copCars.length){ COPS.play(); newsFlash('🔴 המשטרה: "כוחותינו בדרך לצומת"'); }
+  else newsFlash('🚔 ניידת נוספת הוזעקה לציר');
+  AUDIO.siren(true); spawnCruiser(); AUDIO.ding();
+}
+function ptHorse(){ if(!G.running||G.score<500) return; addScore(-500); spawnHorses(2); AUDIO.ding(); }
+function ptCannon(){ if(!G.running||G.score<1500||G.cannon) return; addScore(-1500); spawnCannon(); AUDIO.ding(); }
+/* רכב-שוליים גנרי: נכנס מקצה הכביש, עוצר, מבצע, יוצא ומתנקה.
+   משרת גם את הגרר (משטרה) וגם את ההסעות (מפגינים). */
+function shoulderVehicleFx(type,targetX,sideZ,pauseT,onPause,onDone){
+  const v=mkCarMesh(type);
+  v.position.set(G.roadLen/2+15,0,sideZ*(G.roadHalfW+2.2));
+  v.rotation.y=Math.PI;
+  G.dyn.add(v);
+  let phase=0,pt=0,follow=null;
+  G.fx.push({update(dt){
+    if(!G.running) return true;   // קופא מאחורי מסך סיכום — לא משלים מאחורי הקלעים
+    if(phase===0){
+      v.position.x-=12*dt;
+      if(v.position.x<=targetX) phase=1;
+    }else if(phase===1){
+      pt+=dt;
+      if(pt>=pauseT){ follow=onPause(v)||null; phase=2; }
+    }else{
+      v.position.x-=12*dt;
+      if(follow) follow(v,dt);
+      if(v.position.x<-G.roadLen/2-20){
+        G.dyn.remove(v); disposeDeep(v);
+        if(onDone) onDone();
+        return false;
+      }
+    }
+    return true;
+  }});
+  return v;
+}
+function ptTow(){
+  if(!G.running||G.score<600||G.towBusy) return;
+  let best=null;
+  for(const c of G.cars)
+    if(c.attached.length&&(!best||c.attached.length>best.attached.length
+       ||(c.attached.length===best.attached.length&&c.stoppedTime>best.stoppedTime))) best=c;
+  if(!best){ toast('אין רכב עם מפגינים צמודים','bad'); return; }
+  addScore(-600); G.towBusy=true;
+  const car=best, sideZ=car.obj.position.z>=0?1:-1;
+  newsFlash('🪝 גרר משטרתי בדרך לרכב החסום');
+  AUDIO.ding();
+  shoulderVehicleFx('pickup',car.obj.position.x+4,sideZ,1.5,(truck)=>{
+    if(!G.cars.includes(car)) return null;   // הרכב שוחרר/הוסר בינתיים
+    G.cars.splice(G.cars.indexOf(car),1);    // יוצא מהתנועה — לא לקרוא removeCar אחר-כך!
+    [...car.attached].forEach(p=>{
+      detach(p); p.state='recover'; p.recoverT=8;
+      p.obj.position.z+=(p.obj.position.z>=car.obj.position.z?1.2:-1.2);
+    });
+    car.attached.length=0;   // הנהג (אם בחוץ) יוסר אוטומטית ב-updateDrivers
+    newsFlash('🪝 הגרר פינה את הרכב — הצמודים פוזרו');
+    AUDIO.horn();
+    const tv=new THREE.Vector3();
+    return (t,dt)=>{   // התקרבות רכה אל וו הגרירה — בלי טלפורט
+      car.obj.position.lerp(tv.set(t.position.x+6,0,t.position.z),Math.min(1,(dt||.016)*4));
+      car.obj.rotation.y=Math.PI;
+    };
+  },()=>{
+    if(G.cars.indexOf(car)<0&&car.obj.parent){ G.dyn.remove(car.obj); disposeDeep(car.obj); }
+    G.towBusy=false;
+  });
+}
+function ptMeg(){
+  if(!G.running||G.score<250||G.megCD>0) return;
+  const c=G.rally?{x:G.rally.x,z:G.rally.z}:{x:0,z:0};
+  const hit=[];
+  for(const p of G.peeps){
+    if(!['blocking','moving','idle','lying'].includes(p.state)) continue;
+    if(dist2(p.obj.position.x,p.obj.position.z,c.x,c.z)>100) continue;
+    if(p.state==='lying'&&Math.random()>=.3) continue;
+    hit.push(p);
+  }
+  if(!hit.length){ toast('אין מפגינים בטווח המגפון','bad'); return; }   // בלי חיוב על כרוז לריק
+  addScore(-250); G.megCD=25;
+  for(const p of hit){
+    detach(p); p.state='moving'; p.cowT=8;   // הדירקטור מכבד cowT — לא שולח חזרה מיד
+    p.target={x:p.obj.position.x+rnd(-2,2), z:sidewalkZ(p.obj.position.z)};
+  }
+  pingFx(c,0xffd34d); AUDIO.horn();
+  toast('המגפון פיזר '+hit.length+' מפגינים — זמנית!','good');
+  newsFlash('📢 "להתפנות מיד! זו התקהלות בלתי חוקית!"');
+}
+function ptDet(){
+  if(!G.running||G.score<700) return;
+  addScore(-700);
+  const al=pick(G.alleys);
+  const fig=mkFigure({coat:0x141417,hat:'fedora',beard:0x2e2118,peyot:true});   // מחופש למפגין
+  fig.root.position.set(al.x+rnd(-1,1),0,al.z+rnd(-1,1));
+  G.dyn.add(fig.root);
+  newsFlash('🕵 דמות לא מזוהה מסתננת אל תוך ההפגנה...');
+  AUDIO.ding();
+  const det={obj:fig.root,parts:fig.parts,phase:0};
+  const rid=G.runId;
+  G.fx.push({update(dt){
+    if(!G.running||G.runId!==rid) return false;   // השלב הוחלף — הדמות מסולקת עם ה-dyn
+    let best=1e9,t=null;
+    for(const p of G.peeps){
+      if(!copValidTarget(p)) continue;
+      const dd=dist2(p.obj.position.x,p.obj.position.z,det.obj.position.x,det.obj.position.z);
+      if(dd<best){best=dd;t=p;}
+    }
+    if(!t){ animHumanoid(det.parts,'idle',det.phase,G.gameTime); return true; }
+    if(moveFig(det,t.obj.position.x+.4,t.obj.position.z,2.4,dt)){
+      // חשיפה! מעצר בזק — בלי זמן תפיסה, בלי "יש לי אישור"
+      say(det.obj,'משטרה! את/ה עצור!',2.5);
+      newsFlash('🕵 בלש סמוי נחשף בלב ההפגנה — מעצר בזק!');
+      AUDIO.ding();
+      detach(t); G.selected.delete(t); t.ring.visible=false;
+      const cop={fig,obj:det.obj,parts:det.parts,state:'drag',target:t,grabT:0,frozenT:0,
+        phase:det.phase,home:{x:al.x,z:al.z},argueT:0};
+      t.state='dragged'; t.dragger=cop; t.copLock=cop;
+      G.cops.push(cop);   // מכאן והלאה — שוטר רגיל (בבגדים אזרחיים)
+      return false;
+    }
+    animHumanoid(det.parts,'walk',det.phase,G.gameTime);
+    return true;
+  }});
 }
 
 /* =========================================================================
@@ -2823,10 +3141,10 @@ function toolPashkevil(){
   for(const p of G.peeps) if(p.onRoad()){cx+=p.obj.position.x;cz+=p.obj.position.z;n++;}
   const tx=n?cx/n:0, tzr=n?cz/n:0;
   const types=['bochur','bochur','bochur','bochur','bochur','bochur','avrech','avrech','avrech','askan'];
-  const stg=G.stage;
+  const rid=G.runId;
   types.forEach((tk,i)=>{
-    setTimeout(()=>{
-      if(!G.running||G.stage!==stg||G.peeps.length>=MAXPEEPS) return;
+    gameTimeout(()=>{
+      if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
       const al=pick(G.alleys);
       const p=mkPeep(tk,al.x+rnd(-2,2),al.z+rnd(-1,1));
       p.state='moving';
@@ -2858,11 +3176,37 @@ function toolBag(){
 function toolSummon(typeKey){
   const st=UNIT_STATS[typeKey];
   if(G.score<st.cost||G.peeps.length>=MAXPEEPS) return;
+  if(typeKey==='zalam'&&G.peeps.filter(p=>p.typeKey==='zalam').length>=2){
+    toast('שני צלמים בשטח — זה המקסימום','bad'); return;
+  }
   addScore(-st.cost);
   const al=pick(G.alleys);
   const p=mkPeep(typeKey,al.x+rnd(-2,2),al.z+rnd(-1,1));
-  say(p.obj,'באתי לחזק!',2);
+  say(p.obj,typeKey==='zalam'?'מצלמים הכל!':'באתי לחזק!',2);
   AUDIO.ding();
+}
+function toolBus(){
+  if(G.score<800||G.peeps.length>=MAXPEEPS||G.busBusy) return;
+  addScore(-800); G.busBusy=true;
+  // האוטובוס פורק ליד יעד הפקודה האחרונה — שליטה מרחבית, בניגוד לפיזור הפשקווילים
+  const tx=clamp(G.lastMoveX===null||G.lastMoveX===undefined?0:G.lastMoveX,-G.roadLen*.3,G.roadLen*.3);
+  const sideZ=Math.random()<.5?1:-1;
+  newsFlash('🚌 הסעות מאורגנות יצאו לדרך — "כולם לציר!"');
+  AUDIO.ding();
+  const rid=G.runId;
+  shoulderVehicleFx('bus',tx,sideZ,2.5,(bus)=>{
+    const types=['bochur','bochur','bochur','bochur','bochur','avrech','avrech','askan'];
+    types.forEach((tk,i)=>{
+      gameTimeout(()=>{
+        if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
+        const p=mkPeep(tk,bus.position.x+rnd(-1.5,1.5),bus.position.z+(sideZ>0?-1.4:1.4));
+        p.state='moving';
+        p.target={x:tx+rnd(-4,4), z:rnd(-G.roadHalfW+1,G.roadHalfW-1)};
+        if(i===0) say(p.obj,'הגענו!',1.6);
+      },i*400);
+    });
+    return null;
+  },()=>{ G.busBusy=false; });
 }
 
 /* =========================================================================
@@ -2974,14 +3318,20 @@ function showMarker(pt){
 }
 function hideMarker(){ if(MARKER) MARKER.g.visible=false; }
 
-function clearSel(){ G.selected.forEach(p=>p.ring.visible=false); G.selected.clear(); updateSelInfo(); }
+function clearSel(){
+  G.selected.forEach(p=>p.ring.visible=false); G.selected.clear();
+  G.selCops.forEach(c=>{ if(c.ring) c.ring.visible=false; }); G.selCops.clear();
+  updateSelInfo();
+}
 function updateSelInfo(){
-  const n=G.selected.size;
+  const pol=G.side==='police';
+  const n=pol?G.selCops.size:G.selected.size;
   $('selInfo').style.display=n?'block':'none';
-  $('selInfo').textContent='נבחרו: '+n;
+  $('selInfo').textContent=(pol?'שוטרים: ':'נבחרו: ')+n;
 }
 function commandMove(gp){
   let i=0;
+  G.lastMoveX=gp.x;   // יעד ההסעות המאורגנות
   const danger=Math.abs(gp.z)<G.roadHalfW&&dangerAt(gp.x,gp.z);
   G.selected.forEach(p=>{
     if(!p.selectable()) return;
@@ -3026,17 +3376,41 @@ function commandStand(){
 function pingFx(pos,color){
   const m=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9,side:THREE.DoubleSide}));
   m.rotation.x=-Math.PI/2; m.position.set(pos.x,.08,pos.z);
-  G.scene.add(m);
+  G.dyn.add(m);   // ב-dyn ולא ב-scene — כדי ש-clearWorld יאסוף אותו אם שלב מתחלף באמצע
   let t=0;
   G.fx.push({update(dt){
     t+=dt; const s=1+t*7; m.scale.set(s,s,1);
     m.material.opacity=clamp(.9-t*1.8,0,1);
-    if(t>.55){ G.scene.remove(m); m.material.dispose(); return false; }
+    if(t>.55){ G.dyn.remove(m); m.material.dispose(); return false; }
     return true;
   }});
 }
 function clickAt(cx,cy,additive){
   if(!G.running) return;
+  if(G.side==='police'){
+    const gp=groundPoint(cx,cy);
+    if(!(gp&&Math.abs(gp.z)<G.roadHalfW+6&&Math.abs(gp.x)<G.roadLen/2)) return;
+    if(G.selCops.size){
+      // יש שוטרים נבחרים — פקודת תנועה אישית (כמו אצל המפגינים)
+      let i=0;
+      G.selCops.forEach(cp=>{
+        if(cp.state==='drag') return;   // מסיים קודם את המעצר הנוכחי
+        const r=.8*Math.sqrt(i), a=i*2.39996;
+        cp.orderPt={x:gp.x+r*Math.cos(a), z:clamp(gp.z+r*Math.sin(a),-G.roadHalfW-4,G.roadHalfW+4)};
+        if((cp.state==='walk'||cp.state==='grab')&&cp.target){ cp.target.copLock=null; cp.target=null; }
+        if(cp.state!=='argue') cp.state='seek';
+        i++;
+      });
+      pingFx(gp,0x35e08a); AUDIO.ding();
+      return;
+    }
+    // בלי בחירה — קליק מציב דגל ריכוז כללי
+    G.rally={x:gp.x,z:gp.z,t:14};
+    const f=ensureRallyFlag(); f.visible=true; f.position.set(gp.x,0,gp.z);
+    pingFx(gp,0x4488ff);
+    if(!G._rallyTip){ G._rallyTip=true; toast('דגל ריכוז! השוטרים והמכת"זית מתעדפים את האזור. גררו מלבן כדי לבחור שוטרים ולפקד ישירות','good'); }
+    return;
+  }
   const peep=pickPeep(cx,cy);
   if(peep){
     if(!additive) clearSel();
@@ -3150,8 +3524,34 @@ function initInput(){
   });
   addEventListener('keydown',e=>{
     if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')) return;
-    if(e.key==='Escape') clearSel();
-    if(e.key==='l'||e.key==='ל') commandLie();
+    const c=e.code;
+    if(e.key==='Escape'){
+      if(G.running&&!G.paused&&G.selected.size){ clearSel(); return; }   // Esc ראשון — ניקוי בחירה
+      if(G.running) setPaused(!G.paused);
+      return;
+    }
+    if(c==='KeyP'||c==='Space'){ if(G.running){ e.preventDefault(); setPaused(!G.paused); } return; }
+    if(c==='KeyM'){ $('tMute').click(); return; }
+    if(c==='Tab'){ e.preventDefault(); if(G.running) toggleMinimap(); return; }   // בתפריט אין מה להחליף בשקט
+    if(c==='F11'&&!IS_ELECTRON){ e.preventDefault(); toggleFullscreen(); return; }   // ב-EXE העטיפה מטפלת
+    if(!G.running||G.paused) return;
+    if((e.ctrlKey||e.metaKey)&&c==='KeyA'){   // בחר-הכל: מפגינים או שוטרים לפי הצד
+      e.preventDefault();
+      if(G.side==='police') G.cops.forEach(cp=>{ if(cp.state!=='drag') G.selCops.add(cp); });
+      else G.peeps.forEach(p=>{ if(p.selectable()){ G.selected.add(p); p.ring.visible=true; } });
+      updateSelInfo(); return;
+    }
+    if(e.key==='l'||e.key==='ל'||c==='KeyL') commandLie();
+    if(c==='KeyK') commandStand();
+    if(/^Digit[1-8]$/.test(c)) hotkeyTool(+c.slice(5));
+    if(KEYCAM_CODES.includes(c)){ KEYPAN[c]=true; e.preventDefault(); }
+  });
+  addEventListener('keyup',e=>{ delete KEYPAN[e.code]; });
+  // השהיה אוטומטית כשהחלון מאבד פוקוס — נימוס דסקטופי; וגם שחרור כל מקש "תקוע"
+  // (ה-keyup של מקש שהוחזק ב-Alt+Tab נמסר לחלון האחר — בלעדי זה המצלמה נסחפת לנצח)
+  addEventListener('blur',()=>{
+    for(const k in KEYPAN) delete KEYPAN[k];
+    if(G.running&&!G.paused) setPaused(true);
   });
   // מצב בחירה במובייל
   if('ontouchstart' in window) $('selModeBtn').style.display='block';
@@ -3172,11 +3572,17 @@ function finishRect(x1,y1,x2,y2,additive){
   if(!additive) clearSel();
   const v=new THREE.Vector3();
   const minX=Math.min(x1,x2),maxX=Math.max(x1,x2),minY=Math.min(y1,y2),maxY=Math.max(y1,y2);
-  for(const p of G.peeps){
-    if(!p.selectable()) continue;
-    v.copy(p.obj.position); v.y=1; v.project(G.camera);
+  const pol=G.side==='police';
+  const pool=pol?G.cops:G.peeps;   // במצב משטרה בוחרים שוטרים
+  for(const u of pool){
+    if(pol){ if(u.state==='drag') continue; }   // באמצע גרירת עצור — לא מפריעים
+    else if(!u.selectable()) continue;
+    v.copy(u.obj.position); v.y=1; v.project(G.camera);
     const sx=(v.x+1)/2*innerWidth, sy=(-v.y+1)/2*innerHeight;
-    if(sx>=minX&&sx<=maxX&&sy>=minY&&sy<=maxY){ G.selected.add(p); p.ring.visible=true; }
+    if(sx>=minX&&sx<=maxX&&sy>=minY&&sy<=maxY){
+      (pol?G.selCops:G.selected).add(u);
+      if(u.ring) u.ring.visible=true;
+    }
   }
   updateSelInfo();
 }
@@ -3188,6 +3594,11 @@ G.copCars=[];
 function addScore(d){
   G.score=Math.max(0,G.score+d);
   $('score').textContent=Math.round(G.score).toLocaleString('he-IL');
+  // הבזק ירוק על שורת התקציב כשמגיע תגמול אמיתי — שיהיה ברור ממה מרוויחים
+  if(G.side==='police'&&d>=30&&G.running){
+    const ch=$('score').parentElement;
+    ch.classList.remove('budgetFlash'); void ch.offsetWidth; ch.classList.add('budgetFlash');
+  }
 }
 let toastTimer=null;
 function toast(msg,kind){
@@ -3231,15 +3642,21 @@ function scoreTick(dt){
   if(scoreAcc<1) return;
   scoreAcc-=1;
   const stopped=countStopped();
-  if(stopped) addScore(10*stopped);
-  if(G.train&&G.train.blocked) addScore(50);
-  // חוק: הכביש ריק לגמרי והפקק ירד ל-0 — ההפגנה הסתיימה והניקוד נקבע
-  if(G.protestStarted){
+  if(G.side==='police'){
+    addScore(8);   // תקציב שוטף למפקד
+    // בונוס ציר-פתוח: בלי דרישת אפס-פקק (שריד הפקק מתפזר לאט) — משולש בביקורת המפכ"ל
+    if(G.protestStarted&&!G.peeps.some(p=>p.onRoad())) addScore(G.pw&&G.pw.visit?30:10);
+  }else{
+    if(stopped) addScore(10*stopped);
+    if(G.train&&G.train.blocked) addScore(50);
+  }
+  // חוק (צד מפגינים): הכביש ריק לגמרי והפקק ירד ל-0 — ההפגנה הסתיימה והניקוד נקבע
+  if(G.side!=='police'&&G.protestStarted){
     const onRoadN=G.peeps.filter(p=>p.onRoad()).length;
     if(onRoadN===0&&stopped===0){
       G.emptyT=(G.emptyT||0)+1;
       if(G.emptyT===1) toast('הכביש ריק והפקק התפזר! ההפגנה תסתיים בעוד 5 שניות','bad');
-      if(G.emptyT>=5){ endStage('empty'); return; }
+      if(G.emptyT>=6){ endStage('empty'); return; }
     } else G.emptyT=0;
   }
   const km=stopped/10;
@@ -3256,15 +3673,34 @@ function scoreTick(dt){
   $('tBochur').disabled=G.score<50||G.peeps.length>=MAXPEEPS;
   $('tAvrech').disabled=G.score<150||G.peeps.length>=MAXPEEPS;
   $('tAskan').disabled=G.score<250||G.peeps.length>=MAXPEEPS;
+  $('pCruiser').disabled=G.score<300;
+  $('pHorse').disabled=G.score<500;
+  $('pCannon').disabled=G.score<1500||!!G.cannon;
+  $('pTow').disabled=G.score<600||!!G.towBusy;
+  $('pMeg').disabled=G.score<250||G.megCD>0;
+  $('pMeg').querySelector('small').textContent=G.megCD>0?('נטען... '+Math.ceil(G.megCD)+' שנ\''):'פיזור אזורי — 250';
+  $('pDet').disabled=G.score<700;
+  $('tBus').disabled=G.score<800||G.peeps.length>=MAXPEEPS||!!G.busBusy;
+  $('tZalam').disabled=G.score<400||G.peeps.length>=MAXPEEPS;
   AUDIO.setCrowd(G.peeps.filter(p=>p.onRoad()).length);
   updateSelInfo();
-  // איכות אדפטיבית — מעדיף חדות: מוריד רזולוציה רק בעומס אמיתי, ולעולם לא מתחת לרזולוציה מקורית (1.0)
+  // איכות אדפטיבית — יחסית לקצב הרענון הנמדד של המסך (לא 60 קבוע), עם היסטרזיס:
+  // מכשיר שנעול על 30Hz (חיסכון סוללה) לא ייחשב "איטי", וכל ירידה מקשיחה את ההעלאה הבאה — בלי פינג-פונג חד/מטושטש
   const fps=G._fr||0; G._fr=0;
   const maxDpr=Math.min(devicePixelRatio,2);
   if(G._dpr===undefined) G._dpr=maxDpr;
-  if(fps>0&&fps<32) G._low=(G._low||0)+1; else G._low=Math.max(0,(G._low||0)-1);
-  if(G._low>=4 && G._dpr>1){ G._dpr=Math.max(1,+(G._dpr-0.25).toFixed(2)); G.renderer.setPixelRatio(G._dpr); G._low=0; }   // עומס מתמשך — מוריד מעט (רצפה 1.0)
-  else if(G._low===0 && G._dpr<maxDpr && fps>52){ G._dpr=Math.min(maxDpr,+(G._dpr+0.25).toFixed(2)); G.renderer.setPixelRatio(G._dpr); }  // התאוששות — מחזיר חדות
+  if(fps>0&&fps<150){
+    G._fpsMax=Math.max(G._fpsMax||0,fps);          // הערכת קצב-רענון
+    const ref=G._fpsMax;
+    if(fps<ref*.72) G._low=(G._low||0)+1; else G._low=Math.max(0,(G._low||0)-1);
+    if(G._low>=4 && G._dpr>1){
+      G._dpr=Math.max(1,+(G._dpr-0.25).toFixed(2)); G.renderer.setPixelRatio(G._dpr);
+      G._low=0; G._good=0; G._raiseNeed=Math.min(60,(G._raiseNeed||8)*2);
+    } else if(G._dpr<maxDpr && fps>=ref*.92){
+      G._good=(G._good||0)+1;
+      if(G._good>=(G._raiseNeed||8)){ G._dpr=Math.min(maxDpr,+(G._dpr+0.25).toFixed(2)); G.renderer.setPixelRatio(G._dpr); G._good=0; }
+    } else G._good=0;
+  }
 }
 
 /* =========================================================================
@@ -3274,26 +3710,96 @@ function showScr(id){
   ['loading','menu','howto','fameScr','entryScr','summary'].forEach(s=>$(s).classList.add('hidden'));
   if(id) $(id).classList.remove('hidden');
 }
-async function requestPlayToken(){
-  G.playToken=null;
+/* ---------------- הפסקה, מיני-מפה והעדפות (דסקטופ) ---------------- */
+function setPaused(on){
+  if(!G.running&&on) return;
+  if(!!G.paused===!!on) return;
+  G.paused=on;
+  $('pauseOv').classList.toggle('hidden',!on);
+  if(on){
+    G._copsWasOn=!!(COPS.el&&!COPS.el.paused&&!COPS.el.ended);
+    AUDIO.siren(false); AUDIO.spray(false); AUDIO.setCrowd(0); BGM.stop(); COPS.stop();
+  }else{
+    G._fr=0;   // פריימים של ההשהיה לא נספרו — איפוס למדידת FPS נקייה
+    if(G.side!=='police') BGM.resume();
+    if(G._copsWasOn){ COPS.resume(); G._copsWasOn=false; }
+  }
+}
+// תור טיימרים בשעון-משחק: שורד השהיה עם שמירת המרווחים המקוריים,
+// ומתנקה אוטומטית בהחלפת שלב (runId).
+const GTQ=[];
+function gameTimeout(fn,ms){ GTQ.push({fn, at:G.gameTime+ms/1000, rid:G.runId}); }
+function runGTQ(){
+  for(let i=GTQ.length-1;i>=0;i--){
+    const t=GTQ[i];
+    if(t.rid!==G.runId){ GTQ.splice(i,1); continue; }
+    if(G.gameTime>=t.at){ GTQ.splice(i,1); t.fn(); }
+  }
+}
+const MM={on:true,acc:0};
+function mmSync(){ $('minimap').style.display=(MM.on&&G.running)?'block':'none'; }
+function toggleMinimap(){ MM.on=!MM.on; savePrefs(); mmSync(); }
+function drawMinimap(){
+  const cv=$('minimap'),x=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=G.roadLen,hw=G.roadHalfW+8;
+  const mx=v=>(v+L/2)/L*W, mz=v=>(v+hw)/(hw*2)*H;
+  x.fillStyle='rgba(16,13,28,.92)'; x.fillRect(0,0,W,H);
+  x.fillStyle='#3b3f4a'; x.fillRect(0,mz(-G.roadHalfW),W,mz(G.roadHalfW)-mz(-G.roadHalfW));
+  for(const c of G.cars){ x.fillStyle=c.v<.3?'#c8b25a':'#7d838f';
+    x.fillRect(mx(c.obj.position.x)-1.5,mz(c.obj.position.z)-1,3,2); }
+  for(const cr of G.copCars){ x.fillStyle='#2b4bd8';
+    x.fillRect(mx(cr.obj.position.x)-2,mz(cr.obj.position.z)-1.5,4,3); }
+  if(G.train){ x.fillStyle='#c62828'; x.fillRect(mx(G.train.obj.position.x)-5,mz(0)-1.5,10,3); }
+  if(G.cannon){ x.fillStyle='#5b8cff';
+    x.fillRect(mx(G.cannon.obj.position.x)-2.5,mz(G.cannon.obj.position.z)-2.5,5,5); }
+  for(const h of G.horses){ x.fillStyle='#8a5c2e';
+    x.fillRect(mx(h.obj.position.x)-1.5,mz(h.obj.position.z)-1.5,3,3); }
+  for(const c2 of G.cops){ x.fillStyle='#4d79ff';
+    x.fillRect(mx(c2.obj.position.x)-1,mz(c2.obj.position.z)-1,2.5,2.5); }
+  for(const p of G.peeps){
+    x.fillStyle=p.state==='lying'?'#ff5544':p.state==='attached'?'#ffd34d':'#f2ead8';
+    x.fillRect(mx(p.obj.position.x)-1,mz(p.obj.position.z)-1,2.5,2.5);
+  }
+  if(G.rally){ x.strokeStyle='#37d5ff'; x.lineWidth=1.5;
+    x.strokeRect(mx(G.rally.x)-4,mz(G.rally.z)-4,8,8); }
+}
+function setVolume(v){
+  G.vol=clamp(v,0,1);
+  if(AUDIO.master) AUDIO.master.gain.value=.5*G.vol;
+  if(BGM.el) BGM.el.volume=G.vol;
+  if(COPS.el) COPS.el.volume=.9*G.vol;
+}
+const PREFS_KEY='hosmim-prefs';
+function savePrefs(){
+  try{ localStorage.setItem(PREFS_KEY,JSON.stringify(
+    {muted:!!G.muted, minimap:!!MM.on, vol:G.vol===undefined?1:G.vol})); }catch(e){}
+}
+function loadPrefs(){
   try{
-    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),6000);
-    const r=await fetch(Fame.API+'?issue=1',{cache:'no-store',signal:ctrl.signal}); clearTimeout(t);
-    if(r.ok){ const j=await r.json(); if(j&&j.token) G.playToken=j.token; }
+    const p=JSON.parse(localStorage.getItem(PREFS_KEY)||'{}');
+    if(p.muted){ G.muted=true; $('tMute').textContent='🔇 מושתק'; }
+    if(p.minimap===false) MM.on=false;
+    if(typeof p.vol==='number'){ G.vol=clamp(p.vol,0,1); $('volSlider').value=Math.round(G.vol*100); }
   }catch(e){}
 }
 function startRun(mapIdx){
-  G.score=0; addScore(0);
-  requestPlayToken();            // טוקן חתום לכל המשחק (אימות ניקוד בשרת)
+  BGM.init(); COPS.prime();   // בתוך מחוות הקליק עצמה — שחרור autoplay במובייל (iOS)
+  setVolume(G.vol===undefined?1:G.vol);   // מחיל את ההעדפה על האלמנטים שנוצרו הרגע
+  G.score=G.side==='police'?500:0;   // תקציב פתיחה למפקד
+  addScore(0);
   startStage(mapIdx);
 }
 function startStage(i){
+  G.running=false;   // עוצר את השלב הישן כבר בחלון הטעינה — שלא ירוץ מאחורי המסך
+  G.stageStartScore=G.score;   // ל"התחל את המפה מחדש" — משחזר את הניקוד של תחילת השלב
   showScr('loading');
   $('loadMsg').textContent='בונים את '+MAPS[i].name+'...';
   setTimeout(()=>{
     G.stage=i;
+    G.runId=(G.runId||0)+1;    // מזהה-דור: מבטל callbacks תלויים משלב/ריצה קודמים
+    GTQ.length=0;
     buildMap(i);
-    G.escTime=0; G.wave=0; G.gameTime=0; G.shofarUsed=false; G.bagT=0;
+    G.escTime=0; G.wave=0; G.gameTime=0; G.shofarUsed=false; G.bagT=0; G._fr=0;
     G.runovers=0; G.fled=0; G.jamPeak=0; G.bigJamNews=false;
     G.protestStarted=false; G.emptyT=0;
     G.spawnTimers=[]; G.trainTimer=14; G.copCars=[]; G.drivers=[];
@@ -3302,12 +3808,35 @@ function startStage(i){
     $('trainBonus').style.display='none';
     AUDIO.siren(false); AUDIO.spray(false);
     hideMarker(); clearSel();
-    // מפגינים פותחים על המדרכה
-    const startTypes=['bochur','bochur','bochur','bochur','bochur','bochur','bochur','bochur',
-                      'avrech','avrech','avrech','avrech','askan','askan'];
-    startTypes.forEach((tk,k)=>{
-      mkPeep(tk, -12+ (k%7)*3.6+rnd(-.8,.8), (G.roadHalfW+2.6)+(k>6?1.6:0)+rnd(-.4,.4));
-    });
+    // מיתוג ממשק לפי צד
+    const pol=G.side==='police';
+    $('toolsBtn').parentElement.style.display=pol?'none':'';
+    $('tLie').style.display=pol?'none':'';
+    $('tStand').style.display=pol?'none':'';
+    document.querySelectorAll('.pTool').forEach(b=>{ b.style.display=pol?'':'none'; });
+    $('scoreLbl').textContent=pol?'תקציב':'נקודות';
+    $('score').parentElement.title=pol
+      ? 'התקציב גדל: ‎+8/ש׳ קבוע · מעצר ‎+60 (חוזר ‎+30) · הברחה במים ‎+30 · ציר פתוח ‎+10/ש׳'
+      : 'נקודות: ‎+10/ש׳ לכל רכב תקוע · רכבת חסומה ‎+50/ש׳ · שורד ‎+100 בסיום';
+    $('tEnd').childNodes[0].textContent=pol?'🏁 סיום מבצע':'🏁 סיום הפגנה';
+    $('selModeBtn').style.display=pol?'none':(('ontouchstart' in window)?'block':'none');
+    G.pw=pol?{idx:0,timer:PWAVES[0].delay,winT:0,aiT:0,overT:0,warned:false}:null;
+    G.rally=null; G._rallyTip=false;
+    G.rallyFlag=null;                 // הישן נהרס עם ה-dyn הקודם ב-clearWorld
+    G.towBusy=false; G.busBusy=false; G.megCD=0; G.lastMoveX=null;
+    if(pol){ PTR.selectMode=false; $('selModeBtn').classList.remove('on'); }
+    if(pol){
+      // המפקד מתחיל מול ציר שקט; המפגינים יגיעו בגלים מהדירקטור
+      newsQ=['🔴 מבזק: התארגנות חרדית לחסימת '+MAPS[i].name+' — המשטרה נערכת',
+             '💰 התקציב: ‎8/ש׳ קבוע · מעצר ‎+60 · הברחה במים ‎+30 · ציר פתוח ‎+10/ש׳'];
+    }else{
+      // מפגינים פותחים על המדרכה
+      const startTypes=['bochur','bochur','bochur','bochur','bochur','bochur','bochur','bochur',
+                        'avrech','avrech','avrech','avrech','askan','askan'];
+      startTypes.forEach((tk,k)=>{
+        mkPeep(tk, -12+ (k%7)*3.6+rnd(-.8,.8), (G.roadHalfW+2.6)+(k>6?1.6:0)+rnd(-.4,.4));
+      });
+    }
     // תנועה ראשונית על הציר (מתחילים מעבר לאזור הכניסה כדי לא לחסום ספאון)
     G.laneDefs.forEach(lane=>{
       for(let s=-G.roadLen/2+17; s<G.roadLen/2-10; s+=rnd(20,34)){
@@ -3319,86 +3848,51 @@ function startStage(i){
     showScr(null);
     $('hud').style.display='block';
     G.running=true;
-    BGM.play();                  // הקלטת רקע בתחילת המשחק
+    G.paused=false; $('pauseOv').classList.add('hidden'); mmSync();
+    if(!pol) BGM.play();         // הקלטת רקע — רק לצד המפגינים
     COPS.prime();                // משחרר את סאונד השוטרים לניגון מאוחר יותר (מובייל)
-    toast('בחרו מפגינים (גרירה) ושלחו אותם לכביש!','good');
+    toast(pol?'גלי מפגינים בדרך! קנו כוחות 🧰 וקבעו נקודת ריכוז בקליק על הכביש'
+             :'בחרו מפגינים (גרירה) ושלחו אותם לכביש!','good');
   },350);
 }
 function endStage(reason){
   if(!G.running) return;
   G.running=false;
-  AUDIO.siren(false); AUDIO.spray(false); BGM.stop(); COPS.stop();
+  G.paused=false; $('pauseOv').classList.add('hidden'); mmSync();
+  AUDIO.siren(false); AUDIO.spray(false); AUDIO.setCrowd(0); BGM.stop(); COPS.stop();
   hideMarker(); hideRect();
   const survivors=G.peeps.length;
-  addScore(survivors*100);
-  $('sumTitle').textContent= reason==='cleared'? 'ההפגנה פוזרה!'
-    : reason==='empty'? 'הכביש התרוקן — ההפגנה הסתיימה' : 'ההפגנה הסתיימה!';
-  $('sumSub').textContent= MAPS[G.stage].name+' • '+(
-    reason==='cleared'?'כל המפגינים פונו מהשטח'
-    :reason==='empty'?'התנועה זורמת שוב — הניקוד נקבע סופית'
-    :'סיום יזום בהוראת העסקנים');
+  const pol=G.side==='police';
+  if(!pol) addScore(survivors*100);
+  if(G.rallyFlag) G.rallyFlag.visible=false;
+  $('sumTitle').textContent= pol
+    ? (reason==='cleared'?'הציר פונה בהצלחה!'
+      : reason==='overrun'?'הצומת אבוד — המפגינים ניצחו!' : 'המבצע הסתיים')
+    : (reason==='cleared'? 'ההפגנה פוזרה!'
+      : reason==='empty'? 'הכביש התרוקן — ההפגנה הסתיימה' : 'ההפגנה הסתיימה!');
+  $('sumSub').textContent= MAPS[G.stage].name+' • '+(pol
+    ? (reason==='cleared'?'כל הגלים פוזרו והתנועה זורמת'
+      :reason==='overrun'?'ההמון החזיק בציר 90 שניות ברציפות'
+      :'סיום יזום בהוראת המפקד')
+    : (reason==='cleared'?'כל המפגינים פונו מהשטח'
+      :reason==='empty'?'התנועה זורמת שוב — הניקוד נקבע סופית'
+      :'סיום יזום בהוראת העסקנים'));
+  $('sumScoreL').textContent=pol?'תקציב סופי':'ניקוד כולל';
+  $('sumJamL').textContent=pol?'שיא הפקק שנגרם (ק"מ)':'שיא אורך פקק (ק"מ)';
+  $('sumTimeL').textContent=pol?'זמן שהציר היה חסום':'זמן חסימה';
+  $('sumSurvL').textContent=pol?'מפגינים שנותרו בשטח':'מפגינים ששרדו (‎+100‎)';
+  $('sumFledL').textContent=pol?'נמלטו מהמים (‎+30‎)':'ברחו מהמים (‎-20‎)';
+  $('btnFinish').textContent=pol?'חזרה לתפריט':'סיים ושמור בהיכל התהילה';
   $('sumScore').textContent=Math.round(G.score).toLocaleString('he-IL');
   $('sumJam').textContent=G.jamPeak.toFixed(1);
   $('sumTime').textContent=fmtTime(G.totalBlockTime);
   $('sumSurv').textContent=survivors;
-  // כביש ריק = סוף סופי, הניקוד נשמר — אין שלב הבא
-  $('btnNext').style.display = (G.stage<2 && reason!=='empty') ? 'block':'none';
+  $('sumInj').textContent=G.runovers;
+  $('sumFled').textContent=G.fled;
+  // מפגינים: כביש ריק = סוף סופי. משטרה: מתקדמים רק אחרי פינוי מוצלח
+  $('btnNext').style.display = (G.stage<2 && (pol? reason==='cleared' : reason!=='empty')) ? 'block':'none';
   $('hud').style.display='none';
   showScr('summary');        // הסיכום מופיע מיד — בלי השהיה
-  try{ showEndAd(); }catch(e){}  // פרסומת מסך-מלא מתחלפת (אדריכלות/משכנתא) בסיום הפגנה
-  showInterstitial();        // פרסומת אינטרסטיציאל מעל (כשזמינה, אחרי אישור גוגל)
-}
-function showInterstitial(){
-  try{
-    if(typeof adBreak==='function'){
-      adBreak({
-        type:'next', name:'end-protest',
-        beforeAd:()=>{ try{ AUDIO.siren(false); AUDIO.spray(false); BGM.stop(); }catch(e){} }
-      });
-    }
-  }catch(e){}
-}
-/* ===== פרסומת מתחלפת בסיום + טופס השארת פרטים ===== */
-let _adFlip=0;
-function showEndAd(){
-  const ov=document.getElementById('houseAdOverlay');
-  const arch=document.getElementById('adArch'), mort=document.getElementById('adMort');
-  if(!ov||!arch||!mort) return;
-  _adFlip^=1;                         // מתחלף בכל סיום: פעם משכנתא, פעם אדריכלות
-  const showMort=(_adFlip===1);
-  mort.classList.toggle('show', showMort);
-  arch.classList.toggle('show', !showMort);
-  ov.classList.remove('hidden');
-}
-const LEAD_API='https://hosmim-scores.pages.dev/api/lead';
-function openLeadForm(src){
-  const f=document.getElementById('leadForm');
-  f.dataset.src=src||'mortgage';
-  const m=document.getElementById('lfMsg'); m.textContent=''; m.className='lfMsg';
-  document.getElementById('houseAdOverlay').classList.add('hidden');   // סוגר את הפרסומת מאחור
-  f.classList.remove('hidden');
-  setTimeout(()=>{ try{ document.getElementById('lfName').focus(); }catch(e){} },60);
-}
-function closeLeadForm(){ document.getElementById('leadForm').classList.add('hidden'); }
-async function submitLead(){
-  const $v=id=>document.getElementById(id);
-  const name=$v('lfName').value.trim(), phone=$v('lfPhone').value.trim(),
-        email=$v('lfEmail').value.trim(), story=$v('lfStory').value.trim();
-  const msg=$v('lfMsg');
-  if(name.length<2 || phone.replace(/\D/g,'').length<7 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
-    msg.className='lfMsg'; msg.textContent='נא למלא שם, פלאפון תקין וכתובת מייל תקינה'; return;
-  }
-  const btn=$v('lfSubmit'); btn.disabled=true; msg.className='lfMsg'; msg.textContent='שולח...';
-  try{
-    const r=await fetch(LEAD_API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,phone,email,story,source:$v('leadForm').dataset.src})});
-    if(r.ok){
-      msg.className='lfMsg ok'; msg.textContent='נשלח בהצלחה! נחזור אליכם בהקדם 🙏';
-      ['lfName','lfPhone','lfEmail','lfStory'].forEach(i=>$v(i).value='');
-      setTimeout(closeLeadForm,1800);
-    } else { msg.className='lfMsg'; msg.textContent='אירעה שגיאה, נסו שוב'; }
-  }catch(e){ msg.className='lfMsg'; msg.textContent='שגיאת רשת, נסו שוב'; }
-  btn.disabled=false;
 }
 function confetti(){
   const em=['🎉','🎊','✨','📜','🎩'];
@@ -3413,7 +3907,7 @@ function confetti(){
   }
 }
 async function finishGame(){
-  showScr('loading'); $('loadMsg').textContent='בודקים את ספר השיאים...';
+  if(G.side==='police'){ showScr('menu'); return; }   // היכל התהילה שמור לחוסמים בלבד 😉
   // תופסים את הניקוד הסופי כאן — לא קוראים את G.score החי בזמן השמירה
   const finalScore=Math.round(G.score)||0;
   G.finalScore=finalScore;
@@ -3430,19 +3924,17 @@ async function finishGame(){
   }
 }
 async function showFame(){
-  showScr('loading'); $('loadMsg').textContent='פותחים את ספר הזהב...';
   let list=[];
   try{ list=await Fame.load(); }catch(e){}
   const body=$('fameBody');
-  const banner = Fame.shared
-    ? '<div style="font-weight:900;color:#1d7a46;margin-bottom:6px">🌍 טבלה עולמית — כל החוסמים מכל העולם</div>'
-    : '<div style="font-weight:900;color:#b3221e;margin-bottom:6px">📴 אין חיבור — מוצגת הטבלה המקומית שלך</div>';
+  const banner = '<div style="font-weight:900;color:#6b5b2a;margin-bottom:6px">📜 ספר הזהב — השיאים נשמרים במכשיר הזה</div>';
   if(!list.length){
     body.innerHTML=banner+'<div style="padding:20px;font-weight:700">עדיין אין שיאים בהיכל — היה הראשון לחסום!</div>';
   }else{
     let html=banner+'<table id="fameTable"><tr><th>מקום</th><th>שם</th><th>ניקוד</th><th>תאריך</th></tr>';
     list.forEach((e,i)=>{
-      html+=`<tr class="${i<3?'gold':''}"><td>${i+1}${i===0?' 👑':''}</td><td>${String(e.name).replace(/[<>&]/g,'')}</td><td>${Number(e.score).toLocaleString('he-IL')}</td><td>${String(e.date||'').replace(/[<>&]/g,'')}</td></tr>`;
+      const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html+=`<tr class="${i<3?'gold':''}"><td>${i+1}${i===0?' 👑':''}</td><td>${esc(e.name)}</td><td>${Number(e.score).toLocaleString('he-IL')}</td><td>${esc(e.date||'')}</td></tr>`;
     });
     body.innerHTML=html+'</table>';
   }
@@ -3452,14 +3944,43 @@ async function showFame(){
 /* =========================================================================
    לולאה ראשית
    ========================================================================= */
+const IS_ELECTRON=navigator.userAgent.includes('Electron');
+const KEYPAN={};
+const KEYCAM_CODES=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD',
+  'KeyQ','KeyE','Equal','Minus','NumpadAdd','NumpadSubtract'];
+function applyKeyCam(dt){
+  const px=300*dt;
+  if(KEYPAN.ArrowRight||KEYPAN.KeyD) panCam(-px,0);
+  if(KEYPAN.ArrowLeft ||KEYPAN.KeyA) panCam(px,0);
+  if(KEYPAN.ArrowUp   ||KEYPAN.KeyW) panCam(0,px);
+  if(KEYPAN.ArrowDown ||KEYPAN.KeyS) panCam(0,-px);
+  if(KEYPAN.KeyQ) CAM.theta+=dt*1.6;
+  if(KEYPAN.KeyE) CAM.theta-=dt*1.6;
+  if(KEYPAN.Equal||KEYPAN.NumpadAdd)      CAM.dist*=(1-dt*.9);
+  if(KEYPAN.Minus||KEYPAN.NumpadSubtract) CAM.dist*=(1+dt*.9);
+}
+function hotkeyTool(n){
+  if(G.side==='police') [ptCruiser,ptHorse,ptCannon,ptTow,ptMeg,ptDet][n-1]?.();
+  else [toolPashkevil,toolShofar,toolBag,
+        ()=>toolSummon('bochur'),()=>toolSummon('avrech'),()=>toolSummon('askan'),
+        toolBus,()=>toolSummon('zalam')][n-1]?.();
+}
+function toggleFullscreen(){
+  try{
+    if(document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }catch(e){}
+}
 let lastT=0;
 function loop(tms){
   requestAnimationFrame(loop);
   const now=tms/1000;
   let dt=Math.min(now-lastT,.05); lastT=now;
-  G._fr=(G._fr||0)+1;
-  if(G.running){
+  if(!G.paused) G._fr=(G._fr||0)+1;   // פריימים בהשהיה לא נספרים — שלא ינפחו את מדידת ה-FPS
+  if(G.running&&!G.paused){
+    applyKeyCam(dt);
     G.gameTime+=dt;
+    runGTQ();
     updateTraffic(dt);
     updatePeeps(dt,now);
     updateDrivers(dt,now);
@@ -3469,24 +3990,42 @@ function loop(tms){
     updateWaves(dt);
     scoreTick(dt);
     updateNews(dt);
-    if(G.peeps.length===0&&G.gameTime>6) endStage('cleared');
-  }else if(!$('menu').classList.contains('hidden')){
+    if(G.side==='police') updateDirector(dt);
+    else if(G.peeps.length===0&&G.gameTime>6) endStage('cleared');
+  }else if(!G.running&&!$('menu').classList.contains('hidden')){
     CAM.theta+=dt*.05;   // סיבוב עדין מאחורי התפריט
   }
-  updateBubbles(dt);
-  updateFx(dt);
-  updateCamera(dt);
-  if(G.scene) G.renderer.render(G.scene,G.camera);
+  if(!G.paused){
+    updateBubbles(dt);
+    updateFx(dt);
+    updateCamera(dt);
+    if(MM.on&&G.running){ MM.acc+=dt; if(MM.acc>=.12){ MM.acc=0; drawMinimap(); } }
+  }
+  // כל המסכים אטומים — רינדור מאחוריהם הוא בזבוז סוללה (כולל shadow pass מלא)
+  const scrOpen=['loading','menu','howto','fameScr','entryScr','summary'].some(id=>!$(id).classList.contains('hidden'));
+  if(!scrOpen&&G.scene) G.renderer.render(G.scene,G.camera);
 }
 
 /* =========================================================================
    חיווט ואתחול
    ========================================================================= */
 function wireUI(){
-  $('btnStart').onclick=()=>{ AUDIO.init(); startRun(0); };
+  // כפתורי המפות = בורר (כמו בורר הצד); "התחל" משגר את הבחירה
+  G.mapSel=0;
+  function updateStartBtn(){
+    const mapName=document.querySelector('.mapBtn[data-map="'+G.mapSel+'"]').textContent;
+    $('btnStart').textContent=(G.side==='police'?'פתח במבצע פינוי':'התחל הפגנה')+' — '+mapName;
+  }
+  G._updStart=updateStartBtn;
+  $('btnStart').onclick=()=>{ AUDIO.init(); startRun(G.mapSel); };
   document.querySelectorAll('.mapBtn').forEach(b=>{
-    b.onclick=()=>{ AUDIO.init(); startRun(+b.dataset.map); };
+    b.onclick=()=>{
+      G.mapSel=+b.dataset.map;
+      document.querySelectorAll('.mapBtn').forEach(x=>x.classList.toggle('active',x===b));
+      updateStartBtn();
+    };
   });
+  updateStartBtn();
   $('btnFame').onclick=()=>showFame();
   $('btnFameBack').onclick=()=>showScr('menu');
   $('btnHow').onclick=()=>showScr('howto');
@@ -3517,16 +4056,80 @@ function wireUI(){
   document.querySelectorAll('#camBtns [data-cam]').forEach(b=>{
     b.onclick=()=>setCamMode(b.dataset.cam);
   });
+  // בורר צד
+  document.querySelectorAll('.sideBtn').forEach(b=>{
+    b.onclick=()=>{
+      G.side=b.dataset.side;
+      document.querySelectorAll('.sideBtn').forEach(x=>x.classList.toggle('active',x===b));
+      G._updStart();   // מרענן את הכיתוב כולל שם המפה הנבחרת
+    };
+  });
+  // כלי המפקד
+  $('pCruiser').onclick=ptCruiser;
+  $('pHorse').onclick=ptHorse;
+  $('pCannon').onclick=ptCannon;
+  $('pTow').onclick=ptTow;
+  $('pMeg').onclick=ptMeg;
+  $('pDet').onclick=ptDet;
+  $('tBus').onclick=toolBus;
+  $('tZalam').onclick=()=>toolSummon('zalam');
+  // עוצמת קול — נגרר בתפריט ההפסקה, נשמר בהעדפות
+  $('volSlider').oninput=e=>{ setVolume(+e.target.value/100); savePrefs(); };
+  // קליק על המיני-מפה מקפיץ את המצלמה לנקודה
+  $('minimap').addEventListener('pointerdown',e=>{
+    if(!G.running) return;
+    const r=e.currentTarget.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+    const hw=G.roadHalfW+8;
+    CAM.target.set(px*G.roadLen-G.roadLen/2, 0, py*hw*2-hw);
+    CAM.follow=false; if(G.camMode==='follow') G.camMode='free';
+    e.stopPropagation();
+  });
+  // איפוס היכל התהילה — אישור כפול
+  $('btnFameReset').onclick=async ()=>{
+    const b=$('btnFameReset');
+    if(b.dataset.arm!=='1'){
+      b.dataset.arm='1';
+      b.textContent='בטוחים? לחיצה נוספת מוחקת את הכל!';
+      setTimeout(()=>{ b.dataset.arm=''; b.textContent='🗑 איפוס הספר'; },4000);
+      return;
+    }
+    b.dataset.arm=''; b.textContent='🗑 איפוס הספר';
+    Fame.clear();
+    await showFame();
+  };
   $('tMute').onclick=()=>{
     G.muted=!G.muted;
     $('tMute').textContent=G.muted?'🔇 מושתק':'🔊 צליל';
     AUDIO.setCrowd(0);
     if(G.muted){ AUDIO.siren(false); AUDIO.spray(false); BGM.stop(); COPS.stop(); }
-    else if(G.running){ BGM.play(); }
+    else if(G.running&&!G.paused&&G.side!=='police'){ BGM.resume(); }   // לא מאחורי מסך השהיה; למשטרה אין מוזיקת מפגינים
+    savePrefs();
   };
+  // תפריט ההפסקה
+  $('pauseResume').onclick=()=>setPaused(false);
+  $('pauseRestart').onclick=()=>{   // רק המפה הנוכחית — הניקוד שנצבר בשלבים קודמים נשמר
+    setPaused(false);
+    BGM.init(); COPS.prime();
+    G.score=G.stageStartScore!==undefined?G.stageStartScore:(G.side==='police'?500:0);
+    addScore(0);
+    startStage(G.stage);
+  };
+  $('pauseQuit').onclick=()=>{
+    G.paused=false; $('pauseOv').classList.add('hidden');
+    G.running=false;
+    AUDIO.siren(false); AUDIO.spray(false); AUDIO.setCrowd(0); BGM.stop(); COPS.stop();
+    hideMarker(); hideRect(); mmSync();
+    $('hud').style.display='none';
+    showScr('menu');
+  };
+  // טולטיפים עם קיצורי מקלדת (דסקטופ)
+  const tips={tPash:'1',tShofar:'2',tBag:'3',tBochur:'4',tAvrech:'5',tAskan:'6',tBus:'7',tZalam:'8',
+    pCruiser:'1',pHorse:'2',pCannon:'3',pTow:'4',pMeg:'5',pDet:'6',tLie:'L',tStand:'K',tMute:'M'};
+  for(const id in tips){ const el=$(id); if(el) el.title='קיצור מקלדת: '+tips[id]; }
+  loadPrefs();
 }
 window.addEventListener('load',()=>{
-  try{ fetch(Fame.API+'?ping=1',{cache:'no-store'}).catch(()=>{}); }catch(e){}  // מונה כניסות
   try{
     initThree();
     initInput();
