@@ -2,10 +2,10 @@ package com.unisocsu.hosmim;
 
 import android.content.Context;
 import android.graphics.*;
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -17,7 +17,7 @@ public final class GameView extends View {
     private final List<Car> cars = new ArrayList<Car>();
 
     private int stage = 0;
-    private int side = 0; // 0 protesters, 1 traffic-management
+    private int side = 0;
     private int score = 0;
     private int wave = 0;
     private float lastX, lastY;
@@ -28,6 +28,8 @@ public final class GameView extends View {
     private float cameraX, cameraY;
     private final RectF selectedRect = new RectF();
     private boolean selecting;
+    private Unit draggedUnit;
+    private boolean pointerDrag;
     private final ArrayList<Unit> selected = new ArrayList<Unit>();
 
     private static final int[] MAP_LENGTH = {200, 240, 200};
@@ -36,6 +38,8 @@ public final class GameView extends View {
     public GameView(Context c) {
         super(c);
         setFocusable(true);
+        setFocusableInTouchMode(true);
+        requestFocus();
         p.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
         startMenuWorld();
     }
@@ -184,10 +188,11 @@ public final class GameView extends View {
         p.setTypeface(Typeface.DEFAULT);
         p.setTextSize(18); p.setColor(0xFFB8C8D0);
         c.drawText("גרסה טבעית לאנדרואיד — Java, ללא JavaScript",w/2f,h*.28f,p);
-        button(c,w*.20f,h*.43f,w*.46f,h*.58f,"כמפגינים");
-        button(c,w*.54f,h*.43f,w*.80f,h*.58f,"כמפקד");
+        button(c,w*.14f,h*.43f,w*.38f,h*.58f,"כמפגינים");
+        button(c,w*.42f,h*.43f,w*.66f,h*.58f,"כמפקד");
+        button(c,w*.70f,h*.43f,w*.86f,h*.58f,"הגדרות");
         p.setTextSize(15); p.setColor(0xFFB8C8D0);
-        c.drawText("בחר צד, מפה ושלוט במשחק במגע",w/2f,h*.70f,p);
+        c.drawText("עכבר מערכת: לחיצה לבחירה, גרירה לסימון/הזזה",w/2f,h*.70f,p);
     }
 
     private void button(Canvas c,float l,float t,float r,float b,String text) {
@@ -206,41 +211,94 @@ public final class GameView extends View {
 
     @Override public boolean onTouchEvent(MotionEvent e) {
         float x=e.getX(), y=e.getY();
-        if (e.getAction()==MotionEvent.ACTION_DOWN) {
-            lastX=x; lastY=y; dragging=false;
+        final int action = e.getActionMasked();
+
+        if (action == MotionEvent.ACTION_DOWN) {
+            lastX=x; lastY=y; dragging=false; pointerDrag=false; draggedUnit=null;
             if (menu) {
                 if (y>getHeight()*.40f && y<getHeight()*.62f) {
-                    side = x < getWidth()/2f ? 0 : 1;
-                    beginStage(0); return true;
+                    if (x>getWidth()*.68f) {
+                        ((MainActivity)getContext()).showGameSettings();
+                    } else {
+                        side = x < getWidth()*.40f ? 0 : 1;
+                        beginStage(0);
+                    }
+                    return true;
                 }
                 return true;
             }
             if (y<65) { paused=!paused; invalidate(); return true; }
+
+            Unit hit = findUnitAt(x,y);
+            boolean mouseLike = isMouseLike(e);
+            if (hit != null && selected.contains(hit)) {
+                draggedUnit = hit;
+                pointerDrag = mouseLike;
+                lastX=x; lastY=y;
+                return true;
+            }
+            if (mouseLike && hit != null) {
+                selected.clear();
+                selected.add(hit);
+                return true;
+            }
             if (y>getHeight()*.30f && y<getHeight()*.76f) {
                 selecting=true; selectedRect.set(x,y,x,y); return true;
             }
-        } else if (e.getAction()==MotionEvent.ACTION_MOVE) {
-            if (selecting) {
+        } else if (action == MotionEvent.ACTION_MOVE) {
+            if (draggedUnit != null) {
+                float dx=x-lastX, dy=y-lastY;
+                if (Math.abs(dx)>0.5f || Math.abs(dy)>0.5f) {
+                    float sx=getWidth()/(float)MAP_LENGTH[stage];
+                    draggedUnit.targetX += dx/sx;
+                    draggedUnit.targetZ += dy/28f;
+                    draggedUnit.x = draggedUnit.targetX;
+                    draggedUnit.z = draggedUnit.targetZ;
+                    dragging=true;
+                }
+            } else if (selecting) {
                 selectedRect.right=x; selectedRect.bottom=y;
             } else {
                 float dx=x-lastX;
                 if (Math.abs(dx)>2) { cameraX -= dx * 0.12f; dragging=true; }
             }
             lastX=x; lastY=y;
-        } else if (e.getAction()==MotionEvent.ACTION_UP) {
-            if (selecting) {
+        } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            if (draggedUnit != null) {
+                draggedUnit = null;
+            } else if (selecting) {
                 selecting=false; selectUnits(selectedRect);
-            } else if (!dragging) commandAt(x,y);
+            } else if (!dragging) {
+                commandAt(x,y);
+            }
         }
         invalidate(); return true;
+    }
+
+    private boolean isMouseLike(MotionEvent e) {
+        int source = e.getSource();
+        return (source & InputDevice.SOURCE_CLASS_POINTER) != 0
+                && (source & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE;
+    }
+
+    private Unit findUnitAt(float x,float y) {
+        float sx=getWidth()/(float)MAP_LENGTH[stage];
+        List<Unit> list=side==0?people:police;
+        for (Unit u:list) {
+            if (Math.abs(screenX(u.x,sx)-x)<24 &&
+                    Math.abs(screenY(u.z,getHeight()*.31f,getHeight()*.74f)-y)<28) return u;
+        }
+        return null;
     }
 
     private void selectUnits(RectF r) {
         selected.clear();
         float sx=getWidth()/(float)MAP_LENGTH[stage];
+        float l=Math.min(r.left,r.right), rr=Math.max(r.left,r.right);
+        float t=Math.min(r.top,r.bottom), b=Math.max(r.top,r.bottom);
         for (Unit u : side==0?people:police) {
             float x=screenX(u.x,sx), y=screenY(u.z,getHeight()*.31f,getHeight()*.74f);
-            if (r.contains(x,y)) selected.add(u);
+            if (new RectF(l,t,rr,b).contains(x,y)) selected.add(u);
         }
     }
 
@@ -255,19 +313,15 @@ public final class GameView extends View {
                 u.targetX=wx+(i%3-1)*2.5f; u.targetZ=wz+(i/3)*1.8f; i++;
             }
         } else {
-            // Tap a unit to select it.
-            List<Unit> list=side==0?people:police;
-            for (Unit u:list) {
-                if (Math.abs(screenX(u.x,sx)-x)<22 && Math.abs(screenY(u.z,getHeight()*.31f,getHeight()*.74f)-y)<25) {
-                    selected.clear(); selected.add(u); return;
-                }
-            }
+            Unit hit=findUnitAt(x,y);
+            if (hit!=null) { selected.clear(); selected.add(hit); }
         }
     }
 
     private static final class Unit {
         int team; float x,z,targetX,targetZ,speed;
     }
+
     private static final class Car {
         float x,z,dir,speed=18;
         Car(float x,float dir){this.x=x;this.dir=dir;this.z=0;}
