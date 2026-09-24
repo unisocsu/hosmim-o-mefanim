@@ -25,6 +25,14 @@ public final class GameView extends View {
     private int side = 0;
     private int score = 0;
     private int wave = 0;
+    private int stage = 0;
+    private float gameTime = 0f;
+    private float jamPeak = 0f;
+    private float tickerTime = 0f;
+    private String ticker = "מבזק: מתיחות בצומת...";
+    private int water = 100;
+    private boolean lying = false;
+    private boolean toolsOpen = false;
     private float cameraX;
     private float lastX, lastY;
     private boolean dragging;
@@ -73,6 +81,14 @@ public final class GameView extends View {
         paused = false;
         score = side == 1 ? 500 : 0;
         wave = 0;
+        stage = 0;
+        gameTime = 0f;
+        jamPeak = 0f;
+        tickerTime = 0f;
+        ticker = side == 0 ? "מבזק: מתיחות בצומת..." : "מבזק: המשטרה נערכת לפינוי...";
+        water = 100;
+        lying = false;
+        toolsOpen = false;
         cameraX = 0;
         units.clear();
         enemies.clear();
@@ -116,6 +132,19 @@ public final class GameView extends View {
     }
 
     private void update(float dt) {
+        gameTime += dt;
+        tickerTime += dt;
+        if (tickerTime > 5f) {
+            tickerTime = 0f;
+            if (side == 0) {
+                String[] news = {"מבזק: הנהגים מתעכבים...", "דיווח: עוד מפגינים בדרך", "מבזק: הצומת הולך ונסתמין"};
+                ticker = news[(int)(gameTime / 5f) % news.length];
+            } else {
+                String[] news = {"מבזק: הכוחות מתקדמים", "דיווח: הפגנה מתרחבת", "מבזק: המפקד דורש תוצאות"};
+                ticker = news[(int)(gameTime / 5f) % news.length];
+            }
+        }
+
         if (side == 0) {
             for (Unit u : units) moveToward(u, dt);
             if (score > 250 && enemies.size() < 4) enemies.add(makeUnit(Type.POLICE, 15, -2));
@@ -137,8 +166,15 @@ public final class GameView extends View {
 
         int blocked = 0;
         for (Car car : cars) if (nearBlocker(car)) blocked++;
+        float jam = blocked * 0.35f;
+        jamPeak = Math.max(jamPeak, jam);
         if (side == 0) score += Math.round(blocked * 10 * dt);
         else score += Math.round(Math.max(0, 5 - enemies.size()) * dt);
+
+        stage = Math.min(3, (int)(gameTime / 45f));
+        wave = Math.min(6, 1 + stage + (int)(gameTime / 30f));
+        if (side == 0 && water < 100) water = Math.min(100, water + (int)(12 * dt));
+        if (side == 1 && water > 0 && stage >= 2) water = Math.max(0, water - (int)(3 * dt));
     }
 
     private void moveToward(Unit u, float dt) {
@@ -269,37 +305,101 @@ public final class GameView extends View {
 
     private void drawHud(Canvas c) {
         int w = getWidth(), h = getHeight();
-        p.setColor(0xD80B0E15);
-        c.drawRect(0, 0, w, 76, p);
+        p.setColor(0xE0070A12);
+        c.drawRect(0, 0, w, 92, p);
+        p.setColor(Color.rgb(145, 27, 27));
+        c.drawRect(0, 0, w, 30, p);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTextSize(13);
+        p.setColor(Color.WHITE);
+        c.drawText("🔴  " + ticker, w / 2f, 20, p);
 
         p.setTextAlign(Paint.Align.LEFT);
-        p.setTextSize(15);
+        p.setTextSize(14);
         p.setColor(Color.WHITE);
-        c.drawText(side == 0 ? "צד המפגינים" : "צד המשטרה", 14, 22, p);
-        p.setTextSize(24);
+        c.drawText(side == 0 ? "צד המפגינים" : "צד המשטרה", 12, 48, p);
+        p.setTextSize(23);
         p.setColor(Color.rgb(255, 217, 102));
-        c.drawText((side == 0 ? "נקודות: " : "תקציב: ") + score, 14, 52, p);
+        c.drawText((side == 0 ? "נקודות: " : "תקציב: ") + score, 12, 76, p);
 
         p.setTextAlign(Paint.Align.CENTER);
-        p.setTextSize(17);
+        p.setTextSize(16);
         p.setColor(Color.rgb(154, 208, 255));
-        c.drawText(MAP_NAMES[map] + "  •  גל " + wave, w / 2f, 28, p);
-        p.setTextSize(13);
+        String stageName = stage == 0 ? "התארגנות" : stage == 1 ? "הסלמה" : stage == 2 ? "עימות" : "שעת מבחן";
+        c.drawText(MAPS_LABEL(map) + " • " + stageName, w / 2f, 52, p);
+        p.setTextSize(12);
         p.setColor(Color.LTGRAY);
-        c.drawText("Java Native • API 19", w / 2f, 52, p);
+        c.drawText(formatTime(gameTime) + "  •  פקק: " + String.format(java.util.Locale.US, "%.1f", jamPeak) + " ק״מ  •  נבחרו: " + selected.size(), w / 2f, 74, p);
 
         p.setTextAlign(Paint.Align.RIGHT);
-        p.setTextSize(25);
+        p.setTextSize(24);
         p.setColor(Color.WHITE);
-        c.drawText(paused ? "מושהה" : "⏸", w - 15, 35, p);
+        c.drawText(paused ? "מושהה" : "⏸", w - 12, 55, p);
+
+        if (side == 1 && stage >= 2) {
+            p.setTextSize(11);
+            p.setColor(Color.rgb(130, 205, 255));
+            c.drawText("מיכל מים " + water + "%", w - 12, 77, p);
+        }
+
+        drawToolbar(c);
 
         // Bottom command bar.
         p.setColor(0xDD0C0A12);
         c.drawRoundRect(8, h - 62, w - 8, h - 8, 12, 12, p);
         p.setTextAlign(Paint.Align.CENTER);
-        p.setTextSize(13);
+        p.setTextSize(12);
         p.setColor(Color.WHITE);
         c.drawText("גרור לבחירה • גרור יחידה • קליק בכביש = יעד • גרור רקע = מצלמה", w / 2f, h - 30, p);
+    }
+
+    private void drawToolbar(Canvas c) {
+        int w = getWidth(), h = getHeight();
+        float y = h - 82;
+        float[] xs = {10, 92, 174, 256, 338, 420};
+        String[] labels = side == 0
+                ? new String[]{"🧰 כלים", "🎩 בחור", "🧔 אברך", "📱 עסקן", "🛏 שכיבה", "🏁 סיום"}
+                : new String[]{"🚔 ניידת", "🐎 פרשים", "📢 מגפון", "🚛 מכת״ז", "🪝 גרר", "🏁 סיום"};
+        for (int i = 0; i < labels.length; i++) {
+            float l = Math.min(xs[i], w - 82);
+            p.setColor((i == 0 && toolsOpen) ? Color.rgb(80, 61, 110) : 0xE60C0A12);
+            c.drawRoundRect(l, y, l + 74, y + 48, 9, 9, p);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(1.5f);
+            p.setColor(0x77FFFFFF);
+            c.drawRoundRect(l, y, l + 74, y + 48, 9, 9, p);
+            p.setStyle(Paint.Style.FILL);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setTextSize(11);
+            p.setColor(Color.WHITE);
+            c.drawText(labels[i], l + 37, y + 20, p);
+            p.setTextSize(9);
+            p.setColor(Color.rgb(255, 217, 102));
+            String cost = i == 0 || i == 5 ? "" : side == 0 ? (i == 1 ? "50" : i == 2 ? "150" : i == 3 ? "250" : "0") : (i == 1 ? "500" : i == 2 ? "250" : i == 3 ? "1500" : "600");
+            c.drawText(cost, l + 37, y + 37, p);
+        }
+        if (toolsOpen) {
+            p.setColor(0xF20E0B18);
+            c.drawRoundRect(10, y - 150, Math.min(w - 10, 260), y - 10, 12, 12, p);
+            p.setColor(Color.WHITE);
+            p.setTextAlign(Paint.Align.RIGHT);
+            p.setTextSize(12);
+            c.drawText(side == 0 ? "כלים למפגינים" : "כלי פיקוד", 242, y - 125, p);
+            p.setTextSize(11);
+            String[] t = side == 0
+                    ? new String[]{"פשקווילים  500", "שופר  1000", "שקיות  2000", "הסעות  800"}
+                    : new String[]{"בלש סמוי  700", "ריכוז כוחות", "מגפון  250", "מכת״זית  1500"};
+            for (int i = 0; i < t.length; i++) c.drawText(t[i], 242, y - 98 + i * 25, p);
+        }
+    }
+
+    private String MAPS_LABEL(int i) {
+        return MAP_NAMES[Math.max(0, Math.min(MAP_NAMES.length - 1, i))];
+    }
+
+    private String formatTime(float seconds) {
+        int s = (int) seconds;
+        return (s / 60) + ":" + String.format(java.util.Locale.US, "%02d", s % 60);
     }
 
     private void drawMiniMap(Canvas c) {
@@ -423,8 +523,13 @@ public final class GameView extends View {
                 return true;
             }
 
-            if (y < 78) {
+            if (y < 34) {
                 paused = !paused;
+                invalidate();
+                return true;
+            }
+            if (y > getHeight() - 92) {
+                handleToolbarClick(x, y);
                 invalidate();
                 return true;
             }
@@ -479,6 +584,61 @@ public final class GameView extends View {
 
         invalidate();
         return true;
+    }
+
+    private void handleToolbarClick(float x, float y) {
+        float barY = getHeight() - 82;
+        int index = Math.max(0, Math.min(5, (int)((x - 10) / 82f)));
+        if (y < barY && toolsOpen) {
+            if (side == 0) {
+                if (score >= 500) { score -= 500; addReinforcements(3); ticker = "התגבורת הגיעה!"; }
+            } else if (score >= 250) {
+                score -= 250;
+                for (Unit u : enemies) u.targetX += 6;
+                ticker = "המגפון הופעל — הכוחות מתקדמים!";
+            }
+            toolsOpen = false;
+            return;
+        }
+        if (index == 0) {
+            toolsOpen = !toolsOpen;
+        } else if (index == 1) {
+            if (side == 0 && score >= 50) { score -= 50; addReinforcements(1); }
+            else if (side == 1 && score >= 500) { score -= 500; addPolice(2); }
+        } else if (index == 2) {
+            if (side == 0 && score >= 150) { score -= 150; addVeteran(); }
+            else if (side == 1 && score >= 250) { score -= 250; enemies.clear(); ticker = "המגפון פיזר חלק מהמפגינים"; }
+        } else if (index == 3) {
+            if (side == 0 && score >= 250) { score -= 250; addAskan(); }
+            else if (side == 1 && score >= 1500 && water >= 30) { score -= 1500; water -= 30; enemies.clear(); ticker = "המכת״זית הופעלה!"; }
+        } else if (index == 4) {
+            if (side == 0) lying = !lying;
+            else if (score >= 600) { score -= 600; if (!enemies.isEmpty()) enemies.remove(0); ticker = "הגרר פינה את הציר"; }
+        } else if (index == 5) {
+            paused = true;
+            menu = true;
+            buildMenuScene();
+        }
+    }
+
+    private void addReinforcements(int count) {
+        for (int i = 0; i < count; i++) units.add(makeUnit(Type.BOCHUR, cameraX + 8 + i * 2, ROAD_HALF[map] + 2));
+        ticker = "תגבורת נכנסה לשטח!";
+    }
+
+    private void addVeteran() {
+        units.add(makeUnit(Type.AVRECH, cameraX + 8, ROAD_HALF[map] + 2));
+        ticker = "אברך ותיק הוצב בציר";
+    }
+
+    private void addAskan() {
+        units.add(makeUnit(Type.ASKAN, cameraX + 8, ROAD_HALF[map] + 2));
+        ticker = "העסקן נכנס למשא ומתן";
+    }
+
+    private void addPolice(int count) {
+        for (int i = 0; i < count; i++) enemies.add(makeUnit(Type.POLICE, cameraX + 10 + i * 2, -2));
+        ticker = "ניידת הגיעה עם כוחות";
     }
 
     private Unit findUnitAt(float x, float y) {
