@@ -212,8 +212,8 @@ public final class GameView extends View {
         drawBuildings(c, h * .08f, h * .30f, false);
         drawBuildings(c, h * .77f, h, true);
 
-        float top = h * .31f;
-        float bottom = h * .76f;
+        float top = compact ? h * .27f : h * .31f;
+        float bottom = compact ? h * .78f : h * .76f;
         p.setColor(Color.rgb(70, 72, 76));
         c.drawRect(0, top, w, bottom, p);
 
@@ -243,7 +243,7 @@ public final class GameView extends View {
             p.setStyle(Paint.Style.FILL);
         }
 
-        drawMiniMap(c);
+        if (!compact) drawMiniMap(c);
     }
 
     private void drawBuildings(Canvas c, float top, float bottom, boolean lower) {
@@ -311,41 +311,43 @@ public final class GameView extends View {
 
     private void drawHud(Canvas c) {
         int w = getWidth(), h = getHeight();
+        boolean compact = w < 600 || h < 600;
+        int hudHeight = compact ? 64 : 92;
         p.setColor(0xE0070A12);
-        c.drawRect(0, 0, w, 92, p);
+        c.drawRect(0, 0, w, hudHeight, p);
         p.setColor(Color.rgb(145, 27, 27));
         c.drawRect(0, 0, w, 30, p);
         p.setTextAlign(Paint.Align.CENTER);
-        p.setTextSize(13);
+        p.setTextSize(compact ? 10 : 13);
         p.setColor(Color.WHITE);
-        c.drawText("🔴  " + ticker, w / 2f, 20, p);
+        c.drawText(ticker, w / 2f, compact ? 17 : 20, p);
 
         p.setTextAlign(Paint.Align.LEFT);
-        p.setTextSize(14);
+        p.setTextSize(compact ? 11 : 14);
         p.setColor(Color.WHITE);
-        c.drawText(side == 0 ? "צד המפגינים" : "צד המשטרה", 12, 48, p);
-        p.setTextSize(23);
+        c.drawText(side == 0 ? "צד המפגינים" : "צד המשטרה", 10, compact ? 39 : 48, p);
+        p.setTextSize(compact ? 16 : 23);
         p.setColor(Color.rgb(255, 217, 102));
-        c.drawText((side == 0 ? "נקודות: " : "תקציב: ") + score, 12, 76, p);
+        c.drawText((side == 0 ? "נקודות: " : "תקציב: ") + score, 10, compact ? 59 : 76, p);
 
         p.setTextAlign(Paint.Align.CENTER);
-        p.setTextSize(16);
+        p.setTextSize(compact ? 12 : 16);
         p.setColor(Color.rgb(154, 208, 255));
         String stageName = stage == 0 ? "התארגנות" : stage == 1 ? "הסלמה" : stage == 2 ? "עימות" : "שעת מבחן";
-        c.drawText(MAPS_LABEL(map) + " • " + stageName, w / 2f, 52, p);
+        c.drawText(MAPS_LABEL(map) + " • " + stageName, w / 2f, compact ? 39 : 52, p);
         p.setTextSize(12);
         p.setColor(Color.LTGRAY);
-        c.drawText(formatTime(gameTime) + "  •  פקק: " + String.format(java.util.Locale.US, "%.1f", jamPeak) + " ק״מ  •  נבחרו: " + selected.size(), w / 2f, 74, p);
+        c.drawText(formatTime(gameTime) + "  •  פקק: " + String.format(java.util.Locale.US, "%.1f", jamPeak) + "  •  נבחרו: " + selected.size(), w / 2f, compact ? 56 : 74, p);
 
         p.setTextAlign(Paint.Align.RIGHT);
-        p.setTextSize(24);
+        p.setTextSize(compact ? 18 : 24);
         p.setColor(Color.WHITE);
-        c.drawText(paused ? "מושהה" : "⏸", w - 12, 55, p);
+        c.drawText(paused ? "מושהה" : "⏸", w - 10, compact ? 38 : 55, p);
 
         if (side == 1 && stage >= 2) {
-            p.setTextSize(11);
+            p.setTextSize(compact ? 9 : 11);
             p.setColor(Color.rgb(130, 205, 255));
-            c.drawText("מיכל מים " + water + "%", w - 12, 77, p);
+            c.drawText("מים " + water + "%", w - 10, compact ? 57 : 77, p);
         }
 
         drawToolbar(c);
@@ -720,7 +722,7 @@ public final class GameView extends View {
         List<Unit> list = side == 0 ? units : enemies;
         for (Unit u : list) {
             if (Math.abs(screenX(u.x, sx) - x) < 25 &&
-                    Math.abs(screenY(u.z, getHeight() * .31f, getHeight() * .76f) - y) < 30)
+                    Math.abs(screenY(u.z, getHeight() * .27f, getHeight() * .78f) - y) < 30)
                 return u;
         }
         return null;
