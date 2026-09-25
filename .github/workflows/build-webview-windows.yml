@@ -30,14 +30,13 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish single-file Windows EXE
+      - name: Publish small framework-dependent Windows EXE
         run: >
           dotnet publish desktop-webview/HosmimEtHatzir.WebView.csproj
           -c Release
           -r win-x64
-          --self-contained true
+          --self-contained false
           -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
           -p:DebugType=None
           -o publish
 
