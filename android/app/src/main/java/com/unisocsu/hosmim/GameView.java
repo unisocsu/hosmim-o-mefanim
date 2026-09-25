@@ -193,9 +193,8 @@ public final class GameView extends View {
         return false;
     }
 
-    private void drawRoundRectCompat(Canvas c, float left, float top, float right, float bottom, float rx, float ry) {
-        // API 19-compatible overload: the float-coordinate overload was added in API 21.
-        drawRoundRectCompat(c, new RectF(left, top, right, bottom), rx, ry, p);
+    private void drawRoundRectCompat(Canvas c, float left, float top, float right, float bottom, float rx, float ry, Paint paint) {
+        c.drawRoundRect(new RectF(left, top, right, bottom), rx, ry, paint);
     }
 
     private void drawWorld(Canvas c) {
