@@ -1,0 +1,54 @@
+name: Build Windows Chromium EXE
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop-electron/**'
+      - 'index.html'
+      - 'three.min.js'
+      - 'fonts.css'
+      - 'manifest.json'
+      - 'privacy.html'
+      - 'sw.js'
+      - 'intro.mp4'
+      - 'cops.mp4'
+      - 'icon-*.png'
+      - 'fonts/**'
+      - '.github/workflows/build-electron-windows.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-electron/package.json
+
+      - name: Prepare game files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force desktop-electron/app | Out-Null
+          Copy-Item index.html,three.min.js,fonts.css,manifest.json,privacy.html,sw.js,intro.mp4,cops.mp4,icon-192.png,icon-512.png,icon-512-maskable.png desktop-electron/app/ -Force
+          if (Test-Path fonts) { Copy-Item fonts desktop-electron/app/fonts -Recurse -Force }
+
+      - name: Install dependencies
+        working-directory: desktop-electron
+        run: npm install
+
+      - name: Build portable Chromium EXE
+        working-directory: desktop-electron
+        run: npm run dist
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: HosmimEtHatzir-Chromium-Windows
+          path: desktop-electron/dist/*.exe
