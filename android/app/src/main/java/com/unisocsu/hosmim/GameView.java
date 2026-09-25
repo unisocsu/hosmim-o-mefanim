@@ -194,9 +194,8 @@ public final class GameView extends View {
     }
 
     private void drawRoundRectCompat(Canvas c, float left, float top, float right, float bottom, float rx, float ry) {
-        Path path = new Path();
-        path.addRoundRect(new RectF(left, top, right, bottom), rx, ry, Path.Direction.CW);
-        c.drawPath(path, p);
+        // API 19-compatible overload: the float-coordinate overload was added in API 21.
+        drawRoundRectCompat(c, new RectF(left, top, right, bottom), rx, ry, p);
     }
 
     private void drawWorld(Canvas c) {
@@ -266,7 +265,7 @@ public final class GameView extends View {
         float x = getWidth() / 2f + (car.x - cameraX) * sx;
         float y = center + car.dir * 58;
         p.setColor(car.dir > 0 ? Color.rgb(64, 124, 181) : Color.rgb(188, 76, 66));
-        c.drawRoundRect(x - 20, y - 10, x + 20, y + 10, 5, 5, p);
+        drawRoundRectCompat(c, x - 20, y - 10, x + 20, y + 10, 5, 5, p);
         p.setColor(Color.rgb(215, 230, 238));
         c.drawRect(x - 9, y - 7, x + 9, y + 5, p);
         p.setColor(Color.rgb(35, 38, 43));
@@ -295,7 +294,7 @@ public final class GameView extends View {
         p.setColor(Color.rgb(225, 185, 145));
         c.drawCircle(x, y - 12, 7, p);
         p.setColor(body);
-        c.drawRoundRect(x - 8, y - 5, x + 8, y + 14, 3, 3, p);
+        drawRoundRectCompat(c, x - 8, y - 5, x + 8, y + 14, 3, 3, p);
         p.setColor(Color.DKGRAY);
         c.drawRect(x - 7, y + 14, x - 2, y + 24, p);
         c.drawRect(x + 2, y + 14, x + 7, y + 24, p);
@@ -352,7 +351,7 @@ public final class GameView extends View {
 
         // Bottom command bar.
         p.setColor(0xDD0C0A12);
-        c.drawRoundRect(8, h - 62, w - 8, h - 8, 12, 12, p);
+        drawRoundRectCompat(c, 8, h - 62, w - 8, h - 8, 12, 12, p);
         p.setTextAlign(Paint.Align.CENTER);
         p.setTextSize(12);
         p.setColor(Color.WHITE);
@@ -369,11 +368,11 @@ public final class GameView extends View {
         for (int i = 0; i < labels.length; i++) {
             float l = Math.min(xs[i], w - 82);
             p.setColor((i == 0 && toolsOpen) ? Color.rgb(80, 61, 110) : 0xE60C0A12);
-            c.drawRoundRect(l, y, l + 74, y + 48, 9, 9, p);
+            drawRoundRectCompat(c, l, y, l + 74, y + 48, 9, 9, p);
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(1.5f);
             p.setColor(0x77FFFFFF);
-            c.drawRoundRect(l, y, l + 74, y + 48, 9, 9, p);
+            drawRoundRectCompat(c, l, y, l + 74, y + 48, 9, 9, p);
             p.setStyle(Paint.Style.FILL);
             p.setTextAlign(Paint.Align.CENTER);
             p.setTextSize(11);
@@ -386,7 +385,7 @@ public final class GameView extends View {
         }
         if (toolsOpen) {
             p.setColor(0xF20E0B18);
-            c.drawRoundRect(10, y - 150, Math.min(w - 10, 260), y - 10, 12, 12, p);
+            drawRoundRectCompat(c, 10, y - 150, Math.min(w - 10, 260), y - 10, 12, 12, p);
             p.setColor(Color.WHITE);
             p.setTextAlign(Paint.Align.RIGHT);
             p.setTextSize(12);
@@ -414,11 +413,11 @@ public final class GameView extends View {
         float left = w - size - 10;
         float top = 86;
         p.setColor(0xC0100D16);
-        c.drawRoundRect(left, top, left + size, top + size * .48f, 7, 7, p);
+        drawRoundRectCompat(c, left, top, left + size, top + size * .48f, 7, 7, p);
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(1);
         p.setColor(0x66FFFFFF);
-        c.drawRoundRect(left, top, left + size, top + size * .48f, 7, 7, p);
+        drawRoundRectCompat(c, left, top, left + size, top + size * .48f, 7, 7, p);
         p.setStyle(Paint.Style.FILL);
 
         float roadTop = top + size * .13f;
@@ -446,7 +445,7 @@ public final class GameView extends View {
         c.drawRect(0, 0, w, h, p);
 
         p.setColor(0xFFEFE5CD);
-        c.drawRoundRect(w * .06f, h * .08f, w * .94f, h * .91f, 10, 10, p);
+        drawRoundRectCompat(c, w * .06f, h * .08f, w * .94f, h * .91f, 10, 10, p);
 
         p.setTextAlign(Paint.Align.CENTER);
         p.setColor(Color.rgb(22, 19, 16));
@@ -483,7 +482,7 @@ public final class GameView extends View {
 
     private void button(Canvas c, float l, float t, float r, float b, String text, boolean active) {
         p.setColor(active ? Color.rgb(32, 28, 23) : Color.rgb(220, 211, 188));
-        c.drawRoundRect(l, t, r, b, 5, 5, p);
+        drawRoundRectCompat(c, l, t, r, b, 5, 5, p);
         p.setTextAlign(Paint.Align.CENTER);
         p.setTextSize(Math.max(13, Math.min(19, getWidth() / 30f)));
         p.setColor(active ? Color.rgb(245, 236, 213) : Color.rgb(38, 34, 29));
