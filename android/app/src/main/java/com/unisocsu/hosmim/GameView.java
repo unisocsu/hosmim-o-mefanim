@@ -355,9 +355,16 @@ public final class GameView extends View {
         int w = getWidth(), h = getHeight();
         float y = h - 58;
         // Keep only the two always-useful actions visible on small screens.
-        drawToolbarButton(c, 10, y, 96, y + 48, side == 0 ? "כלים" : "פיקוד", toolsOpen);
-        drawToolbarButton(c, 104, y, 190, y + 48, "שכיבה", lying);
-        drawToolbarButton(c, w - 96, y, w - 10, y + 48, "סיום", false);
+        // במסכים קטנים מציגים רק את כפתור השכיבה, כדי להשאיר את המשחק נקי.
+        boolean compact = w < 600 || h < 600;
+        if (compact) {
+            float l = w / 2f - 48;
+            drawToolbarButton(c, l, y, l + 96, y + 48, "שכיבה", lying);
+        } else {
+            drawToolbarButton(c, 10, y, 96, y + 48, side == 0 ? "כלים" : "פיקוד", toolsOpen);
+            drawToolbarButton(c, 104, y, 190, y + 48, "שכיבה", lying);
+            drawToolbarButton(c, w - 96, y, w - 10, y + 48, "סיום", false);
+        }
         p.setTextAlign(Paint.Align.CENTER);
         p.setTextSize(11);
         p.setColor(0xCCFFFFFF);
@@ -621,8 +628,16 @@ public final class GameView extends View {
         float barY = getHeight() - 58;
         float w = getWidth();
 
-        // Bottom bar: tools/power menu, lying, end.
+        // בסרגל קומפקטי במסך קטן קיים רק כפתור שכיבה.
+        boolean compact = w < 600 || getHeight() < 600;
         if (y >= barY) {
+            if (compact) {
+                if (x >= w / 2f - 55 && x <= w / 2f + 55) {
+                    lying = !lying;
+                    ticker = lying ? "המפגינים נשכבו על הכביש" : "המפגינים קמו";
+                }
+                return;
+            }
             if (x <= 100) {
                 toolsOpen = !toolsOpen;
                 return;
