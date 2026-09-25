@@ -102,7 +102,7 @@ public final class GameView extends View {
                     Type.AVRECH, Type.ASKAN
             };
             for (int i = 0; i < opening.length; i++) {
-                float z = ROAD_HALF[map] + 2.0f + (i / 6) * 1.4f;
+                float z = -1.8f + (i / 6) * 1.6f;
                 units.add(makeUnit(opening[i], -18 + (i % 6) * 4, z));
             }
         } else {
@@ -152,7 +152,7 @@ public final class GameView extends View {
         } else {
             wave = Math.min(5, 1 + (int)(score / 220));
             if (wave > 1 && enemies.size() < 5 + wave * 2)
-                enemies.add(makeUnit(Type.BOCHUR, 20 + random.nextInt(35), -3 + random.nextInt(6)));
+                enemies.add(makeUnit(Type.BOCHUR, 20 + random.nextInt(35), -2 + random.nextInt(5)));
             for (Unit u : units) moveToward(u, dt);
             for (Unit u : enemies) moveToward(u, dt);
         }
@@ -194,7 +194,9 @@ public final class GameView extends View {
     }
 
     private void drawRoundRectCompat(Canvas c, float left, float top, float right, float bottom, float rx, float ry, Paint paint) {
-        c.drawRoundRect(new RectF(left, top, right, bottom), rx, ry, paint);
+        Path path = new Path();
+        path.addRoundRect(new RectF(left, top, right, bottom), rx, ry, Path.Direction.CW);
+        c.drawPath(path, paint);
     }
 
     private void drawWorld(Canvas c) {
@@ -360,41 +362,65 @@ public final class GameView extends View {
     private void drawToolbar(Canvas c) {
         int w = getWidth(), h = getHeight();
         float y = h - 82;
-        float[] xs = {10, 92, 174, 256, 338, 420};
-        String[] labels = side == 0
-                ? new String[]{"🧰 כלים", "🎩 בחור", "🧔 אברך", "📱 עסקן", "🛏 שכיבה", "🏁 סיום"}
-                : new String[]{"🚔 ניידת", "🐎 פרשים", "📢 מגפון", "🚛 מכת״ז", "🪝 גרר", "🏁 סיום"};
-        for (int i = 0; i < labels.length; i++) {
-            float l = Math.min(xs[i], w - 82);
-            p.setColor((i == 0 && toolsOpen) ? Color.rgb(80, 61, 110) : 0xE60C0A12);
-            drawRoundRectCompat(c, l, y, l + 74, y + 48, 9, 9, p);
-            p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(1.5f);
-            p.setColor(0x77FFFFFF);
-            drawRoundRectCompat(c, l, y, l + 74, y + 48, 9, 9, p);
-            p.setStyle(Paint.Style.FILL);
-            p.setTextAlign(Paint.Align.CENTER);
-            p.setTextSize(11);
-            p.setColor(Color.WHITE);
-            c.drawText(labels[i], l + 37, y + 20, p);
-            p.setTextSize(9);
-            p.setColor(Color.rgb(255, 217, 102));
-            String cost = i == 0 || i == 5 ? "" : side == 0 ? (i == 1 ? "50" : i == 2 ? "150" : i == 3 ? "250" : "0") : (i == 1 ? "500" : i == 2 ? "250" : i == 3 ? "1500" : "600");
-            c.drawText(cost, l + 37, y + 37, p);
-        }
+        // Keep only the two always-useful actions visible on small screens.
+        drawToolbarButton(c, 10, y, 96, y + 48, side == 0 ? "כלים" : "פיקוד", toolsOpen);
+        drawToolbarButton(c, 104, y, 190, y + 48, "שכיבה", lying);
+        drawToolbarButton(c, w - 96, y, w - 10, y + 48, "סיום", false);
+
         if (toolsOpen) {
-            p.setColor(0xF20E0B18);
-            drawRoundRectCompat(c, 10, y - 150, Math.min(w - 10, 260), y - 10, 12, 12, p);
+            float panelL = 10;
+            float panelR = w - 10;
+            float panelB = y - 10;
+            float panelT = Math.max(105, panelB - 210);
+            p.setColor(0xF514111C);
+            drawRoundRectCompat(c, panelL, panelT, panelR, panelB, 12, 12, p);
+
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setTextSize(14);
             p.setColor(Color.WHITE);
-            p.setTextAlign(Paint.Align.RIGHT);
-            p.setTextSize(12);
-            c.drawText(side == 0 ? "כלים למפגינים" : "כלי פיקוד", 242, y - 125, p);
-            p.setTextSize(11);
-            String[] t = side == 0
-                    ? new String[]{"פשקווילים  500", "שופר  1000", "שקיות  2000", "הסעות  800"}
-                    : new String[]{"בלש סמוי  700", "ריכוז כוחות", "מגפון  250", "מכת״זית  1500"};
-            for (int i = 0; i < t.length; i++) c.drawText(t[i], 242, y - 98 + i * 25, p);
+            c.drawText(side == 0 ? "כלים למפגינים" : "כלי פיקוד", (panelL + panelR) / 2f, panelT + 23, p);
+
+            String[] labels = side == 0
+                    ? new String[]{"תגבורת", "ותיק", "עסקן", "כלי נוסף"}
+                    : new String[]{"ניידת", "מגפון", "מכת״ז", "גרר"};
+            String[] costs = side == 0
+                    ? new String[]{"50", "150", "250", "500"}
+                    : new String[]{"500", "250", "1500", "600"};
+
+            float gap = 8;
+            float bw = (panelR - panelL - gap * 3) / 4f;
+            float by = panelT + 48;
+            for (int i = 0; i < 4; i++) {
+                float l = panelL + i * (bw + gap);
+                p.setColor(0xFF292330);
+                drawRoundRectCompat(c, l, by, l + bw, by + 72, 9, 9, p);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(1);
+                p.setColor(0x66888888);
+                drawRoundRectCompat(c, l, by, l + bw, by + 72, 9, 9, p);
+                p.setStyle(Paint.Style.FILL);
+                p.setTextSize(12);
+                p.setColor(Color.WHITE);
+                c.drawText(labels[i], l + bw / 2f, by + 28, p);
+                p.setTextSize(10);
+                p.setColor(Color.rgb(255, 217, 102));
+                c.drawText(costs[i], l + bw / 2f, by + 49, p);
+            }
         }
+    }
+
+    private void drawToolbarButton(Canvas c, float l, float t, float r, float b, String label, boolean active) {
+        p.setColor(active ? Color.rgb(78, 55, 105) : 0xE60C0A12);
+        drawRoundRectCompat(c, l, t, r, b, 9, 9, p);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(1.5f);
+        p.setColor(0x77FFFFFF);
+        drawRoundRectCompat(c, l, t, r, b, 9, 9, p);
+        p.setStyle(Paint.Style.FILL);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTextSize(12);
+        p.setColor(Color.WHITE);
+        c.drawText(label, (l + r) / 2f, t + 29, p);
     }
 
     private String MAPS_LABEL(int i) {
@@ -532,6 +558,11 @@ public final class GameView extends View {
                 invalidate();
                 return true;
             }
+            if (toolsOpen) {
+                handleToolbarClick(x, y);
+                invalidate();
+                return true;
+            }
             if (y > getHeight() - 92) {
                 handleToolbarClick(x, y);
                 invalidate();
@@ -592,51 +623,79 @@ public final class GameView extends View {
 
     private void handleToolbarClick(float x, float y) {
         float barY = getHeight() - 82;
-        int index = Math.max(0, Math.min(5, (int)((x - 10) / 82f)));
-        if (y < barY && toolsOpen) {
-            if (side == 0) {
-                if (score >= 500) { score -= 500; addReinforcements(3); ticker = "התגבורת הגיעה!"; }
-            } else if (score >= 250) {
-                score -= 250;
-                for (Unit u : enemies) u.targetX += 6;
-                ticker = "המגפון הופעל — הכוחות מתקדמים!";
+        float w = getWidth();
+
+        // Bottom bar: tools/power menu, lying, end.
+        if (y >= barY) {
+            if (x <= 100) {
+                toolsOpen = !toolsOpen;
+                return;
             }
-            toolsOpen = false;
-            return;
+            if (x <= 200) {
+                lying = !lying;
+                ticker = lying ? "המפגינים נשכבו על הכביש" : "המפגינים קמו";
+                return;
+            }
+            if (x >= w - 105) {
+                paused = true;
+                menu = true;
+                toolsOpen = false;
+                buildMenuScene();
+                return;
+            }
         }
-        if (index == 0) {
-            toolsOpen = !toolsOpen;
-        } else if (index == 1) {
-            if (side == 0 && score >= 50) { score -= 50; addReinforcements(1); }
-            else if (side == 1 && score >= 500) { score -= 500; addPolice(2); }
-        } else if (index == 2) {
-            if (side == 0 && score >= 150) { score -= 150; addVeteran(); }
-            else if (side == 1 && score >= 250) { score -= 250; enemies.clear(); ticker = "המגפון פיזר חלק מהמפגינים"; }
-        } else if (index == 3) {
-            if (side == 0 && score >= 250) { score -= 250; addAskan(); }
-            else if (side == 1 && score >= 1500 && water >= 30) { score -= 1500; water -= 30; enemies.clear(); ticker = "המכת״זית הופעלה!"; }
-        } else if (index == 4) {
-            if (side == 0) lying = !lying;
-            else if (score >= 600) { score -= 600; if (!enemies.isEmpty()) enemies.remove(0); ticker = "הגרר פינה את הציר"; }
-        } else if (index == 5) {
-            paused = true;
-            menu = true;
-            buildMenuScene();
+
+        // Tool panel. It is intentionally checked before generic world commands.
+        if (toolsOpen) {
+            float panelL = 10;
+            float panelR = w - 10;
+            float panelB = barY - 10;
+            float panelT = Math.max(105, panelB - 210);
+            if (x >= panelL && x <= panelR && y >= panelT && y <= panelB) {
+                float gap = 8;
+                float bw = (panelR - panelL - gap * 3) / 4f;
+                float by = panelT + 48;
+                if (y >= by && y <= by + 72) {
+                    int i = Math.max(0, Math.min(3, (int)((x - panelL) / (bw + gap))));
+                    if (side == 0) {
+                        if (i == 0 && score >= 50) { score -= 50; addReinforcements(1); }
+                        else if (i == 1 && score >= 150) { score -= 150; addVeteran(); }
+                        else if (i == 2 && score >= 250) { score -= 250; addAskan(); }
+                        else if (i == 3 && score >= 500) { score -= 500; addReinforcements(3); }
+                    } else {
+                        if (i == 0 && score >= 500) { score -= 500; addPolice(2); }
+                        else if (i == 1 && score >= 250) {
+                            score -= 250;
+                            for (Unit u : enemies) u.targetX += 6;
+                            ticker = "המגפון הופעל — הכוחות מתקדמים!";
+                        } else if (i == 2 && score >= 1500 && water >= 30) {
+                            score -= 1500; water -= 30; enemies.clear(); ticker = "הפעולה בוצעה!";
+                        } else if (i == 3 && score >= 600 && !enemies.isEmpty()) {
+                            score -= 600; enemies.remove(0); ticker = "הציר התפנה חלקית";
+                        }
+                    }
+                    toolsOpen = false;
+                    return;
+                }
+                return;
+            }
+            // Tap outside the panel closes it.
+            toolsOpen = false;
         }
     }
 
     private void addReinforcements(int count) {
-        for (int i = 0; i < count; i++) units.add(makeUnit(Type.BOCHUR, cameraX + 8 + i * 2, ROAD_HALF[map] + 2));
+        for (int i = 0; i < count; i++) units.add(makeUnit(Type.BOCHUR, cameraX + 8 + i * 2, -1.5f + i * 1.2f));
         ticker = "תגבורת נכנסה לשטח!";
     }
 
     private void addVeteran() {
-        units.add(makeUnit(Type.AVRECH, cameraX + 8, ROAD_HALF[map] + 2));
+        units.add(makeUnit(Type.AVRECH, cameraX + 8, 0));
         ticker = "אברך ותיק הוצב בציר";
     }
 
     private void addAskan() {
-        units.add(makeUnit(Type.ASKAN, cameraX + 8, ROAD_HALF[map] + 2));
+        units.add(makeUnit(Type.ASKAN, cameraX + 8, 1.2f));
         ticker = "העסקן נכנס למשא ומתן";
     }
 
