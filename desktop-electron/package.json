@@ -1,0 +1,28 @@
+{
+  "name": "hosmim-et-hatzir",
+  "version": "1.0.0",
+  "private": true,
+  "description": "חוסמים את הציר - Windows desktop build",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.unisocsu.hosmimethatzir",
+    "productName": "חוסמים את הציר",
+    "asar": true,
+    "files": [
+      "main.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "artifactName": "HosmimEtHatzir-Chromium.exe"
+    }
+  }
+}
