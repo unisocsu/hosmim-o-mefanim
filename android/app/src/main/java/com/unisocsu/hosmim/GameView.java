@@ -201,16 +201,20 @@ public final class GameView extends View {
 
     private void drawWorld(Canvas c) {
         int w = getWidth(), h = getHeight();
+        boolean compact = w < 600 || h < 600;
         p.setStyle(Paint.Style.FILL);
         p.setColor(Color.rgb(19, 22, 29));
         c.drawRect(0, 0, w, h, p);
 
         // City blocks.
         p.setColor(Color.rgb(42, 45, 52));
-        c.drawRect(0, h * .08f, w, h * .30f, p);
-        c.drawRect(0, h * .77f, w, h, p);
-        drawBuildings(c, h * .08f, h * .30f, false);
-        drawBuildings(c, h * .77f, h, true);
+        float cityTop = compact ? h * .06f : h * .08f;
+        float cityBottom = compact ? h * .25f : h * .30f;
+        float lowerCityTop = compact ? h * .82f : h * .77f;
+        c.drawRect(0, cityTop, w, cityBottom, p);
+        c.drawRect(0, lowerCityTop, w, h, p);
+        drawBuildings(c, cityTop, cityBottom, false);
+        drawBuildings(c, lowerCityTop, h, true);
 
         float top = compact ? h * .27f : h * .31f;
         float bottom = compact ? h * .78f : h * .76f;
@@ -218,8 +222,9 @@ public final class GameView extends View {
         c.drawRect(0, top, w, bottom, p);
 
         p.setColor(Color.rgb(168, 164, 148));
-        c.drawRect(0, top - 13, w, top, p);
-        c.drawRect(0, bottom, w, bottom + 13, p);
+        float curb = compact ? 8 : 12;
+        c.drawRect(0, top - curb, w, top, p);
+        c.drawRect(0, bottom, w, bottom + curb, p);
 
         p.setColor(Color.rgb(215, 181, 69));
         p.setStrokeWidth(4);
@@ -335,14 +340,14 @@ public final class GameView extends View {
         p.setColor(Color.rgb(154, 208, 255));
         String stageName = stage == 0 ? "התארגנות" : stage == 1 ? "הסלמה" : stage == 2 ? "עימות" : "שעת מבחן";
         c.drawText(MAPS_LABEL(map) + " • " + stageName, w / 2f, compact ? 39 : 52, p);
-        p.setTextSize(12);
+        p.setTextSize(compact ? 10 : 12);
         p.setColor(Color.LTGRAY);
         c.drawText(formatTime(gameTime) + "  •  פקק: " + String.format(java.util.Locale.US, "%.1f", jamPeak) + "  •  נבחרו: " + selected.size(), w / 2f, compact ? 56 : 74, p);
 
         p.setTextAlign(Paint.Align.RIGHT);
         p.setTextSize(compact ? 18 : 24);
         p.setColor(Color.WHITE);
-        c.drawText(paused ? "מושהה" : "⏸", w - 10, compact ? 38 : 55, p);
+        c.drawText(paused ? "מושהה" : "||", w - 10, compact ? 38 : 55, p);
 
         if (side == 1 && stage >= 2) {
             p.setTextSize(compact ? 9 : 11);
@@ -370,7 +375,7 @@ public final class GameView extends View {
         p.setTextAlign(Paint.Align.CENTER);
         p.setTextSize(11);
         p.setColor(0xCCFFFFFF);
-        c.drawText("גרור לבחירה • גרור יחידה • קליק בכביש = יעד • גרור רקע = מצלמה", w / 2f, y - 7, p);
+        if (!compact) c.drawText("גרור לבחירה • גרור יחידה • קליק בכביש = יעד • גרור רקע = מצלמה", w / 2f, y - 7, p);
 
         if (toolsOpen) {
             float panelL = 10;
@@ -378,7 +383,7 @@ public final class GameView extends View {
             float panelB = y - 10;
             float panelT = Math.max(105, panelB - 210);
             p.setColor(0xF514111C);
-            drawRoundRectCompat(c, panelL, panelT, panelR, panelB, 12, 12, p);
+            drawRoundRectCompat(c, panelL, panelT, panelR, panelB, 16, 16, p);
 
             p.setTextAlign(Paint.Align.CENTER);
             p.setTextSize(14);
@@ -416,7 +421,7 @@ public final class GameView extends View {
 
     private void drawToolbarButton(Canvas c, float l, float t, float r, float b, String label, boolean active) {
         p.setColor(active ? Color.rgb(78, 55, 105) : 0xE60C0A12);
-        drawRoundRectCompat(c, l, t, r, b, 9, 9, p);
+        drawRoundRectCompat(c, l, t, r, b, 12, 12, p);
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(1.5f);
         p.setColor(0x77FFFFFF);
