@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>HosmimEtHatzir</AssemblyName>
+    <RootNamespace>HosmimEtHatzir</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3485.44" />
+  </ItemGroup>
+
+  <!-- Copy the existing browser game and all of its local assets next to the EXE. -->
+  <ItemGroup>
+    <Content Include="..\index.html" Link="app\index.html" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\three.min.js" Link="app\three.min.js" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\fonts.css" Link="app\fonts.css" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\manifest.json" Link="app\manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\privacy.html" Link="app\privacy.html" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\sw.js" Link="app\sw.js" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\intro.mp4" Link="app\intro.mp4" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\cops.mp4" Link="app\cops.mp4" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\icon-192.png" Link="app\icon-192.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\icon-512.png" Link="app\icon-512.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\icon-512-maskable.png" Link="app\icon-512-maskable.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\fonts\**\*" Link="app\fonts\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
