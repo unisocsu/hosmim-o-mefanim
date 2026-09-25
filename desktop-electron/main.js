@@ -31,7 +31,21 @@ function createWindow() {
     }
   });
 
-  win.loadFile(path.join(__dirname, "app", "index.html"));
+  win.webContents.on("did-fail-load", (_event, code, description, validatedURL) => {
+    console.error("Game load failed:", code, description, validatedURL);
+  });
+
+  win.webContents.on("render-process-gone", (_event, details) => {
+    console.error("Renderer crashed:", details.reason, details.exitCode);
+  });
+
+  win.webContents.on("console-message", (_event, details) => {
+    console.log("Game console:", details.level, details.message);
+  });
+
+  win.loadFile(path.join(__dirname, "app", "index.html")).catch(err => {
+    console.error("Failed to load game:", err);
+  });
 }
 
 app.whenReady().then(() => {
