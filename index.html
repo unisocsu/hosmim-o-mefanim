@@ -65,8 +65,8 @@
     background:var(--ink);color:var(--paper);border:none;border-radius:3px;
     box-shadow:3px 3px 0 rgba(0,0,0,.35);transition:transform .08s}
   .btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(1px)}
-  .siderow{display:flex;gap:8px}
-  .siderow .btn{margin:5px 0;flex:1;font-size:clamp(14px,3vw,19px);opacity:.5}
+.siderow{display:flex;gap:8px;flex-wrap:wrap}
+  .siderow .btn{margin:5px 0;flex:1;min-width:30%;font-size:clamp(14px,3vw,19px);opacity:.5}
   .siderow .btn.active{opacity:1;box-shadow:0 0 0 3px var(--ink),3px 3px 0 rgba(0,0,0,.35)}
   .maprow .btn{opacity:.55}
   .maprow .btn.active{opacity:1;box-shadow:0 0 0 3px var(--ink),3px 3px 0 rgba(0,0,0,.35)}
@@ -207,8 +207,9 @@
     <h1 class="logo">חוסמים את הציר</h1>
     <div class="sub">סימולטור הפגנות &middot; צאו והגנו על כבוד שמיים בצמתים המרכזיים</div>
     <div class="siderow">
-      <button class="btn sec sideBtn active" data-side="peeps">🎩 צד המפגינים</button>
-      <button class="btn sec sideBtn" data-side="police">🚔 צד המשטרה</button>
+      <button class="btn sec sideBtn active" data-side="peeps">🎩 מפגינים חרדים</button>
+      <button class="btn sec sideBtn" data-side="opposition">✊ מפגיני המחנה השני</button>
+      <button class="btn sec sideBtn" data-side="police">🚔 משטרה</button>
     </div>
     <button class="btn" id="btnStart">התחל הפגנה</button>
     <div class="maprow">
@@ -491,7 +492,8 @@ const G={
   laneDefs:[], roadLen:200, roadHalfW:5, sidewalkZ:7,
   spawnTimers:[], muted:false, totalBlockTime:0,
   camMode:'top', followPt:new THREE.Vector3(),
-  side:'peeps'   // 'peeps' = מפגינים (קלאסי) | 'police' = מפקד המשטרה
+  side:'peeps',  // 'peeps' = מפגינים חרדים | 'opposition' = מפגיני המחנה השני | 'police' = משטרה
+  playerFaction:'haredi'
 };
 const MAPS=[
   {name:'צומת בר אילן, ירושלים', speed:12, lanes:1, sign:'בר אילן'},
@@ -1989,11 +1991,12 @@ function zalamNear(x,z){
        &&dist2(p.obj.position.x,p.obj.position.z,x,z)<64) return true;
   return false;
 }
-function mkPeep(typeKey,x,z){
+function mkPeep(typeKey,x,z,faction){
   const st=UNIT_STATS[typeKey];
+  faction=faction||(G.side==='opposition'?'opposition':'haredi');
   const beardC= typeKey==='avrech'?0xb9b9b9 : typeKey==='askan'?0x4a3826 : 0x2e2118;
   const fig=mkFigure({
-    coat: typeKey==='askan'?0x23232a: typeKey==='zalam'?0x2e4a52 :0x141417,
+    coat: faction==='opposition' ? (typeKey==='askan'?0x26364a: typeKey==='zalam'?0x35505c :0x24415a) : (typeKey==='askan'?0x23232a: typeKey==='zalam'?0x2e4a52 :0x141417),
     hat:'fedora', smallHat:typeKey==='bochur'||typeKey==='zalam',
     longCoat:typeKey==='avrech',
     beard: typeKey==='zalam'?null:((typeKey!=='bochur'||Math.random()<.4)?beardC:null),
@@ -2020,15 +2023,48 @@ function mkPeep(typeKey,x,z){
   const peep={
     obj:root, inner, typeKey, st, mats:fig.mats,
     parts:fig.parts,
-    state:'idle', target:null, phase:rnd(0,6), ring,
+    faction, ai:faction!==G.playerFaction, state:'idle', target:null, phase:rnd(0,6), ring,
     recoverT:0, attachCar:null, dragger:null, hitT:0, stain:0,
     shoutT:0, argueT:0, argueCD:0,
     onRoad(){ const p=this.obj.position; return Math.abs(p.z)<G.roadHalfW-.2 && Math.abs(p.x)<G.roadLen/2; },
-    selectable(){ return !['dragged','recover','flee','hit'].includes(this.state); }
+    selectable(){ return this.faction===G.playerFaction && !['dragged','recover','flee','hit'].includes(this.state); }
   };
   root.userData.peep=peep;
   G.peeps.push(peep); G.dyn.add(root);
   return peep;
+}
+function spawnFactionAI(faction,count){
+  for(let i=0;i<count;i++){
+    const p=mkPeep(pick(['bochur','bochur','avrech','askan']),rnd(-G.roadLen/2+8,G.roadLen/2-8),rnd(G.roadHalfW+4,G.roadHalfW+8),faction);
+    p.ai=true; p.target=new THREE.Vector3(clamp(rnd(-G.roadLen*.38,G.roadLen*.38),-G.roadLen/2+5,G.roadLen/2-5),0,rnd(-1.8,1.8));
+    p.state='moving';
+  }
+}
+function updateFactionAI(dt){
+  for(const p of G.peeps){
+    if(!p.ai || ['hit','flee','dragged','recover'].includes(p.state)) continue;
+    if(p.state==='blocking' && Math.random()<dt*.045){
+      p.target=new THREE.Vector3(rnd(-G.roadLen*.42,G.roadLen*.42),0,rnd(-2.2,2.2));
+      p.state='moving';
+    }else if(p.state==='idle' && p.onRoad()) p.state='blocking';
+    if(p.state==='moving' && p.target && steerPeep(p,dt,p.st.speed*.75)){
+      p.state=p.onRoad()?'blocking':'idle'; p.target=null;
+    }
+  }
+  // עימות לא-גרפי בין הפלגים: התקרבות, צעקות ודחיפות קלות בלבד.
+  for(let i=0;i<G.peeps.length;i++){
+    const a=G.peeps[i]; if(!a.ai && a.faction!==G.playerFaction) continue;
+    if(['hit','flee','dragged','recover','argue'].includes(a.state)) continue;
+    for(let j=i+1;j<G.peeps.length;j++){
+      const b=G.peeps[j];
+      if(a.faction===b.faction || ['hit','flee','dragged','recover','argue'].includes(b.state)) continue;
+      if(dist2(a.obj.position.x,a.obj.position.z,b.obj.position.x,b.obj.position.z)<1.8*1.8 && Math.random()<dt*.7){
+        a.state=b.state='argue'; a.argueT=b.argueT=1.2;
+        say(a.obj,'עימות!',1.1); say(b.obj,'תתרחק!',1.1); AUDIO.thud();
+        break;
+      }
+    }
+  }
 }
 function removePeep(p){
   detach(p);
@@ -3801,10 +3837,10 @@ function startStage(i){
     buildMap(i);
     G.escTime=0; G.wave=0; G.gameTime=0; G.shofarUsed=false; G.bagT=0; G._fr=0;
     G.runovers=0; G.fled=0; G.jamPeak=0; G.bigJamNews=false;
-    G.protestStarted=false; G.emptyT=0;
+    G.protestStarted=false; G.emptyT=0;\n    G.playerFaction=G.side==='opposition'?'opposition':(G.side==='peeps'?'haredi':null);
     G.spawnTimers=[]; G.trainTimer=14; G.copCars=[]; G.drivers=[];
     scoreAcc=0; newsQ=['🔴 מבזק: הפגנה מתארגנת ב'+MAPS[i].name]; newsT=0;
-    $('tankWrap').style.display='none';
+    $('tankWrap').style.display='none';    // בכל משחק קיימים שני מחנות אזרחיים; השחקן בוחר מי מהם או משטרה.\n    if(G.side==='police'){ spawnFactionAI('haredi',7); spawnFactionAI('opposition',7); }\n    else spawnFactionAI(G.playerFaction==='haredi'?'opposition':'haredi',7);\n
     $('trainBonus').style.display='none';
     AUDIO.siren(false); AUDIO.spray(false);
     hideMarker(); clearSel();
@@ -3982,7 +4018,7 @@ function loop(tms){
     G.gameTime+=dt;
     runGTQ();
     updateTraffic(dt);
-    updatePeeps(dt,now);
+    updateFactionAI(dt);\n    updatePeeps(dt,now);
     updateDrivers(dt,now);
     updateCops(dt,now);
     updateHorses(dt,now);
@@ -4060,6 +4096,7 @@ function wireUI(){
   document.querySelectorAll('.sideBtn').forEach(b=>{
     b.onclick=()=>{
       G.side=b.dataset.side;
+      G.playerFaction=G.side==='opposition'?'opposition':(G.side==='peeps'?'haredi':null);
       document.querySelectorAll('.sideBtn').forEach(x=>x.classList.toggle('active',x===b));
       G._updStart();   // מרענן את הכיתוב כולל שם המפה הנבחרת
     };
