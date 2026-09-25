@@ -107,7 +107,7 @@ public final class GameView extends View {
             }
         } else {
             for (int i = 0; i < 5; i++)
-                enemies.add(makeUnit(Type.BOCHUR, -18 + i * 4, ROAD_HALF[map] + 2));
+                enemies.add(makeUnit(Type.BOCHUR, -18 + i * 4, -1.8f + (i % 3) * 1.6f));
         }
 
         for (int i = 0; i < 12; i++)
@@ -189,7 +189,7 @@ public final class GameView extends View {
 
     private boolean nearBlocker(Car car) {
         for (Unit u : units)
-            if (Math.abs(u.x - car.x) < 3.2f && Math.abs(u.z) < ROAD_HALF[map]) return true;
+            if (u.type != Type.POLICE && Math.abs(u.x - car.x) < 3.2f && Math.abs(u.z) < ROAD_HALF[map]) return true;
         return false;
     }
 
@@ -230,7 +230,7 @@ public final class GameView extends View {
         float sx = w / (float) MAP_LENGTH[map];
         for (Car car : cars) drawCar(c, car, sx, center);
         for (Unit u : units) drawUnit(c, u, sx, top, bottom, false);
-        for (Unit u : enemies) drawUnit(c, u, sx, top, bottom, true);
+        for (Unit u : enemies) drawUnit(c, u, sx, top, bottom, u.type == Type.POLICE);
 
         if (selecting) {
             p.setStyle(Paint.Style.FILL);
@@ -349,23 +349,19 @@ public final class GameView extends View {
         }
 
         drawToolbar(c);
-
-        // Bottom command bar.
-        p.setColor(0xDD0C0A12);
-        drawRoundRectCompat(c, 8, h - 62, w - 8, h - 8, 12, 12, p);
-        p.setTextAlign(Paint.Align.CENTER);
-        p.setTextSize(12);
-        p.setColor(Color.WHITE);
-        c.drawText("גרור לבחירה • גרור יחידה • קליק בכביש = יעד • גרור רקע = מצלמה", w / 2f, h - 30, p);
     }
 
     private void drawToolbar(Canvas c) {
         int w = getWidth(), h = getHeight();
-        float y = h - 82;
+        float y = h - 58;
         // Keep only the two always-useful actions visible on small screens.
         drawToolbarButton(c, 10, y, 96, y + 48, side == 0 ? "כלים" : "פיקוד", toolsOpen);
         drawToolbarButton(c, 104, y, 190, y + 48, "שכיבה", lying);
         drawToolbarButton(c, w - 96, y, w - 10, y + 48, "סיום", false);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTextSize(11);
+        p.setColor(0xCCFFFFFF);
+        c.drawText("גרור לבחירה • גרור יחידה • קליק בכביש = יעד • גרור רקע = מצלמה", w / 2f, y - 7, p);
 
         if (toolsOpen) {
             float panelL = 10;
@@ -563,7 +559,7 @@ public final class GameView extends View {
                 invalidate();
                 return true;
             }
-            if (y > getHeight() - 92) {
+            if (y > getHeight() - 68) {
                 handleToolbarClick(x, y);
                 invalidate();
                 return true;
@@ -622,7 +618,7 @@ public final class GameView extends View {
     }
 
     private void handleToolbarClick(float x, float y) {
-        float barY = getHeight() - 82;
+        float barY = getHeight() - 58;
         float w = getWidth();
 
         // Bottom bar: tools/power menu, lying, end.
@@ -730,7 +726,7 @@ public final class GameView extends View {
     }
 
     private void commandAt(float x, float y) {
-        if (y > getHeight() - 70) {
+        if (y > getHeight() - 58) {
             menu = true;
             buildMenuScene();
             return;
