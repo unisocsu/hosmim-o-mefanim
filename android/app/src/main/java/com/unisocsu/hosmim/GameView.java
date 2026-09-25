@@ -193,6 +193,12 @@ public final class GameView extends View {
         return false;
     }
 
+    private void drawRoundRectCompat(Canvas c, float left, float top, float right, float bottom, float rx, float ry) {
+        Path path = new Path();
+        path.addRoundRect(new RectF(left, top, right, bottom), rx, ry, Path.Direction.CW);
+        c.drawPath(path, p);
+    }
+
     private void drawWorld(Canvas c) {
         int w = getWidth(), h = getHeight();
         p.setStyle(Paint.Style.FILL);
