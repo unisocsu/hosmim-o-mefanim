@@ -30,9 +30,41 @@ jobs:
         with:
           gradle-version: '8.10'
 
-      - name: Build debug APK
+      - name: Build unsigned APK
         working-directory: android
         run: gradle :app:assembleDebug --no-daemon
+
+      - name: Download pinned Uber APK Signer
+        shell: bash
+        run: |
+          set -euo pipefail
+          UAS_VERSION="1.3.0"
+          UAS_URL="https://github.com/patrickfav/uber-apk-signer/releases/download/v${UAS_VERSION}/uber-apk-signer-${UAS_VERSION}.jar"
+          UAS_SHA256="e1299fd6fcf4da527dd53735b56127e8ea922a321128123b9c32d619bba1d835"
+
+          curl -fsSL "${UAS_URL}" -o uber-apk-signer.jar
+          echo "${UAS_SHA256}  uber-apk-signer.jar" | sha256sum -c -
+
+      - name: Sign APK with stable Uber APK Signer debug key
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf signed-apk
+          mkdir -p signed-apk
+
+          # No --ks is intentional: Uber APK Signer uses its embedded debug
+          # keystore, giving us a stable signing certificate across GitHub runners.
+          java -jar uber-apk-signer.jar             --allowResign             --apks android/app/build/outputs/apk/debug/app-debug.apk             --out signed-apk
+
+          SIGNED_APK="$(find signed-apk -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "${SIGNED_APK}"
+          cp "${SIGNED_APK}" android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Verify final APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          java -jar uber-apk-signer.jar             --apks android/app/build/outputs/apk/debug/app-debug.apk             --onlyVerify
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
