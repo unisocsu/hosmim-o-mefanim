@@ -45,6 +45,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Copy-Item publish/HosmimEtHatzir.exe dist/HosmimEtHatzir.exe
+          Copy-Item publish/WebView2Loader.dll dist/WebView2Loader.dll
           Copy-Item publish/app dist/app -Recurse -Force
 
       - name: Zip portable build
