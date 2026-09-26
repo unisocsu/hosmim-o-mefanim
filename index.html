@@ -962,7 +962,7 @@ function initThree(){
   // שמש שקיעה — צללים ארוכים וחמים
   const sun=new THREE.DirectionalLight(0xffa75f,1.4);
   sun.position.set(-85,40,62); sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.mapSize.set(1024,1024);
   const sc=sun.shadow.camera;
   sc.left=-85; sc.right=85; sc.top=85; sc.bottom=-85; sc.near=1; sc.far=350;
   sun.shadow.bias=-0.0012; sun.shadow.normalBias=.02;
@@ -4167,17 +4167,37 @@ function wireUI(){
   loadPrefs();
 }
 window.addEventListener('load',()=>{
-  try{
-    initThree();
-    initInput();
-    wireUI();
-    buildMap(0);            // רקע חי לתפריט
-    requestAnimationFrame(loop);
-    setTimeout(()=>{ showScr('menu'); },500);
-  }catch(err){
-    $('loadMsg').textContent='שגיאה בטעינה: '+err.message;
+  // מפצלים את האתחול כדי שה־WebView2 יצייר כל שלב ולא ייראה קפוא.
+  const progress=(msg)=>{
+    const el=$('loadMsg');
+    if(el) el.textContent=msg;
+  };
+  const fail=(err)=>{
+    progress('שגיאה בטעינה: '+(err&&err.message?err.message:String(err)));
     console.error(err);
-  }
+  };
+  try{
+    progress('מאתחלים את מנוע התלת־ממד...');
+    initThree();
+  }catch(err){ fail(err); return; }
+
+  setTimeout(()=>{
+    try{
+      progress('מאתחלים את השליטה...');
+      initInput();
+      wireUI();
+    }catch(err){ fail(err); return; }
+
+    setTimeout(()=>{
+      try{
+        progress('בונים את הצומת...');
+        buildMap(0);            // רקע חי לתפריט
+        progress('מסיימים טעינה...');
+        requestAnimationFrame(loop);
+        setTimeout(()=>{ showScr('menu'); },250);
+      }catch(err){ fail(err); }
+    },0);
+  },0);
 });
 </script>
 </body>
