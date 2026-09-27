@@ -1921,10 +1921,16 @@ function mkFigure(o){
   };
   mesh(o.longCoat?FGE.coatLong:FGE.coat,coatM,0,1.02,0);
   if(o.shirt!==false){
-    const shirtM=matC(0xf2f1ea,.8); mats.push(shirtM);
+    const shirtM=matC(o.shirtColor??0xf2f1ea,.8); mats.push(shirtM);
     const sh=mesh(GEO.box,shirtM,0,1.17,.16); sh.scale.set(.12,.23,.05); sh.castShadow=false;
   }
   const head=mesh(FGE.head,skinM,0,1.5,0);
+  if(o.hair){
+    const hm=matC(o.hair,.9); mats.push(hm);
+    const hair=mesh(FG.sph,hm,0,1.59,-.01);
+    hair.scale.set(.105,.085,.095);
+    hair.castShadow=true;
+  }
   const mkLeg=sx=>{
     const hip=new THREE.Group(); hip.position.set(sx*.1,.84,0); inner.add(hip);
     const th=new THREE.Mesh(FG.limb,pantsM); th.scale.set(.075,.42,.075);
@@ -2002,15 +2008,25 @@ function mkPeep(typeKey,x,z,faction){
   const st=UNIT_STATS[typeKey];
   faction=faction||(G.side==='opposition'?'opposition':'haredi');
   const beardC= typeKey==='avrech'?0xb9b9b9 : typeKey==='askan'?0x4a3826 : 0x2e2118;
+  const isOpp=faction==='opposition';
+  const matureOpp=isOpp && Math.random()<.42;
   const fig=mkFigure({
-    coat: faction==='opposition' ? (typeKey==='askan'?0x26364a: typeKey==='zalam'?0x35505c :0x24415a) : (typeKey==='askan'?0x23232a: typeKey==='zalam'?0x2e4a52 :0x141417),
-    hat:'fedora', smallHat:typeKey==='bochur'||typeKey==='zalam',
-    longCoat:typeKey==='avrech',
-    beard: typeKey==='zalam'?null:((typeKey!=='bochur'||Math.random()<.4)?beardC:null),
-    beardBig:typeKey==='avrech',
-    peyot:typeKey!=='zalam',   // צלם עיתונות — מראה אחר
-    phone:typeKey==='askan'||typeKey==='zalam',   // אצל הצלם זו המצלמה
-    glasses:typeKey==='askan'||typeKey==='zalam'
+    // למחנה השני יש מראה אזרחי מובחן: מעילים/חולצות, בלי כובע או פאות,
+    // ובחלק מהדמויות שיער מאפיר ומשקפיים כדי ליצור מגוון גילאים.
+    coat: isOpp
+      ? pick([0x334155,0x3b4657,0x4b5563,0x26384a,0x5a4b43])
+      : (typeKey==='askan'?0x23232a: typeKey==='zalam'?0x2e4a52:0x141417),
+    pants: isOpp ? pick([0x202631,0x30343d,0x45413d]) : undefined,
+    shirtColor: isOpp ? pick([0xe7e2d8,0xd9e0e5,0xcfd7d0,0xf0e6d2]) : undefined,
+    hat: isOpp ? (Math.random()<.22?'cap':null) : 'fedora',
+    smallHat:typeKey==='bochur'||typeKey==='zalam',
+    longCoat:isOpp ? false : typeKey==='avrech',
+    beard: isOpp ? null : (typeKey==='zalam'?null:((typeKey!=='bochur'||Math.random()<.4)?beardC:null)),
+    beardBig:!isOpp && typeKey==='avrech',
+    peyot:!isOpp && typeKey!=='zalam',
+    hair: isOpp && matureOpp ? pick([0x777777,0x8b8178,0x5f6368]) : (isOpp?pick([0x2b2522,0x3b302b,0x4a4039]):null),
+    phone:typeKey==='askan'||typeKey==='zalam',
+    glasses:isOpp ? (matureOpp||Math.random()<.28) : (typeKey==='askan'||typeKey==='zalam')
   });
   const root=fig.root, inner=fig.inner;
   // ציציות מציצות מתחת לז'קט
@@ -2021,7 +2037,8 @@ function mkPeep(typeKey,x,z,faction){
   }
   // גיוון מבנה גוף
   const sc=rnd(.95,1.05);
-  inner.scale.set(sc*(typeKey==='bochur'?.94:typeKey==='avrech'?1.06:1),sc,sc);
+  const oppScale=isOpp ? rnd(.97,1.06) : 1;
+  inner.scale.set(oppScale*sc*(typeKey==='bochur'?.94:typeKey==='avrech'?1.06:1),oppScale*sc,oppScale*sc);
   // טבעת בחירה
   const ring=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:0x35e08a,transparent:true,opacity:.9}));
   ring.rotation.x=-Math.PI/2; ring.position.y=.04; ring.scale.set(1.5,1.5,1); ring.visible=false;
