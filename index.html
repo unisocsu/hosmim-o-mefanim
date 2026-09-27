@@ -3837,10 +3837,14 @@ function startStage(i){
     buildMap(i);
     G.escTime=0; G.wave=0; G.gameTime=0; G.shofarUsed=false; G.bagT=0; G._fr=0;
     G.runovers=0; G.fled=0; G.jamPeak=0; G.bigJamNews=false;
-    G.protestStarted=false; G.emptyT=0;\n    G.playerFaction=G.side==='opposition'?'opposition':(G.side==='peeps'?'haredi':null);
+    G.protestStarted=false; G.emptyT=0;
+    G.playerFaction=G.side==='opposition'?'opposition':(G.side==='peeps'?'haredi':null);
     G.spawnTimers=[]; G.trainTimer=14; G.copCars=[]; G.drivers=[];
     scoreAcc=0; newsQ=['🔴 מבזק: הפגנה מתארגנת ב'+MAPS[i].name]; newsT=0;
-    $('tankWrap').style.display='none';    // בכל משחק קיימים שני מחנות אזרחיים; השחקן בוחר מי מהם או משטרה.\n    if(G.side==='police'){ spawnFactionAI('haredi',7); spawnFactionAI('opposition',7); }\n    else spawnFactionAI(G.playerFaction==='haredi'?'opposition':'haredi',7);\n
+    $('tankWrap').style.display='none';    // בכל משחק קיימים שני מחנות אזרחיים; השחקן בוחר מי מהם או משטרה.
+    if(G.side==='police'){ spawnFactionAI('haredi',7); spawnFactionAI('opposition',7); }
+    else spawnFactionAI(G.playerFaction==='haredi'?'opposition':'haredi',7);
+
     $('trainBonus').style.display='none';
     AUDIO.siren(false); AUDIO.spray(false);
     hideMarker(); clearSel();
@@ -4018,7 +4022,8 @@ function loop(tms){
     G.gameTime+=dt;
     runGTQ();
     updateTraffic(dt);
-    updateFactionAI(dt);\n    updatePeeps(dt,now);
+    updateFactionAI(dt);
+    updatePeeps(dt,now);
     updateDrivers(dt,now);
     updateCops(dt,now);
     updateHorses(dt,now);
