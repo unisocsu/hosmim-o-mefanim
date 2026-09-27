@@ -2311,7 +2311,9 @@ function updateFx(dt){
    AI מפגינים
    ========================================================================= */
 const MAXPEEPS=80;
-const SLOGANS=['גיוס שמד!','לא נתגייס!','עד מוות!','התורה קודמת!'];
+const SLOGANS_HAREDI=['גיוס שמד!','לא נתגייס!','עד מוות!','התורה קודמת!'];
+const SLOGANS_OPPOSITION=['די לחסימות!','פותחים את הציר!','הצומת של כולנו!','קדימה, ממשיכים!','לא עוצרים כאן!'];
+function factionSlogan(p){ return pick(p.faction==='opposition'?SLOGANS_OPPOSITION:SLOGANS_HAREDI); }
 function sidewalkZ(z){ return (z>=0?1:-1)*(G.roadHalfW+3); }
 function detach(p){
   if(p.attachCar){ const a=p.attachCar.attached; const i=a.indexOf(p); if(i>=0)a.splice(i,1); p.attachCar=null; }
@@ -2391,7 +2393,7 @@ function updatePeeps(dt,now){
         break;
       case 'blocking':
         p.shoutT-=dt;
-        if(p.shoutT<=0){ if(Math.random()<.5) say(p.obj,pick(SLOGANS),2.2); p.shoutAnim=1.2; p.shoutT=rnd(5,11); }
+        if(p.shoutT<=0){ if(Math.random()<.5) say(p.obj,factionSlogan(p),2.2); p.shoutAnim=1.2; p.shoutT=rnd(5,11); }
         if(p.shoutAnim>0){ p.shoutAnim-=dt; mode='shout'; }
         break;
       case 'lying': mode='lie'; break;
@@ -3274,7 +3276,7 @@ function toolPashkevil(){
       const p=mkPeep(tk,al.x+rnd(-2,2),al.z+rnd(-1,1));
       p.state='moving';
       p.target={x:tx+rnd(-5,5),z:clamp(tzr+rnd(-2,2),-G.roadHalfW+1,G.roadHalfW-1)};
-      say(p.obj,'גיוס שמד!',2);
+      say(p.obj,p.faction==='opposition'?'פותחים את הציר!':'גיוס שמד!',2);
     },i*350);
   });
 }
