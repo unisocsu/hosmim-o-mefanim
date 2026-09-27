@@ -122,6 +122,7 @@
     border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 34px rgba(0,0,0,.55);z-index:45;min-width:196px;max-width:92vw}
   .toolPop.hidden{display:none}
   .toolPop .tool{min-width:176px;text-align:right}
+  .oppToolsTitle{font-size:11px;font-weight:900;color:#ffcf66;border-top:1px solid #ffffff22;padding:6px 4px 2px;margin-top:2px}
   #camBtns{position:fixed;bottom:10px;left:10px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
   #camBtns .tool{min-width:0;padding:7px 9px;font-size:12.5px}
   #selInfo{position:fixed;bottom:88px;right:50%;transform:translateX(50%);display:none;pointer-events:none}
@@ -416,6 +417,12 @@
         <button class="tool" id="tAskan">📱 עסקן<small>זימון — 250 נק'</small></button>
         <button class="tool" id="tBus">🚌 הסעות מאורגנות<small>8 ישר ליעד — 800 נק'</small></button>
         <button class="tool" id="tZalam">📸 צלם<small>מאט מעצרים — 400 נק'</small></button>
+        <div class="oppToolsTitle" id="oppToolsTitle">✊ כלי המחנה השני</div>
+        <button class="tool oTool" id="oDrums" style="display:none">🥁 תופים<small>הקפאה — 50 נק'</small></button>
+        <button class="tool oTool" id="oYamshit" style="display:none">🚐 יועמשית<small>עיכוב — 500 נק'</small></button>
+        <button class="tool oTool" id="oEla" style="display:none">🪧 אלה<small>סילוק — 200 נק'</small></button>
+        <button class="tool oTool" id="oHome" style="display:none">🏠 תחזירו אותם הביתה עכשיו<small>תגבורת — 500 נק'</small></button>
+        <button class="tool oTool" id="oBullies" style="display:none">💪 בריונים<small>5 חרדים ל־5 שניות — 100 נק'</small></button>
       </div>
     </div>
     <button class="tool pTool" id="pCruiser" style="display:none">🚔 ניידת<small>3 שוטרים — 300</small></button>
@@ -3168,6 +3175,71 @@ function ptDet(){
 /* =========================================================================
    כלים מיוחדים
    ========================================================================= */
+function activeCopWithin(x,z,r){
+  const rr=r*r;
+  return G.cops.some(c=>c.frozenT<=0 && dist2(c.obj.position.x,c.obj.position.z,x,z)<=rr);
+}
+function freezeFaction(faction,seconds){
+  for(const p of G.peeps){
+    if(p.faction===faction && !['hit','flee','dragged'].includes(p.state)) p.frozenT=Math.max(p.frozenT||0,seconds);
+  }
+}
+function toolOppDrums(){
+  if(G.side!=='opposition'||G.score<50||G.oppDrumT>0) return;
+  addScore(-50); G.oppDrumT=5; freezeFaction('haredi',5);
+  for(const c of G.cops) if(c.frozenT<=0) c.frozenT=Math.max(c.frozenT,5);
+  newsFlash('🥁 התופים נשמעים — כוחות המשטרה והמפגינים החרדים נעצרו לרגע');
+  toast('תופים! המשטרה והמפגינים החרדים מעוכבים ל־5 שניות','good');
+}
+function toolOppYamshit(){
+  if(G.side!=='opposition'||G.score<500||G.oppYamshitT>0) return;
+  addScore(-500); G.oppYamshitT=10; freezeFaction('haredi',10);
+  for(const c of G.cops) if(c.frozenT<=0) c.frozenT=Math.max(c.frozenT,2);
+  newsFlash('🚐 היועמשית הגיעה — החרדים והמשטרה מתעכבים');
+  toast('יועמשית! חרדים 10 שניות, משטרה 2 שניות','good');
+}
+function toolOppEla(){
+  if(G.side!=='opposition'||G.score<200||G.oppElaT>0) return;
+  const target=G.peeps.filter(p=>p.faction==='haredi'&&!['hit','flee','dragged','recover'].includes(p.state))
+    .sort((a,b)=>dist2(a.obj.position.x,a.obj.position.z,0,0)-dist2(b.obj.position.x,b.obj.position.z,0,0))[0];
+  if(!target) return;
+  addScore(-200); G.oppElaT=3;
+  const copNear=activeCopWithin(target.obj.position.x,target.obj.position.z,10);
+  removePeep(target);
+  if(copNear){
+    const opp=G.peeps.filter(p=>p.faction==='opposition'&&!['hit','flee','dragged','recover'].includes(p.state))
+      .sort((a,b)=>dist2(a.obj.position.x,a.obj.position.z,target.obj.position.x,target.obj.position.z)-dist2(b.obj.position.x,b.obj.position.z,target.obj.position.x,target.obj.position.z))[0];
+    if(opp) removePeep(opp);
+  }
+  newsFlash(copNear?'🪧 האלה פעלה — מפגין מכל צד יצא מהמשחק':'🪧 האלה פעלה — המפגין החרדי הקרוב ביותר יצא מהמשחק');
+  toast(copNear?'אלה! יצא מפגין מכל מחנה':'אלה! המפגין החרדי הקרוב ביותר יצא מהמשחק','good');
+}
+function toolOppHome(){
+  if(G.side!=='opposition'||G.score<500||G.oppHomeT>0||G.peeps.length>=MAXPEEPS) return;
+  addScore(-500); G.oppHomeT=8;
+  let added=0; const rid=G.runId;
+  for(let i=0;i<10;i++){
+    gameTimeout(()=>{
+      if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
+      const al=pick(G.alleys);
+      const p=mkPeep(pick(['bochur','avrech','askan']),al.x+rnd(-2,2),al.z+rnd(-1,1),'opposition');
+      p.ai=false; p.target=null; p.state='idle'; added++;
+      say(p.obj,'הגענו!',1.4);
+    },i*180);
+  }
+  newsFlash('🏠 "תחזירו אותם הביתה עכשיו!" — תגבורת של 10 מפגינים הגיעה');
+  toast('עוד 10 מפגינים מהמחנה השני בדרך!','good');
+}
+function toolOppBullies(){
+  if(G.side!=='opposition'||G.score<100||G.oppBulliesT>0) return;
+  const targets=G.peeps.filter(p=>p.faction==='haredi'&&!['hit','flee','dragged','recover'].includes(p.state))
+    .sort(()=>Math.random()-.5).slice(0,5);
+  if(!targets.length) return;
+  addScore(-100); G.oppBulliesT=5;
+  targets.forEach(p=>{ detach(p); p.state='recover'; p.recoverT=5; p.target=null; });
+  newsFlash('💪 הבריונים הגיעו — חמישה מפגינים חרדים יצאו להפסקה קצרה');
+  toast('5 מפגינים חרדים הוצאו מההפגנה ל־5 שניות','good');
+}
 function toolPashkevil(){
   if(G.score<500||G.peeps.length>=MAXPEEPS) return;
   addScore(-500);
@@ -3851,6 +3923,9 @@ function startStage(i){
     // מיתוג ממשק לפי צד
     const pol=G.side==='police';
     $('toolsBtn').parentElement.style.display=pol?'none':'';
+    const isOpp=G.side==='opposition';
+    document.querySelectorAll('.oTool').forEach(b=>{ b.style.display=isOpp?'':'none'; });
+    $('oppToolsTitle').style.display=isOpp?'':'none';
     $('tLie').style.display=pol?'none':'';
     $('tStand').style.display=pol?'none':'';
     document.querySelectorAll('.pTool').forEach(b=>{ b.style.display=pol?'':'none'; });
@@ -3862,6 +3937,7 @@ function startStage(i){
     $('selModeBtn').style.display=pol?'none':(('ontouchstart' in window)?'block':'none');
     G.pw=pol?{idx:0,timer:PWAVES[0].delay,winT:0,aiT:0,overT:0,warned:false}:null;
     G.rally=null; G._rallyTip=false;
+    G.oppDrumT=0; G.oppYamshitT=0; G.oppElaT=0; G.oppHomeT=0; G.oppBulliesT=0;
     G.rallyFlag=null;                 // הישן נהרס עם ה-dyn הקודם ב-clearWorld
     G.towBusy=false; G.busBusy=false; G.megCD=0; G.lastMoveX=null;
     if(pol){ PTR.selectMode=false; $('selModeBtn').classList.remove('on'); }
@@ -4115,6 +4191,11 @@ function wireUI(){
   $('pDet').onclick=ptDet;
   $('tBus').onclick=toolBus;
   $('tZalam').onclick=()=>toolSummon('zalam');
+  $('oDrums').onclick=toolOppDrums;
+  $('oYamshit').onclick=toolOppYamshit;
+  $('oEla').onclick=toolOppEla;
+  $('oHome').onclick=toolOppHome;
+  $('oBullies').onclick=toolOppBullies;
   // עוצמת קול — נגרר בתפריט ההפסקה, נשמר בהעדפות
   $('volSlider').oninput=e=>{ setVolume(+e.target.value/100); savePrefs(); };
   // קליק על המיני-מפה מקפיץ את המצלמה לנקודה
