@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#25314a"/>
+      <stop offset="1" stop-color="#101522"/>
+    </linearGradient>
+    <linearGradient id="jacket" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#596274"/>
+      <stop offset="1" stop-color="#303847"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <circle cx="256" cy="142" r="72" fill="#d8b092"/>
+  <path d="M184 139c5-66 35-94 73-94 43 0 72 32 74 95-24-22-49-31-76-30-25 1-49 11-71 29z" fill="#5b463d"/>
+  <path d="M180 147c8-31 31-52 74-55 42 3 64 24 77 55-7 11-17 20-29 26-13-14-29-22-48-22-20 0-38 8-50 22-11-6-19-14-24-26z" fill="#4a3934"/>
+  <circle cx="230" cy="148" r="7" fill="#222"/>
+  <circle cx="282" cy="148" r="7" fill="#222"/>
+  <path d="M235 181c14 10 29 10 43 0" fill="none" stroke="#7d4e49" stroke-width="6" stroke-linecap="round"/>
+  <path d="M164 266c20-47 57-68 92-68s72 21 92 68l42 154H122z" fill="url(#jacket)"/>
+  <path d="M217 218l39 56 39-56" fill="#e7e1d7"/>
+  <path d="M244 274h24v112h-24z" fill="#263041"/>
+  <path d="M185 279l-34 127M327 279l34 127" stroke="#202733" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="113" cy="218" r="37" fill="#e7c34e"/>
+  <path d="M94 218h38M113 199v38" stroke="#263041" stroke-width="8" stroke-linecap="round"/>
+  <path d="M76 430h360" stroke="#e7c34e" stroke-width="12" stroke-linecap="round"/>
+  <text x="256" y="474" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" font-weight="800" fill="#fff">OPPOSITION</text>
+</svg>
