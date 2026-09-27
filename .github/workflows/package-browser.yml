@@ -1,0 +1,53 @@
+name: Package Browser Version
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'launcher.html'
+      - 'index.html'
+      - 'three.min.js'
+      - 'fonts.css'
+      - 'fonts/**'
+      - 'manifest.json'
+      - 'privacy.html'
+      - 'sw.js'
+      - 'intro.mp4'
+      - 'cops.mp4'
+      - 'icon-*.png'
+      - 'og.jpg'
+      - '.github/workflows/package-browser.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare browser package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf browser-dist
+          mkdir -p browser-dist/fonts
+          cp launcher.html index.html three.min.js fonts.css manifest.json privacy.html sw.js intro.mp4 cops.mp4 icon-192.png icon-512.png icon-512-maskable.png browser-dist/
+          if [ -f og.jpg ]; then cp og.jpg browser-dist/; fi
+          cp -r fonts/. browser-dist/fonts/
+
+      - name: Create ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd browser-dist
+          zip -qr ../HosmimEtHatzir-Browser.zip .
+
+      - name: Upload browser ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: HosmimEtHatzir-Browser
+          path: HosmimEtHatzir-Browser.zip
+          retention-days: 30
