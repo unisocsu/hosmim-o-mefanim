@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           rm -rf browser-dist
           mkdir -p browser-dist/fonts
-          cp launcher.html index.html three.min.js fonts.css manifest.json privacy.html sw.js intro.mp4 cops.mp4 icon-192.png icon-512.png icon-512-maskable.png browser-dist/
+          cp launcher.html הפעלה.html index.html three.min.js fonts.css manifest.json privacy.html sw.js intro.mp4 cops.mp4 icon-192.png icon-512.png icon-512-maskable.png browser-dist/
           if [ -f og.jpg ]; then cp og.jpg browser-dist/; fi
           cp -r fonts/. browser-dist/fonts/
 
