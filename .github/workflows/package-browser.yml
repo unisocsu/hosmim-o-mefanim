@@ -1,4 +1,5 @@
 name: Package Browser Version
+# Rebuild browser package with latest game tools
 
 on:
   workflow_dispatch:
