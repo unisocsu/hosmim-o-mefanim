@@ -1,16 +1,4201 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#171221">
-  <title>חוסמים את הציר</title>
-  <style>
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#171221}
-    iframe{display:block;border:0;width:100%;height:100%}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>חוסמים את הציר — סימולטור הפגנות</title>
+<meta name="description" content="בנו מחסומים, הציבו אברכים, וחסמו את הציר! משחק אסטרטגיה סאטירי בזמן אמת — הפלג הירושלמי.">
+<!-- PWA / אפליקציה -->
+<meta name="theme-color" content="#15122b">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="חוסמים את הציר">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<!-- תצוגת קישור (וואטסאפ/פייסבוק/טוויטר) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="חוסמים את הצירים — או מפנים אותם">
+<meta property="og:url" content="https://beniabot.github.io/hosmim-o-mefanim/">
+<meta property="og:title" content="חוסמים את הציר — סימולטור הפגנות">
+<meta property="og:description" content="בנו מחסומים, הציבו אברכים, וחסמו את הציר! משחק אסטרטגיה סאטירי בזמן אמת — הפלג הירושלמי.">
+<meta property="og:image" content="https://beniabot.github.io/hosmim-o-mefanim/og.jpg?v=1">
+<meta property="og:image:secure_url" content="https://beniabot.github.io/hosmim-o-mefanim/og.jpg?v=1">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="מפגיני הפלג הירושלמי חוסמים את הציר">
+<meta property="og:locale" content="he_IL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="חוסמים את הציר — סימולטור הפגנות">
+<meta name="twitter:description" content="בנו מחסומים, הציבו אברכים, וחסמו את הציר!">
+<meta name="twitter:image" content="https://beniabot.github.io/hosmim-o-mefanim/og.jpg?v=1">
+<script src="three.min.js"></script>
+<link href="fonts.css" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3ecd8; --ink:#161310; --gold:#c9a227; --red:#c0392b; --green:#1d7a46;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#1a1626;
+    font-family:"Heebo","Segoe UI",Arial,sans-serif;direction:rtl;user-select:none}
+  #c{position:fixed;inset:0;display:block;touch-action:none}
+  .scr{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 30%,#3a3050 0%,#171221 70%)}
+  .hidden{display:none !important}
+
+  /* ---------- פשקוויל / נייר ---------- */
+  .paper{background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 2px, transparent 2px 4px),
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.5), transparent 60%),
+      var(--paper);
+    color:var(--ink); border:4px solid var(--ink); outline:2px solid var(--ink); outline-offset:4px;
+    box-shadow:0 24px 70px rgba(0,0,0,.65); padding:26px 30px; max-width:640px; width:92%;
+    max-height:92%; overflow-y:auto; text-align:center; position:relative}
+  .paper::before{content:"בס\"ד"; position:absolute; top:8px; right:14px; font-size:13px; font-weight:700}
+  h1.logo{font-family:"Frank Ruhl Libre","David Libre","Times New Roman",serif;
+    font-weight:900; font-size:clamp(34px,8vw,62px); line-height:1.02; letter-spacing:-1px;
+    border-bottom:5px double var(--ink); padding-bottom:10px; margin-bottom:6px}
+  .sub{font-family:"Frank Ruhl Libre",serif; font-size:clamp(14px,3vw,19px); font-weight:700; margin-bottom:14px}
+  .kol{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:clamp(18px,4vw,26px);margin:6px 0 2px}
+  .btn{display:block;width:100%;margin:9px auto;padding:13px 18px;cursor:pointer;
+    font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:clamp(17px,4vw,24px);
+    background:var(--ink);color:var(--paper);border:none;border-radius:3px;
+    box-shadow:3px 3px 0 rgba(0,0,0,.35);transition:transform .08s}
+  .btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(1px)}
+.siderow{display:flex;gap:8px;flex-wrap:wrap}
+  .siderow .btn{margin:5px 0;flex:1;min-width:30%;font-size:clamp(14px,3vw,19px);opacity:.5}
+  .siderow .btn.active{opacity:1;box-shadow:0 0 0 3px var(--ink),3px 3px 0 rgba(0,0,0,.35)}
+  .maprow .btn{opacity:.55}
+  .maprow .btn.active{opacity:1;box-shadow:0 0 0 3px var(--ink),3px 3px 0 rgba(0,0,0,.35)}
+  .btn.sec{background:transparent;color:var(--ink);border:3px solid var(--ink);box-shadow:none;font-size:18px;padding:9px}
+  .maprow{display:flex;gap:8px;margin-top:4px}
+  .maprow .btn{font-size:15px;padding:9px 4px;margin:0;flex:1}
+  .note{font-size:12.5px;margin-top:12px;opacity:.75;line-height:1.5}
+
+  /* ---------- טוען ---------- */
+  #loading .paper{text-align:center}
+  .spin{width:46px;height:46px;border:5px solid var(--ink);border-top-color:transparent;border-radius:50%;
+    margin:14px auto;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* ---------- הוראות ---------- */
+  #howto .paper{text-align:right;font-size:15px;line-height:1.75}
+  #howto h3{font-family:"Frank Ruhl Libre",serif;border-bottom:2px solid var(--ink);margin:12px 0 4px;font-size:19px}
+  #howto td{padding:3px 6px;border-bottom:1px solid rgba(0,0,0,.15)}
+  #howto table{width:100%;border-collapse:collapse;font-size:14px}
+
+  /* ---------- HUD ---------- */
+  #hud{position:fixed;inset:0;z-index:20;pointer-events:none;display:none}
+  .chip{background:rgba(12,10,20,.78);color:#fff;border:1px solid rgba(255,255,255,.22);
+    border-radius:10px;padding:6px 12px;backdrop-filter:blur(3px);font-size:14px}
+  #ticker{position:fixed;top:0;right:0;left:0;height:34px;background:linear-gradient(180deg,#9d1f1f,#7c1414);
+    color:#fff;display:flex;align-items:center;font-weight:700;font-size:14.5px;z-index:21;
+    border-bottom:2px solid #ffffff44;overflow:hidden;white-space:nowrap}
+  #ticker .dot{margin:0 10px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:.15}}
+  #tickerText{transition:opacity .4s}
+  #topRight{position:fixed;top:42px;right:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  #score{font-size:26px;font-weight:900;color:#ffd966}
+  #topLeft{position:fixed;top:42px;left:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+  #jam{font-size:22px;font-weight:900;color:#ff9b66}
+  #jam b{font-size:30px;color:#ffce8a}
+  #topCenter{position:fixed;top:42px;right:50%;transform:translateX(50%);text-align:center;display:flex;flex-direction:column;gap:5px;align-items:center}
+  #waveName{color:#9ad0ff;font-weight:700}
+  #tankWrap{display:none;min-width:190px}
+  #tankWrap .bar{height:12px;border-radius:6px;background:#222;overflow:hidden;border:1px solid #fff5;margin-top:4px}
+  #tankBar{height:100%;width:100%;background:linear-gradient(90deg,#7fd4ff,#1e90ff);transition:width .3s linear}
+  #toolbar{position:fixed;bottom:10px;right:50%;transform:translateX(50%);display:flex;gap:7px;flex-wrap:wrap;
+    justify-content:center;pointer-events:auto;max-width:98vw}
+  .tool{background:rgba(12,10,20,.85);color:#fff;border:2px solid #ffffff3a;border-radius:12px;
+    padding:8px 11px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:center;min-width:74px;font-family:inherit}
+  .tool small{display:block;font-weight:400;font-size:10.5px;color:#ffd966}
+  .tool:disabled{opacity:.38;cursor:default}
+  .tool.warn{border-color:#ff8866}
+  /* תפריט כלים נפתח */
+  .toolWrap{position:relative;display:inline-block}
+  #toolsBtn{border-color:#ffd96688;background:rgba(44,32,74,.92)}
+  .toolPop{position:absolute;bottom:calc(100% + 8px);right:50%;transform:translateX(50%);
+    display:flex;flex-direction:column;gap:6px;background:rgba(16,12,30,.97);padding:9px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 34px rgba(0,0,0,.55);z-index:45;min-width:196px;max-width:92vw}
+  .toolPop.hidden{display:none}
+  .toolPop .tool{min-width:176px;text-align:right}
+  #camBtns{position:fixed;bottom:10px;left:10px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+  #camBtns .tool{min-width:0;padding:7px 9px;font-size:12.5px}
+  #selInfo{position:fixed;bottom:88px;right:50%;transform:translateX(50%);display:none;pointer-events:none}
+  #minimap{position:fixed;top:42px;left:10px;z-index:22;border:2px solid rgba(255,255,255,.3);border-radius:6px;
+    background:rgba(10,8,20,.75);pointer-events:auto;cursor:pointer;display:none}
+  #pauseOv{position:fixed;inset:0;z-index:70;background:rgba(10,8,20,.62);display:flex;align-items:center;justify-content:center}
+  #pauseOv.hidden{display:none}
+  .budgetFlash{animation:bPulse .55s}
+  @keyframes bPulse{40%{transform:scale(1.22)}100%{transform:scale(1)}}
+  #selModeBtn{position:fixed;bottom:10px;right:10px;pointer-events:auto;display:none}
+  #selModeBtn.on{background:#1d7a46;border-color:#9fe3bb}
+  #toast{position:fixed;top:120px;right:50%;transform:translateX(50%);z-index:30;pointer-events:none;
+    font-size:18px;font-weight:900;color:#fff;background:rgba(160,30,30,.92);border-radius:12px;
+    padding:10px 22px;opacity:0;transition:opacity .3s;text-align:center;max-width:90vw}
+  #toast.good{background:rgba(22,110,60,.92)}
+  #selrect{position:fixed;border:2px solid #35e08a;background:rgba(53,224,138,.15);z-index:25;display:none;pointer-events:none}
+
+  /* ---------- סיכום / היכל ---------- */
+  #fameTable{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:10px}
+  #fameTable th{border-bottom:3px double var(--ink);padding:4px;font-family:"Frank Ruhl Libre",serif}
+  #fameTable td{padding:4px 6px;border-bottom:1px solid rgba(0,0,0,.18)}
+  #fameTable tr.gold td{background:linear-gradient(90deg,#f7e7b1,#fdf6dd);font-weight:900}
+  .sumGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;text-align:center}
+  .sumGrid .cell{border:2px solid var(--ink);border-radius:6px;padding:10px 6px}
+  .cell b{display:block;font-size:26px;font-family:"Frank Ruhl Libre",serif}
+  .cell span{font-size:13px}
+  #nameIn{width:100%;padding:12px;font-size:20px;text-align:center;border:3px solid var(--ink);
+    border-radius:4px;font-family:"Frank Ruhl Libre",serif;font-weight:900;background:#fffdf4;direction:rtl}
+  /* ---------- הבחור הכועס ---------- */
+  .angryWrap{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:4px}
+  .angryCol{display:flex;flex-direction:column;align-items:center;flex:0 0 auto}
+  .angryGuy{width:clamp(88px,23vw,124px);height:auto;display:block;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.22))}
+  .angryTxt{flex:1;text-align:center;min-width:0}
+  .angryBubble{background:#fff;border:2.5px solid #15130f;border-radius:11px;padding:3px 9px;
+    font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:13.5px;color:#b3221e;
+    position:relative;margin-bottom:9px;white-space:nowrap;box-shadow:2px 2px 0 rgba(0,0,0,.2)}
+  .angryBubble::after{content:"";position:absolute;bottom:-9px;right:22px;border:7px solid transparent;border-top-color:#15130f}
+  .angryBubble::before{content:"";position:absolute;bottom:-5px;right:24px;border:5px solid transparent;border-top-color:#fff;z-index:1}
+  .confetti{position:fixed;top:-20px;font-size:22px;z-index:60;animation:fall linear forwards;pointer-events:none}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  @media (max-width:640px){
+    .chip{font-size:12px;padding:5px 9px}
+    #ticker{font-size:12px;height:30px}
+    #score{font-size:20px} #topRight{top:34px;right:5px}
+    #jam{font-size:15px} #jam b{font-size:20px} #topLeft{top:34px;left:5px;max-width:38vw}
+    #trainBonus{font-size:10.5px;line-height:1.2}
+    #peepCount{font-size:11px}
+    /* מד השלב — נשאר במרכז, רוחב מוגבל, טקסט נגלל */
+    #topCenter{top:34px;max-width:48vw;gap:3px}
+    #timer{font-size:14px;padding:3px 10px}
+    #waveName{font-size:11px;white-space:normal;line-height:1.25;padding:4px 9px}
+    #tankWrap{min-width:0;width:46vw}
+    #tankLabel{font-size:10px}
+    .tool{min-width:56px;padding:6px 7px;font-size:11px}
+    .tool small{font-size:9.5px}
+    /* כפתורי מצלמה — עמודה אנכית בצד שמאל מתחת לפקק (לא על מד השלב) */
+    #camBtns{flex-direction:column;left:5px;right:auto;bottom:auto;top:106px;gap:5px}
+    #camBtns .tool{min-width:0;font-size:10.5px;padding:5px 8px}
+    #selModeBtn{bottom:auto;top:106px;right:5px}
+    #selInfo{bottom:auto;top:152px}
+    #toolbar{gap:5px;bottom:6px;max-width:99vw}
+    #minimap{display:none !important}   /* במובייל אין מקום — מתנגש בכפתורי המצלמה */
+  }
+</style>
 </head>
 <body>
-  <iframe src="index.html" title="חוסמים את הציר"></iframe>
+
+<!-- ======== מסך טוען ======== -->
+<div id="loading" class="scr">
+  <div class="paper" style="max-width:420px">
+    <h1 class="logo">חוסמים את הציר</h1>
+    <div class="sub">בונים מחסומים, מציבים אברכים...</div>
+    <div class="spin"></div>
+    <div id="loadMsg" style="font-weight:700">טוען את הצומת...</div>
+  </div>
+</div>
+
+<!-- ======== תפריט ראשי ======== -->
+<div id="menu" class="scr hidden">
+  <div class="paper">
+    <div class="kol">קול קורא!!!</div>
+    <h1 class="logo">חוסמים את הציר</h1>
+    <div class="sub">סימולטור הפגנות &middot; צאו והגנו על כבוד שמיים בצמתים המרכזיים</div>
+    <div class="siderow">
+      <button class="btn sec sideBtn active" data-side="peeps">🎩 מפגינים חרדים</button>
+      <button class="btn sec sideBtn" data-side="opposition">✊ מפגיני המחנה השני</button>
+      <button class="btn sec sideBtn" data-side="police">🚔 משטרה</button>
+    </div>
+    <button class="btn" id="btnStart">התחל הפגנה</button>
+    <div class="maprow">
+      <button class="btn sec mapBtn active" data-map="0">צומת בר אילן</button>
+      <button class="btn sec mapBtn" data-map="1">כביש 4</button>
+      <button class="btn sec mapBtn" data-map="2">גשר המיתרים</button>
+    </div>
+    <button class="btn sec" id="btnFame" style="margin-top:14px">היכל התהילה</button>
+    <button class="btn sec" id="btnHow">הוראות</button>
+    <div class="note">משחק סאטירי. בלי אלימות גרפית. הזהירות קודמת לכל — מי שנכנס לכביש מול רכב קרוב, נפצע ומוריד נקודות!</div>
+  </div>
+</div>
+
+<!-- ======== הוראות ======== -->
+<div id="howto" class="scr hidden">
+  <div class="paper">
+    <h1 class="logo" style="font-size:34px">הוראות ההפגנה</h1>
+    <h3>שליטה (מחשב)</h3>
+    <table>
+      <tr><td><b>גרירת עכבר שמאלי</b></td><td>ריבוע בחירה — בוחר את כל המפגינים שבתוכו</td></tr>
+      <tr><td><b>קליק על הכביש</b></td><td>הנבחרים רצים לשם וחוסמים (ירוק = בטוח, אדום = מסוכן!)</td></tr>
+      <tr><td><b>קליק על רכב עומד</b></td><td>הנבחרים נצמדים לרכב — שוטרים לא מצליחים לפנות אותם</td></tr>
+      <tr><td><b>דאבל־קליק / כפתור שכיבה</b></td><td>שכיבה על הכביש — פינוי לוקח פי 2 זמן</td></tr>
+      <tr><td><b>קליק ימני + גרירה</b></td><td>הזזת מצלמה</td></tr>
+      <tr><td><b>גלגלת / Alt+גרירה</b></td><td>זום / סיבוב מצלמה</td></tr>
+    </table>
+    <h3>מקלדת (מחשב)</h3>
+    <table>
+      <tr><td><b>חיצים / WASD</b></td><td>הזזת מצלמה · Q/E סיבוב · ‎+/-‎ זום</td></tr>
+      <tr><td><b>רווח / P / Esc</b></td><td>הפסקה (Esc קודם מנקה בחירה)</td></tr>
+      <tr><td><b>ספרות 1–7</b></td><td>הפעלת הכלים לפי סדרם · L שכיבה · K קימה · M השתקה</td></tr>
+      <tr><td><b>Tab / F11</b></td><td>מיני-מפה / מסך מלא</td></tr>
+    </table>
+    <h3>שליטה (מגע)</h3>
+    <table>
+      <tr><td><b>אצבע אחת</b></td><td>סיבוב מצלמה (או בחירה — במצב בחירה)</td></tr>
+      <tr><td><b>צביטה / שתי אצבעות</b></td><td>זום / הזזה</td></tr>
+      <tr><td><b>כפתור "מצב בחירה"</b></td><td>גרירה בוחרת מפגינים, הקשה נותנת פקודה</td></tr>
+    </table>
+    <h3>היחידות</h3>
+    <table>
+      <tr><td><b>בחור ישיבה</b></td><td>מהיר וזריז, אבל בורח ראשון מהמים</td></tr>
+      <tr><td><b>אברך ותיק</b></td><td>עוגן החסימה — פי 3 זמן לפנות, עמיד למים רגילים</td></tr>
+      <tr><td><b>עסקן עם פלאפון</b></td><td>"יש לי אישור!" — מנטרל שוטר לוויכוח של 15 שניות</td></tr>
+      <tr><td><b>📸 צלם</b></td><td>הילת תקשורת — שוטרים לידו תופסים וגוררים לאט בהרבה (עד 2 בשטח)</td></tr>
+    </table>
+    <h3>ההסלמה</h3>
+    נהגים זועמים ← משטרה ← פרשים ← מכת"זית (מים ← מים כחולים ← בואש).
+    שימו לב למד המיכל: כשהמכת"זית מתמלאת — חלון זהב לחזור לכביש!
+    <h3>ניקוד</h3>
+    +10 לשנייה על כל רכב תקוע &middot; ‎+100‎ לכל מפגין ששרד &middot; ‎-200‎ על נפגע &middot; ‎-20‎ על בורח.
+    <h3>🚔 צד המשטרה</h3>
+    בוחרים "צד המשטרה" בתפריט: המפגינים מגיעים בגלים אוטומטיים, ואתם מנהלים את
+    הפינוי מהתקציב — ניידת (300), פרשים (500), מגפון פיזור (250), גרר לרכב עם
+    צמודים (600) ומכת"זית (1500). קליק על הכביש מציב דגל ריכוז שהשוטרים
+    מתעדפים. ניקוד: פינוי ‎+60‎ (חוזר — ‎+30‎, ובפעם השנייה המפגין נשבר והולך)
+    &middot; הברחה במים ‎+30‎ &middot; ציר פתוח ‎+10‎/ש' &middot; נפגע מרכב ‎-200‎.
+    זהירות: 6+ מפגינים על הכביש 90 שניות ברציפות — הצומת אבוד והמבצע נכשל!
+    ולקראת גל 3 — ביקורת המפכ"ל: ציר פתוח = בונוס משולש.
+    <b>פיקוד ישיר:</b> גררו מלבן לבחירת שוטרים וקליק על הכביש שולח אותם לשם;
+    בלי בחירה — הקליק מציב דגל ריכוז שגם המכת"זית מכוונת אליו ("ריכוז אש").
+    🕵 בלש סמוי (700) מסתנן מחופש ומבצע מעצר בזק בלב ההפגנה.
+    <button class="btn" id="btnHowBack" style="margin-top:14px">חזרה</button>
+  </div>
+</div>
+
+<!-- ======== היכל התהילה ======== -->
+<div id="fameScr" class="scr hidden">
+  <div class="paper">
+    <h1 class="logo" style="font-size:36px">היכל התהילה</h1>
+    <div class="sub">גדולי החוסמים לדורותיהם — מאה הגדולים</div>
+    <div id="fameBody" style="max-height:46vh;overflow-y:auto"></div>
+    <button class="btn" id="btnFameBack" style="margin-top:14px">חזרה</button>
+    <button class="btn sec" id="btnFameReset" style="margin-top:8px;font-size:16px">🗑 איפוס הספר</button>
+  </div>
+</div>
+
+<!-- ======== הזנת שם לשיא ======== -->
+<div id="entryScr" class="scr hidden">
+  <div class="paper" style="max-width:540px">
+    <div class="angryWrap">
+      <div class="angryCol">
+        <div class="angryBubble">המקום הזה שלי!!</div>
+        <svg class="angryGuy" viewBox="0 0 200 270" xmlns="http://www.w3.org/2000/svg" aria-label="מפגין כועס">
+          <!-- סימני כעס -->
+          <g stroke="#d8342a" stroke-width="4.5" fill="none" stroke-linecap="round">
+            <path d="M38,52 q9,-7 18,0"/><path d="M47,43 q-7,9 0,18"/>
+            <path d="M170,66 q8,-6 16,0"/><path d="M178,58 q-6,8 0,16"/>
+          </g>
+          <!-- שלט מחאה -->
+          <g transform="rotate(-11 60 50)">
+            <rect x="30" y="58" width="5" height="86" rx="2" fill="#7a4b22"/>
+            <rect x="6" y="18" width="92" height="46" rx="3" fill="#f3ecd6" stroke="#15130f" stroke-width="3"/>
+            <text x="52" y="40" text-anchor="middle" font-family="serif" font-weight="900" font-size="21" fill="#b3221e">די!!!</text>
+            <text x="52" y="56" text-anchor="middle" font-family="serif" font-weight="700" font-size="11" fill="#15130f">לא נשתוק</text>
+          </g>
+          <!-- מעיל וכתפיים -->
+          <path d="M28,270 Q34,212 100,206 Q166,212 172,270 Z" fill="#14110d"/>
+          <path d="M84,214 L100,250 L104,216 Z" fill="#f6f1e4"/>
+          <path d="M116,214 L100,250 L96,216 Z" fill="#e7e0cf"/>
+          <path d="M88,196 H112 V214 Q100,222 88,214 Z" fill="#dca97e"/>
+          <!-- אגרוף מורם -->
+          <path d="M44,232 Q22,196 30,150 Q34,138 46,140 Q58,144 54,176 Q52,206 70,224 Z" fill="#14110d"/>
+          <circle cx="36" cy="139" r="15" fill="#f0cba3"/>
+          <g fill="#e6bd92"><circle cx="29" cy="134" r="3.3"/><circle cx="36" cy="132" r="3.3"/><circle cx="43" cy="134" r="3.3"/></g>
+          <path d="M24,140 q12,-9 24,0" stroke="#cf9a6a" stroke-width="2" fill="none"/>
+          <!-- פנים -->
+          <ellipse cx="106" cy="112" rx="46" ry="54" fill="#f0cba3"/>
+          <path d="M62,82 Q106,98 150,82 Q150,93 106,95 Q62,93 62,82 Z" fill="#d9ab7d" opacity="0.55"/>
+          <!-- זקן ג'ינג'י -->
+          <path d="M60,102 Q55,182 90,212 Q105,230 106,230 Q108,230 122,212 Q158,182 152,102 Q140,124 106,124 Q72,124 60,102 Z" fill="#c4641f"/>
+          <g stroke="#a84e15" stroke-width="2" fill="none" opacity="0.5" stroke-linecap="round">
+            <path d="M74,142 Q78,172 88,196"/><path d="M106,152 V202"/><path d="M138,142 Q134,172 124,196"/>
+            <path d="M64,120 Q70,152 80,178"/><path d="M148,120 Q142,152 132,178"/>
+          </g>
+          <!-- שפם -->
+          <path d="M82,118 Q98,110 106,122 Q114,110 130,118 Q120,132 106,126 Q92,132 82,118 Z" fill="#b85a1c"/>
+          <!-- פה צועק -->
+          <path d="M94,128 Q106,122 118,128 Q116,152 106,154 Q96,152 94,128 Z" fill="#7d2018"/>
+          <path d="M96,129 Q106,125 116,129 L115,135 Q106,132 97,135 Z" fill="#fbf7ee"/>
+          <ellipse cx="106" cy="148" rx="6" ry="4" fill="#c0392b"/>
+          <!-- פאות -->
+          <path d="M62,94 Q48,120 56,146 Q48,154 58,164" stroke="#b85a1c" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <path d="M150,94 Q164,120 156,146 Q164,154 154,164" stroke="#b85a1c" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <!-- אף -->
+          <path d="M106,100 Q102,118 100,122 Q106,126 112,122 Q110,118 106,100 Z" fill="#e3b489"/>
+          <!-- גבות זועמות -->
+          <path d="M70,86 L100,96 L98,102 L70,92 Z" fill="#a84e15"/>
+          <path d="M142,86 L112,96 L114,102 L142,92 Z" fill="#a84e15"/>
+          <!-- משקפיים -->
+          <g fill="#cfe0e8" fill-opacity="0.45" stroke="#161616" stroke-width="4">
+            <circle cx="88" cy="106" r="15"/><circle cx="124" cy="106" r="15"/>
+          </g>
+          <path d="M103,104 Q106,102 109,104" stroke="#161616" stroke-width="4" fill="none"/>
+          <path d="M73,104 L62,99" stroke="#161616" stroke-width="4"/>
+          <path d="M139,104 L150,99" stroke="#161616" stroke-width="4"/>
+          <!-- עיניים זועפות -->
+          <g fill="#3a2415">
+            <path d="M82,103 Q88,99 94,103 L92,109 Q88,106 84,109 Z"/>
+            <path d="M118,103 Q124,99 130,103 L128,109 Q124,106 120,109 Z"/>
+          </g>
+          <!-- מגבעת -->
+          <ellipse cx="106" cy="72" rx="66" ry="12" fill="#15130f"/>
+          <path d="M40,72 Q106,58 172,72" stroke="#000" stroke-width="2" fill="none" opacity="0.5"/>
+          <path d="M78,72 Q75,28 90,22 L122,22 Q138,28 134,72 Z" fill="#1b1713"/>
+          <path d="M78,64 Q106,72 134,64 L134,72 Q106,78 78,72 Z" fill="#0a0807"/>
+          <path d="M88,28 Q86,48 90,66" stroke="#3a342c" stroke-width="3" fill="none" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="angryTxt">
+        <div class="kol">מזל טוב!!!</div>
+        <h1 class="logo" style="font-size:clamp(20px,5.2vw,28px)">נכנסת להיכל התהילה<br>של הפלג הירושלמי!</h1>
+      </div>
+    </div>
+    <div class="sub" id="entryRank"></div>
+    <input id="nameIn" maxlength="20" placeholder="הקלד את שמך (עד 20 תווים)">
+    <button class="btn" id="btnSaveName" style="margin-top:12px">חתום בספר הזהב</button>
+  </div>
+</div>
+
+<!-- ======== סיכום שלב ======== -->
+<div id="summary" class="scr hidden">
+  <div class="paper" style="max-width:520px">
+    <h1 class="logo" style="font-size:32px" id="sumTitle">ההפגנה הסתיימה</h1>
+    <div class="sub" id="sumSub"></div>
+    <div class="sumGrid">
+      <div class="cell"><b id="sumScore">0</b><span id="sumScoreL">ניקוד כולל</span></div>
+      <div class="cell"><b id="sumJam">0</b><span id="sumJamL">שיא אורך פקק (ק"מ)</span></div>
+      <div class="cell"><b id="sumTime">0:00</b><span id="sumTimeL">זמן חסימה</span></div>
+      <div class="cell"><b id="sumSurv">0</b><span id="sumSurvL">מפגינים ששרדו (‎+100‎)</span></div>
+      <div class="cell"><b id="sumInj">0</b><span>נפצעו מרכב (‎-200‎)</span></div>
+      <div class="cell"><b id="sumFled">0</b><span id="sumFledL">ברחו מהמים (‎-20‎)</span></div>
+    </div>
+    <button class="btn" id="btnNext">לשלב הבא</button>
+    <button class="btn sec" id="btnFinish">סיים ושמור בהיכל התהילה</button>
+  </div>
+</div>
+
+<!-- ======== HUD ======== -->
+<div id="hud">
+  <div id="ticker"><span class="dot">🔴</span><span id="tickerText">מבזק: מתיחות בצומת...</span></div>
+  <div id="topRight">
+    <div class="chip"><div id="score">0</div><div id="scoreLbl" style="font-size:11px;text-align:center">נקודות</div></div>
+    <div class="chip" id="peepCount" style="font-size:13px">מפגינים: 0</div>
+  </div>
+  <div id="topCenter">
+    <div class="chip" id="timer">0:00</div>
+    <div class="chip" id="waveName">שלב: התארגנות</div>
+    <div class="chip" id="tankWrap"><span id="tankLabel">מיכל המכת"זית — מים</span><div class="bar"><div id="tankBar"></div></div></div>
+  </div>
+  <div id="topLeft">
+    <div class="chip"><div id="jam">פקק: <b>0.0</b> ק"מ</div></div>
+    <div class="chip" id="trainBonus" style="display:none;color:#ff6b6b;font-weight:900">🚋 הרכבת הקלה נעצרה! בונוס ענק!</div>
+  </div>
+  <div id="toolbar">
+    <div class="toolWrap">
+      <button class="tool" id="toolsBtn">🧰 כלים ▾<small>כוחות · שופר · שקיות</small></button>
+      <div id="toolsPop" class="toolPop hidden">
+        <button class="tool" id="tPash">📜 פשקווילים<small>תגבורת — 500 נק'</small></button>
+        <button class="tool" id="tShofar">🐏 שופר<small>הקפאה — 1000 נק'</small></button>
+        <button class="tool" id="tBag">🛍 שקיות ניילון<small>הגנה ממכת"זית — 2000 נק'</small></button>
+        <button class="tool" id="tBochur">🎩 בחור ישיבה<small>זימון — 50 נק'</small></button>
+        <button class="tool" id="tAvrech">🧔 אברך ותיק<small>זימון — 150 נק'</small></button>
+        <button class="tool" id="tAskan">📱 עסקן<small>זימון — 250 נק'</small></button>
+        <button class="tool" id="tBus">🚌 הסעות מאורגנות<small>8 ישר ליעד — 800 נק'</small></button>
+        <button class="tool" id="tZalam">📸 צלם<small>מאט מעצרים — 400 נק'</small></button>
+      </div>
+    </div>
+    <button class="tool pTool" id="pCruiser" style="display:none">🚔 ניידת<small>3 שוטרים — 300</small></button>
+    <button class="tool pTool" id="pHorse" style="display:none">🐎 פרשים<small>זוג — 500</small></button>
+    <button class="tool pTool" id="pCannon" style="display:none">🚛 מכת"זית<small>אחת — 1500</small></button>
+    <button class="tool pTool" id="pTow" style="display:none">🪝 גרר<small>מפנה רכב צמוד — 600</small></button>
+    <button class="tool pTool" id="pMeg" style="display:none">📢 מגפון<small>פיזור אזורי — 250</small></button>
+    <button class="tool pTool" id="pDet" style="display:none">🕵 בלש סמוי<small>מעצר בזק — 700</small></button>
+    <button class="tool" id="tLie">🛏 שכיבה<small>לנבחרים</small></button>
+    <button class="tool" id="tStand">🧍 קימה<small>ושחרור מרכב</small></button>
+    <button class="tool warn" id="tEnd">🏁 סיום הפגנה<small>וסיכום</small></button>
+  </div>
+  <div id="camBtns">
+    <button class="tool" data-cam="top">🔭 מבט על</button>
+    <button class="tool" data-cam="street">🏘 מבט רחוב</button>
+    <button class="tool" data-cam="follow">🎯 מעקב אקשן</button>
+    <button class="tool" id="tMute">🔊 צליל</button>
+  </div>
+  <div id="selInfo" class="chip">נבחרו: 0</div>
+  <button class="tool" id="selModeBtn">☝ מצב בחירה</button>
+</div>
+<canvas id="minimap" width="230" height="76"></canvas>
+<!-- ======== הפסקה ======== -->
+<div id="pauseOv" class="hidden">
+  <div class="paper" style="max-width:390px">
+    <h1 class="logo" style="font-size:34px">הפסקה</h1>
+    <div class="sub">ההפגנה מחכה לך</div>
+    <button class="btn" id="pauseResume">המשך</button>
+    <button class="btn sec" id="pauseRestart">התחל את המפה מחדש</button>
+    <button class="btn sec" id="pauseQuit">יציאה לתפריט</button>
+    <div style="margin:8px 0 2px;font-weight:700">🔊 עוצמת צליל
+      <input type="range" id="volSlider" min="0" max="100" value="100"
+             style="width:62%;vertical-align:middle;direction:ltr"></div>
+    <div class="note">רווח/P/Esc — הפסקה · Tab — מיני-מפה (קליק עליה מזיז מצלמה) ·
+      חיצים/WASD — מצלמה · Q/E — סיבוב · ‎+/-‎ — זום · ספרות — כלים ·
+      Ctrl+A — לבחור הכל · L שכיבה · K קימה · M השתקה</div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="selrect"></div>
+<canvas id="c"></canvas>
+
+<script>
+/* =========================================================================
+   חוסמים את הציר — משחק RTS סאטירי בעברית
+   קובץ יחיד, Three.js r128
+   ========================================================================= */
+'use strict';
+// שומר סף: בלי three.js אין משחק — עדיף הודעה ברורה מספינר נצחי
+if(!window.THREE){
+  document.getElementById('loadMsg').textContent='שגיאה: ספריית התלת-ממד (three.min.js) לא נטענה. רעננו את הדף.';
+  throw new Error('THREE missing');
+}
+
+/* ---------------- כלי עזר ---------------- */
+const rnd=(a=1,b)=> b===undefined? Math.random()*a : a+Math.random()*(b-a);
+const irnd=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const dist2=(ax,az,bx,bz)=>{const dx=ax-bx,dz=az-bz;return dx*dx+dz*dz};
+const fmtTime=s=>{s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const $=id=>document.getElementById(id);
+
+/* ---------------- מצב גלובלי ---------------- */
+const G={
+  scene:null, camera:null, renderer:null, world:null, dyn:null,
+  peeps:[], cars:[], cops:[], horses:[], drivers:[], bubbles:[], fx:[],
+  cannon:null, train:null,
+  selected:new Set(), selCops:new Set(),
+  score:0, escTime:0, gameTime:0, jamPeak:0,
+  wave:0, stage:0, running:false,
+  shofarUsed:false, bagT:0, runovers:0, fled:0,
+  laneDefs:[], roadLen:200, roadHalfW:5, sidewalkZ:7,
+  spawnTimers:[], muted:false, totalBlockTime:0,
+  camMode:'top', followPt:new THREE.Vector3(),
+  side:'peeps',  // 'peeps' = מפגינים חרדים | 'opposition' = מפגיני המחנה השני | 'police' = משטרה
+  playerFaction:'haredi'
+};
+const MAPS=[
+  {name:'צומת בר אילן, ירושלים', speed:12, lanes:1, sign:'בר אילן'},
+  {name:'כביש 4, בני ברק',       speed:20, lanes:2, sign:'כביש 4'},
+  {name:'גשר המיתרים, ירושלים',  speed:15, lanes:1, sign:'שד׳ הרצל', tram:true}
+];
+
+/* =========================================================================
+   אודיו — Web Audio API, סינתזה בלבד
+   ========================================================================= */
+const AUDIO={
+  ctx:null, master:null, started:false, crowdGain:null, sprayNode:null, sirenT:null,
+  init(){
+    if(this.started) return;
+    try{
+      this.ctx=new (window.AudioContext||window.webkitAudioContext)();
+      this.master=this.ctx.createGain(); this.master.gain.value=0.5;
+      this.master.connect(this.ctx.destination);
+      this.started=true;
+      this.startCrowd();
+    }catch(e){}
+  },
+  resume(){ if(this.ctx&&this.ctx.state==='suspended') this.ctx.resume(); },
+  noiseBuf(){
+    if(this._nb) return this._nb;
+    const len=this.ctx.sampleRate*2, b=this.ctx.createBuffer(1,len,this.ctx.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    return this._nb=b;
+  },
+  env(t0,g,a,peak,dur){ g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(peak,t0+a);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur); },
+  tone(freq,dur,type='square',peak=.18,slideTo=null){
+    if(!this.started||G.muted) return;
+    const t=this.ctx.currentTime, o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    if(slideTo) o.frequency.linearRampToValueAtTime(slideTo,t+dur*.9);
+    this.env(t,g,.01,peak,dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+dur+.05);
+  },
+  horn(){ this.tone(pick([310,350,392,420]),rnd(.3,.8),'square',.12); },
+  ding(){ this.tone(880,.12,'sine',.15); this.tone(1320,.2,'sine',.1); },
+  oy(){ // "אוי!" קומי — שני טונים יורדים
+    this.tone(520,.18,'triangle',.25,300); setTimeout(()=>this.tone(380,.35,'triangle',.22,180),140);
+  },
+  thud(){ this.tone(90,.2,'sine',.3,40); },
+  shofar(){
+    if(!this.started||G.muted) return;
+    const t=this.ctx.currentTime, o=this.ctx.createOscillator(), g=this.ctx.createGain(), f=this.ctx.createBiquadFilter();
+    o.type='sawtooth'; f.type='lowpass'; f.frequency.value=900;
+    o.frequency.setValueAtTime(195,t); o.frequency.linearRampToValueAtTime(205,t+1.1);
+    o.frequency.setValueAtTime(390,t+1.15); o.frequency.linearRampToValueAtTime(400,t+2.6);
+    g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.4,t+.15);
+    g.gain.setValueAtTime(.4,t+2.3); g.gain.exponentialRampToValueAtTime(.0001,t+2.9);
+    o.connect(f); f.connect(g); g.connect(this.master); o.start(t); o.stop(t+3);
+  },
+  siren(on){
+    if(!this.started) return;
+    if(this.sirenT){ clearInterval(this.sirenT); this.sirenT=null; }
+    if(on&&!G.muted){
+      let hi=false;
+      this.sirenT=setInterval(()=>{ this.tone(hi?960:660,.42,'square',.05); hi=!hi; },450);
+      setTimeout(()=>{ if(this.sirenT){clearInterval(this.sirenT); this.sirenT=null;} },9000);
+    }
+  },
+  startCrowd(){
+    if(!this.started) return;
+    const src=this.ctx.createBufferSource(); src.buffer=this.noiseBuf(); src.loop=true;
+    const f=this.ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=420; f.Q.value=.6;
+    this.crowdGain=this.ctx.createGain(); this.crowdGain.gain.value=0;
+    src.connect(f); f.connect(this.crowdGain); this.crowdGain.connect(this.master); src.start();
+  },
+  setCrowd(n){ if(this.crowdGain) this.crowdGain.gain.linearRampToValueAtTime(G.muted?0:clamp(n*.004,0,.09),this.ctx.currentTime+.5); },
+  spray(on){
+    if(!this.started) return;
+    if(on&&!this.sprayNode&&!G.muted){
+      const src=this.ctx.createBufferSource(); src.buffer=this.noiseBuf(); src.loop=true;
+      const f=this.ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=1400;
+      const g=this.ctx.createGain(); g.gain.value=.06;
+      src.connect(f); f.connect(g); g.connect(this.master); src.start();
+      this.sprayNode={src,g};
+    }else if(!on&&this.sprayNode){
+      try{this.sprayNode.src.stop()}catch(e){}
+      this.sprayNode=null;
+    }
+  }
+};
+
+/* =========================================================================
+   מוזיקת רקע — הקלטה שמתנגנת בתחילת כל משחק
+   ========================================================================= */
+const BGM={
+  el:null, src:'intro.mp4',
+  init(){
+    if(this.el) return;
+    try{ this.el=new Audio(this.src); this.el.preload='auto'; this.el.volume=.55; }catch(e){}
+  },
+  play(){
+    this.init();
+    if(!this.el||G.muted) return;
+    try{ this.el.currentTime=0; const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+  },
+  resume(){   // המשך מהנקודה הנוכחית — לביטול השתקה, בלי להתחיל מההתחלה
+    this.init();
+    if(!this.el||G.muted) return;
+    try{ const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+  },
+  stop(){ if(this.el){ try{ this.el.pause(); }catch(e){} } }
+};
+
+/* סאונד שלב השוטרים — מתנגן כשמגיע גל המשטרה */
+const COPS={
+  el:null, src:'cops.mp4', primed:false,
+  init(){ if(this.el) return; try{ this.el=new Audio(this.src); this.el.preload='auto'; this.el.volume=.9; }catch(e){} },
+  prime(){ this.init(); if(!this.el||this.primed) return; this.primed=true;   // שחרור אודיו במובייל בתוך מחוות הלחיצה
+    try{ this.el.muted=true; const p=this.el.play(); if(p&&p.then) p.then(()=>{ try{this.el.pause(); this.el.currentTime=0; this.el.muted=false;}catch(e){} }).catch(()=>{ try{this.el.muted=false;}catch(e){} }); }catch(e){} },
+  play(){ this.init(); if(!this.el||G.muted) return; try{ this.el.muted=false; this.el.currentTime=0; const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} },
+  resume(){ if(!this.el||G.muted||this.el.ended) return; try{ const p=this.el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} },
+  stop(){ if(this.el){ try{ this.el.pause(); }catch(e){} } }
+};
+
+/* =========================================================================
+   שמירה — טבלת שיאים מקומית (localStorage בלבד, ללא רשת)
+   ========================================================================= */
+const Fame={
+  KEY:'hosmim-et-hatzir-hof', mem:[],
+  _cache(list){ this.mem=list.slice(); try{ localStorage.setItem(this.KEY,JSON.stringify(list)); }catch(e){} },
+  _local(){
+    try{ const s=localStorage.getItem(this.KEY); if(s){ const p=JSON.parse(s); if(Array.isArray(p)) return p; } }catch(e){}
+    return this.mem.slice();
+  },
+  async load(){
+    return this._local();
+  },
+  async submit(name,score){
+    score=Math.max(0,Math.round(score)||0);
+    const entry={name:String(name).slice(0,20)||'אלמוני',score};
+    const list=this._local();
+    list.push({...entry,date:new Date().toLocaleDateString('he-IL')});
+    list.sort((a,b)=>b.score-a.score);
+    const cut=list.slice(0,100); this._cache(cut); return cut;
+  },
+  async rankOf(score){
+    const list=await this.load();
+    let r=1; for(const e of list) if(e.score>=score) r++;
+    return (list.length<100||r<=100)? r : 0;
+  },
+  clear(){ this.mem=[]; try{ localStorage.removeItem(this.KEY); }catch(e){} }
+};
+
+/* =========================================================================
+   טקסטורות Canvas — כל הפרטים הישראליים
+   ========================================================================= */
+function canvasTex(w,h,fn){
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const x=c.getContext('2d'); x.direction='rtl'; fn(x,w,h);
+  const t=new THREE.CanvasTexture(c); t.anisotropy=4; return t;
+}
+const SERIF='"Frank Ruhl Libre","David Libre","Times New Roman",serif';
+const TEX={
+  // לוחית רישוי צהובה — מספר אקראי לכל רכב
+  plate(){
+    const num=`${irnd(10,99)}-${irnd(100,999)}-${irnd(10,99)}`;
+    return canvasTex(128,32,(x,w,h)=>{
+      x.fillStyle='#FFD500'; x.fillRect(0,0,w,h);
+      x.strokeStyle='#111'; x.lineWidth=3; x.strokeRect(1,1,w-2,h-2);
+      x.fillStyle='#003399'; x.fillRect(0,0,14,h); // פס כחול
+      x.fillStyle='#fff'; x.font='bold 9px Arial'; x.textAlign='center'; x.fillText('IL',7,21);
+      x.fillStyle='#111'; x.font='bold 21px Arial'; x.textAlign='center'; x.direction='ltr';
+      x.fillText(num,(w+14)/2,24);
+    });
+  },
+  // שלט רחוב ירוק
+  streetSign(name){
+    return canvasTex(256,80,(x,w,h)=>{
+      x.fillStyle='#00693e'; x.fillRect(0,0,w,h);
+      x.strokeStyle='#fff'; x.lineWidth=5; x.strokeRect(5,5,w-10,h-10);
+      x.fillStyle='#fff'; x.textAlign='center';
+      x.font=`bold 34px ${SERIF}`; x.fillText(name,w/2,42);
+      x.font='16px Arial'; x.fillText('ירושלים',w/2,66);
+    });
+  },
+  pashkevil(){
+    const tops=['מודעה רבה','קול קורא!!!','דעת תורה','אזעקה!!'];
+    const bodies=[
+      ['בנות ישראל!','בלבוש צנוע בלבד','תעבורנה ברחובותינו'],
+      ['גיוס שמד!','לא נתייצב!','ובחרת בחיים'],
+      ['אסיפת חיזוק','הערב בהיכל הישיבה','בהשתתפות גדולי הדור'],
+      ['חיזקו ואימצו','אל יפול לבבכם','העומדים בפרץ'],
+      ['מחאה אדירה','ביום חמישי הקרוב','בצומת הישיבה']
+    ];
+    const b=pick(bodies);
+    return canvasTex(160,224,(x,w,h)=>{
+      x.fillStyle='#efe8d2'; x.fillRect(0,0,w,h);
+      x.strokeStyle='#111'; x.lineWidth=4; x.strokeRect(4,4,w-8,h-8);
+      x.lineWidth=1.5; x.strokeRect(10,10,w-20,h-20);
+      x.fillStyle='#111'; x.textAlign='center';
+      x.font=`bold 13px ${SERIF}`; x.fillText('בס"ד',w/2,26);
+      x.font=`900 24px ${SERIF}`; x.fillText(pick(tops),w/2,58);
+      x.font=`bold 17px ${SERIF}`;
+      b.forEach((line,i)=>x.fillText(line,w/2,98+i*30));
+      x.font=`11px ${SERIF}`; x.fillText('— הוועדה להצלת הדור —',w/2,h-18);
+    });
+  },
+  shopSign(text,bg='#14387f',fg='#fff'){
+    return canvasTex(256,56,(x,w,h)=>{
+      x.fillStyle=bg; x.fillRect(0,0,w,h);
+      x.strokeStyle=fg; x.lineWidth=3; x.strokeRect(3,3,w-6,h-6);
+      x.fillStyle=fg; x.textAlign='center'; x.font=`bold 26px ${SERIF}`;
+      x.fillText(text,w/2,38);
+    });
+  },
+  // חזית בניין אבן ירושלמית עם חלונות (חלקם מוארים)
+  facade(floors,cols){
+    return canvasTex(256,256,(x,w,h)=>{
+      x.fillStyle='#D6C9A8'; x.fillRect(0,0,w,h);
+      // נדבכי אבן
+      x.strokeStyle='rgba(120,100,70,.35)'; x.lineWidth=1;
+      for(let y=0;y<h;y+=14){ x.beginPath(); x.moveTo(0,y); x.lineTo(w,y); x.stroke(); }
+      for(let y=0;y<h;y+=14) for(let X=((y/14)%2)*16;X<w;X+=32){ x.beginPath(); x.moveTo(X,y); x.lineTo(X,y+14); x.stroke(); }
+      x.fillStyle='rgba(160,140,100,.25)';
+      for(let i=0;i<26;i++) x.fillRect(rnd(0,w-16),rnd(0,h-7),16,7);
+      // חלונות
+      const mx=18,my=16, cw=(w-mx*2)/cols, ch=(h-my*2)/floors;
+      for(let f=0;f<floors;f++) for(let cI=0;cI<cols;cI++){
+        const wx=mx+cI*cw+cw*.2, wy=my+f*ch+ch*.18, ww=cw*.6, wh=ch*.62;
+        x.fillStyle= Math.random()<.4 ? '#ffd98a' : '#2a3038';      // חלק מוארים בערביים
+        x.fillRect(wx,wy,ww,wh);
+        x.strokeStyle='#6b5d44'; x.lineWidth=2.5; x.strokeRect(wx,wy,ww,wh);
+        x.beginPath(); x.moveTo(wx+ww/2,wy); x.lineTo(wx+ww/2,wy+wh); x.stroke();
+        x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(wx-2,wy+wh,ww+4,3); // אדן
+      }
+    });
+  },
+  egged(){
+    return canvasTex(96,96,(x,w,h)=>{
+      x.fillStyle='#fff'; x.fillRect(0,0,w,h);
+      x.fillStyle='#00833e'; x.beginPath(); x.arc(w/2,h/2,40,0,7); x.fill();
+      x.fillStyle='#fff'; x.textAlign='center'; x.font='bold 34px Arial';
+      x.fillText('אגד',w/2,h/2+12);
+    });
+  },
+  taxi(){
+    return canvasTex(96,40,(x,w,h)=>{
+      x.fillStyle='#111'; x.fillRect(0,0,w,h);
+      x.fillStyle='#FFD500'; x.textAlign='center'; x.font='bold 26px Arial';
+      x.fillText('מונית',w/2,29);
+    });
+  },
+  police(){
+    return canvasTex(192,48,(x,w,h)=>{
+      x.fillStyle='#fff'; x.fillRect(0,0,w,h);
+      x.fillStyle='#0a3a8c'; x.fillRect(0,h-16,w,16);
+      x.textAlign='center'; x.font='bold 30px Arial'; x.fillStyle='#0a3a8c';
+      x.fillText('משטרה',w/2,28);
+    });
+  },
+  stopSign(){
+    return canvasTex(96,96,(x,w,h)=>{
+      // אוקטגון אדום עם כף יד לבנה — תמרור עצור ישראלי
+      x.translate(w/2,h/2);
+      x.fillStyle='#c81e1e'; x.beginPath();
+      for(let i=0;i<8;i++){const a=Math.PI/8+i*Math.PI/4; x.lineTo(Math.cos(a)*46,Math.sin(a)*46);}
+      x.closePath(); x.fill(); x.strokeStyle='#fff'; x.lineWidth=4; x.stroke();
+      x.fillStyle='#fff';
+      x.fillRect(-13,-6,26,28);                          // כף
+      for(let i=0;i<4;i++) x.fillRect(-13+i*7,-26,5,22); // אצבעות
+      x.save(); x.rotate(-.6); x.fillRect(8,-8,6,18); x.restore(); // אגודל
+    });
+  },
+  billboard(){
+    return canvasTex(512,256,(x,w,h)=>{
+      x.fillStyle='#f5efdc'; x.fillRect(0,0,w,h);
+      x.strokeStyle='#111'; x.lineWidth=8; x.strokeRect(6,6,w-12,h-12);
+      x.fillStyle='#111'; x.textAlign='center';
+      x.font=`900 56px ${SERIF}`; x.fillText('הסמינר המרכזי',w/2,86);
+      x.font=`bold 36px ${SERIF}`; x.fillText('ההרשמה בעיצומה',w/2,150);
+      x.font=`24px ${SERIF}`; x.fillText('— בפיקוח ועדת הרבנים —',w/2,205);
+    });
+  },
+  mall(){
+    return canvasTex(256,128,(x,w,h)=>{
+      x.fillStyle='#1d3f8f'; x.fillRect(0,0,w,h);
+      x.fillStyle='#fff'; x.textAlign='center'; x.font='bold 44px Arial';
+      x.fillText('קניון איילון',w/2,80);
+    });
+  },
+  sky(){
+    return canvasTex(512,256,(x,w,h)=>{
+      const g=x.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#16234a'); g.addColorStop(.42,'#5c4a7e');
+      g.addColorStop(.66,'#c96f4a'); g.addColorStop(.84,'#f0a05c');
+      g.addColorStop(1,'#f8cd8d');
+      x.fillStyle=g; x.fillRect(0,0,w,h);
+      const sg=x.createRadialGradient(118,196,4,118,196,78);
+      sg.addColorStop(0,'rgba(255,247,216,1)'); sg.addColorStop(.18,'rgba(255,206,130,.85)');
+      sg.addColorStop(1,'rgba(255,162,92,0)');
+      x.fillStyle=sg; x.fillRect(0,0,w,h);
+      x.globalAlpha=.15; x.fillStyle='#ffdcb4';
+      for(let i=0;i<16;i++){
+        x.beginPath();
+        x.ellipse(rnd(0,w),rnd(50,210),rnd(50,170),rnd(2.5,8),0,0,7);
+        x.fill();
+      }
+      x.globalAlpha=1;
+    });
+  },
+  // אספלט עם גרגור, בלאי וכתמי שמן
+  asphalt(){
+    const t=canvasTex(256,256,(x,w,h)=>{
+      x.fillStyle='#2c2f35'; x.fillRect(0,0,w,h);
+      for(let i=0;i<2800;i++){
+        x.fillStyle=Math.random()<.5?`rgba(255,255,255,${rnd(.02,.07)})`:`rgba(0,0,0,${rnd(.03,.1)})`;
+        x.fillRect(rnd(0,w),rnd(0,h),rnd(1,2.5),rnd(1,2.5));
+      }
+      for(let i=0;i<6;i++){
+        const cx=rnd(0,w),cy=rnd(0,h),r=rnd(14,40);
+        const og=x.createRadialGradient(cx,cy,2,cx,cy,r);
+        og.addColorStop(0,'rgba(15,15,18,.35)'); og.addColorStop(1,'rgba(15,15,18,0)');
+        x.fillStyle=og; x.fillRect(cx-r,cy-r,r*2,r*2);
+      }
+      x.strokeStyle='rgba(0,0,0,.25)'; x.lineWidth=1.2;
+      for(let i=0;i<7;i++){
+        x.beginPath(); let cx=rnd(0,w),cy=rnd(0,h); x.moveTo(cx,cy);
+        for(let k=0;k<5;k++){ cx+=rnd(-22,22); cy+=rnd(-22,22); x.lineTo(cx,cy); }
+        x.stroke();
+      }
+    });
+    t.wrapS=t.wrapT=THREE.RepeatWrapping;
+    return t;
+  },
+  // אבן משתלבת — מדרכה ישראלית
+  sidewalk(){
+    const t=canvasTex(128,128,(x,w,h)=>{
+      x.fillStyle='#807d74'; x.fillRect(0,0,w,h);
+      const bw=32,bh=16;
+      for(let row=0;row<h/bh;row++){
+        for(let col=-1;col<w/bw+1;col++){
+          const ox=col*bw+(row%2)*bw/2;
+          x.fillStyle=`rgba(${irnd(124,148)},${irnd(114,136)},${irnd(98,118)},1)`;
+          x.fillRect(ox+1,row*bh+1,bw-2,bh-2);
+        }
+      }
+      x.fillStyle='rgba(0,0,0,.12)';
+      for(let i=0;i<400;i++) x.fillRect(rnd(0,w),rnd(0,h),1.5,1.5);
+    });
+    t.wrapS=t.wrapT=THREE.RepeatWrapping;
+    return t;
+  },
+  // אבן שפה אדום-לבן
+  curb(){
+    const t=canvasTex(64,16,(x,w,h)=>{
+      x.fillStyle='#d8d8d0'; x.fillRect(0,0,w,h);
+      x.fillStyle='#c0392b'; x.fillRect(0,0,32,h);
+      x.fillStyle='rgba(0,0,0,.15)';
+      for(let i=0;i<40;i++) x.fillRect(rnd(0,w),rnd(0,h),1.5,1.5);
+    });
+    t.wrapS=t.wrapT=THREE.RepeatWrapping;
+    return t;
+  },
+  // צלחת גלגל — חישוק אלומיניום
+  rim(){
+    return canvasTex(64,64,(x,w,h)=>{
+      x.fillStyle='#17191d'; x.fillRect(0,0,w,h);
+      x.translate(32,32);
+      x.fillStyle='#aab0b8'; x.beginPath(); x.arc(0,0,19,0,7); x.fill();
+      x.fillStyle='#23262b';
+      for(let i=0;i<5;i++){ x.rotate(Math.PI*2/5); x.beginPath(); x.ellipse(0,11,4.5,6.5,0,0,7); x.fill(); }
+      x.fillStyle='#d6dade'; x.beginPath(); x.arc(0,0,4.5,0,7); x.fill();
+      x.fillStyle='#15171a'; x.beginPath(); x.arc(0,0,1.8,0,7); x.fill();
+    });
+  },
+  // שלולית אור על הכביש
+  pool(rgb){
+    return canvasTex(128,128,(x,w,h)=>{
+      const g=x.createRadialGradient(64,64,4,64,64,62);
+      g.addColorStop(0,`rgba(${rgb},.65)`); g.addColorStop(.5,`rgba(${rgb},.22)`); g.addColorStop(1,`rgba(${rgb},0)`);
+      x.fillStyle=g; x.fillRect(0,0,w,h);
+    });
+  },
+  smoke(){
+    return canvasTex(64,64,(x,w,h)=>{
+      const g=x.createRadialGradient(32,32,3,32,32,30);
+      g.addColorStop(0,'rgba(150,150,155,.5)'); g.addColorStop(1,'rgba(150,150,155,0)');
+      x.fillStyle=g; x.fillRect(0,0,w,h);
+    });
+  }
+};
+
+/* ---------------- חומרים וגיאומטריות משותפים ---------------- */
+// טקסטורות שילוט קבועות (מונית/אגד/משטרה) — התוכן זהה בכל קריאה, נשמרות פעם אחת
+const _texShared={};
+function TEXC(n){ return _texShared[n]||(_texShared[n]=TEX[n]()); }
+const _matCache={};
+function MAT(hex,opts){
+  const key=hex+(opts?JSON.stringify(opts):'');
+  if(_matCache[key]) return _matCache[key];
+  return _matCache[key]=new THREE.MeshLambertMaterial(Object.assign({color:hex},opts||{}));
+}
+const GEO={
+  box:new THREE.BoxGeometry(1,1,1),
+  cyl:new THREE.CylinderGeometry(.5,.5,1,10),
+  cyl6:new THREE.CylinderGeometry(.5,.5,1,6),
+  plane:new THREE.PlaneGeometry(1,1),
+  ring:new THREE.RingGeometry(.5,.72,24),
+  circle:new THREE.CircleGeometry(.5,20)
+};
+function bx(w,h,d,hex,opts){
+  const m=new THREE.Mesh(GEO.box,MAT(hex,opts)); m.scale.set(w,h,d);
+  m.castShadow=true; m.receiveShadow=true; return m;
+}
+function cyl(r,h,hex,opts,seg6){
+  const m=new THREE.Mesh(seg6?GEO.cyl6:GEO.cyl,MAT(hex,opts)); m.scale.set(r*2,h,r*2);
+  m.castShadow=true; m.receiveShadow=true; return m;
+}
+function texPlane(w,h,tex,opts){
+  const m=new THREE.Mesh(GEO.plane,new THREE.MeshLambertMaterial(Object.assign({map:tex},opts||{})));
+  m.scale.set(w,h,1); return m;
+}
+function put(parent,mesh,x,y,z,ry){
+  mesh.position.set(x,y,z); if(ry!==undefined) mesh.rotation.y=ry;
+  parent.add(mesh); return mesh;
+}
+
+/* =========================================================================
+   סצנה, מצלמה, תאורה
+   ========================================================================= */
+function initThree(){
+  G.renderer=new THREE.WebGLRenderer({canvas:$('c'),antialias:true});
+  G.renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  G.renderer.setSize(innerWidth,innerHeight);
+  G.renderer.shadowMap.enabled=true;
+  G.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  G.renderer.outputEncoding=THREE.sRGBEncoding;
+  G.renderer.toneMapping=THREE.ACESFilmicToneMapping;   // מראה קולנועי
+  G.renderer.toneMappingExposure=.92;
+  G.scene=new THREE.Scene();
+  G.scene.fog=new THREE.Fog(0xa86f4d,85,300);
+  // שומר aspect: חלון 0×0 בזמן טעינה (iframe נסתר וכד') נותן 0/0=NaN שמרעיל את כל מטריצת ההקרנה
+  const safeAspect=()=>{ const a=innerWidth/innerHeight; return isFinite(a)&&a>0?a:16/9; };
+  G.camera=new THREE.PerspectiveCamera(55,safeAspect(),.5,700);
+  addEventListener('resize',()=>{
+    G.camera.aspect=safeAspect(); G.camera.updateProjectionMatrix();
+    G.renderer.setSize(innerWidth,innerHeight);
+  });
+  // מפת סביבה (PMREM) — השתקפויות שקיעה אמיתיות על פח הרכבים
+  const eq=document.createElement('canvas'); eq.width=256; eq.height=128;
+  const ex=eq.getContext('2d');
+  const grad=ex.createLinearGradient(0,0,0,128);
+  grad.addColorStop(0,'#22305c'); grad.addColorStop(.40,'#6e5278');
+  grad.addColorStop(.52,'#d97f50'); grad.addColorStop(.60,'#f7b46a');
+  grad.addColorStop(.64,'#6e5a42'); grad.addColorStop(1,'#352e22');
+  ex.fillStyle=grad; ex.fillRect(0,0,256,128);
+  const sg=ex.createRadialGradient(48,76,2,48,76,30);
+  sg.addColorStop(0,'rgba(255,244,210,1)'); sg.addColorStop(.3,'rgba(255,196,120,.9)');
+  sg.addColorStop(1,'rgba(255,160,80,0)');
+  ex.fillStyle=sg; ex.fillRect(0,0,256,128);
+  const eqt=new THREE.CanvasTexture(eq);
+  eqt.mapping=THREE.EquirectangularReflectionMapping;
+  const pm=new THREE.PMREMGenerator(G.renderer);
+  G.scene.environment=pm.fromEquirectangular(eqt).texture;
+  eqt.dispose(); pm.dispose();
+  // שמיים — כיפה עם גרדיאנט שקיעה
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(420,24,14),
+    new THREE.MeshBasicMaterial({map:TEX.sky(),side:THREE.BackSide,fog:false}));
+  G.scene.add(sky);
+  // שמש שקיעה — צללים ארוכים וחמים
+  const sun=new THREE.DirectionalLight(0xffa75f,1.4);
+  sun.position.set(-85,40,62); sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024);
+  const sc=sun.shadow.camera;
+  sc.left=-85; sc.right=85; sc.top=85; sc.bottom=-85; sc.near=1; sc.far=350;
+  sun.shadow.bias=-0.0012; sun.shadow.normalBias=.02;
+  G.scene.add(sun);
+  G.scene.add(new THREE.HemisphereLight(0x3b4a7a,0x5e4a33,.42));
+  const fill=new THREE.DirectionalLight(0x7e98d6,.2);    // מילוי קריר מהצד הנגדי
+  fill.position.set(70,30,-55);
+  G.scene.add(fill);
+}
+
+/* =========================================================================
+   בוני סביבה — אבני בניין ישראליות
+   ========================================================================= */
+function mkBuilding(p,x,z,w,d,h,faceDir){
+  // faceDir: כיוון החזית (rotation.y כך שהחזית פונה לכביש)
+  const g=new THREE.Group();
+  const floors=Math.max(2,Math.round(h/3)), cols=Math.max(2,Math.round(w/3));
+  const ft=TEX.facade(floors,cols);
+  const facadeMat=new THREE.MeshStandardMaterial({map:ft,bumpMap:ft,bumpScale:.04,roughness:.92});
+  const sideMat=MAT(0xC9BC9B), roofMat=MAT(0x9a8f74);
+  const body=new THREE.Mesh(GEO.box,[sideMat,sideMat,roofMat,sideMat,facadeMat,sideMat]);
+  body.scale.set(w,h,d); body.position.y=h/2;
+  body.castShadow=true; body.receiveShadow=true;
+  g.add(body);
+  // מעקה גג
+  put(g,bx(w,.5,.25,0xC9BC9B),0,h+.25,d/2-.12);
+  // דוד שמש + קולט
+  const dud=cyl(.55,1.6,0xeeeeee); dud.rotation.z=Math.PI/2;
+  put(g,dud,rnd(-w/3,w/3),h+.6,rnd(-d/3,0));
+  const panel=bx(1.6,.1,1.1,0x223244); panel.rotation.x=-.5;
+  put(g,panel,dud.position.x,h+.45,dud.position.z+1);
+  // צלחת לוויין
+  const dish=cyl(.45,.08,0xcccccc); dish.rotation.x=1.1;
+  put(g,dish,rnd(-w/3,w/3),h+.5,rnd(0,d/3));
+  put(g,cyl(.04,1.2,0x888888),dish.position.x,h+.4,dish.position.z);
+  // מרפסות סורגים בחזית
+  for(let f=1;f<floors;f++){
+    if(Math.random()<.55){
+      const bw=Math.min(2.4,w*.35), by=f*(h/floors)+.1, bxp=rnd(-w/2+bw,w/2-bw);
+      const slab=bx(bw,.14,1,0xBDB091); put(g,slab,bxp,by,d/2+.5);
+      const rail=bx(bw,.7,.06,0x2c2c34,{transparent:true,opacity:.85});
+      put(g,rail,bxp,by+.45,d/2+.97);
+      put(g,bx(.06,.7,1,0x2c2c34),bxp-bw/2,by+.45,d/2+.5);
+      put(g,bx(.06,.7,1,0x2c2c34),bxp+bw/2,by+.45,d/2+.5);
+    }
+  }
+  // פשקווילים על קיר הקרקע
+  const nPosters=irnd(1,3);
+  for(let i=0;i<nPosters;i++){
+    const po=texPlane(1.1,1.55,TEX.pashkevil());
+    put(g,po,rnd(-w/2+1,w/2-1),1.5,d/2+.03);
+  }
+  g.position.set(x,0,z); g.rotation.y=faceDir||0;
+  p.add(g);
+  return g;
+}
+function mkShop(p,x,z,text,bg,faceDir){
+  const g=new THREE.Group();
+  const body=bx(7,4.5,6,0xD6C9A8); body.position.y=2.25; g.add(body);
+  // חלון ראווה מואר
+  const win=bx(5,2.2,.15,0x2a3038,{emissive:0xffd98a,emissiveIntensity:.5});
+  put(g,win,0,1.5,3.05);
+  put(g,texPlane(6.4,1.3,TEX.shopSign(text,bg)),0,3.6,3.12);
+  const dud=cyl(.5,1.4,0xeeeeee); dud.rotation.z=Math.PI/2; put(g,dud,0,5,0);
+  g.position.set(x,0,z); g.rotation.y=faceDir||0; p.add(g); return g;
+}
+function mkStreetSign(p,x,z,name,ry){
+  const g=new THREE.Group();
+  put(g,cyl(.05,2.6,0x556),0,1.3,0);
+  put(g,texPlane(1.7,.55,TEX.streetSign(name)),0,2.45,.06,0);
+  g.position.set(x,0,z); g.rotation.y=ry||0; p.add(g);
+}
+function mkStopSign(p,x,z,ry){
+  const g=new THREE.Group();
+  put(g,cyl(.05,2.6,0x667),0,1.3,0);
+  const s=texPlane(.85,.85,TEX.stopSign(),{transparent:true}); put(g,s,0,2.5,.05);
+  g.position.set(x,0,z); g.rotation.y=ry||0; p.add(g);
+}
+function mkTrafficLight(p,x,z,ry){
+  const g=new THREE.Group();
+  put(g,cyl(.12,5.2,0x3a3f44),0,2.6,0);
+  const arm=bx(.18,.18,4.2,0xd9a40a); put(g,arm,0,5,2.1);   // זרוע צהובה
+  const head=bx(.5,1.4,.4,0x16181c); put(g,head,0,4.45,3.9);
+  const cols=[0xff2a2a,0xffc02a,0x2aff5a];
+  cols.forEach((cI,i)=>{
+    const lit=i===0; // אדום דולק — הפגנה...
+    const lamp=new THREE.Mesh(GEO.cyl,new THREE.MeshLambertMaterial({color:cI,emissive:lit?cI:0x000000,emissiveIntensity:lit?1:0}));
+    lamp.scale.set(.26,.1,.26); lamp.rotation.x=Math.PI/2;
+    put(g,lamp,0,4.95-i*.42,4.12);
+  });
+  g.position.set(x,0,z); g.rotation.y=ry||0; p.add(g); return g;
+}
+function mkBusStop(p,x,z,ry){
+  const g=new THREE.Group();
+  put(g,bx(.1,2.4,.1,0x556),-1.6,1.2,0); put(g,bx(.1,2.4,.1,0x556),1.6,1.2,0);
+  const roof=bx(3.8,.12,1.6,0x00833e); put(g,roof,0,2.45,-.3);
+  const back=bx(3.6,1.6,.08,0x9fb6c4,{transparent:true,opacity:.5}); put(g,back,0,1.3,-1);
+  const sign=texPlane(.7,.7,TEX.egged()); put(g,sign,1.9,2.1,.2);
+  put(g,cyl(.04,2.1,0x556),1.9,1.05,.2);
+  put(g,bx(2.8,.08,.5,0x7a5c3a),0,.55,-.6); // ספסל
+  g.position.set(x,0,z); g.rotation.y=ry||0; p.add(g);
+}
+function mkStreetLight(p,x,z,side,withLight){
+  const g=new THREE.Group();
+  put(g,cyl(.09,6.5,0x44484e),0,3.25,0);
+  const arm=cyl(.06,2.2,0x44484e); arm.rotation.x=Math.PI/2*0.94;
+  put(g,arm,0,6.4,side*1.05);
+  const head=bx(.5,.2,.7,0x33363c,{emissive:0xff9a3c,emissiveIntensity:1.2});
+  put(g,head,0,6.55,side*2.1);
+  if(withLight){
+    const pl=new THREE.PointLight(0xff9a3c,.9,28,1.6);
+    pl.position.set(0,6.2,side*2.1); g.add(pl);
+  }
+  // שלולית אור נתרן על הקרקע
+  if(!TEX._lampPool) TEX._lampPool=TEX.pool('255,154,60');
+  const pool=new THREE.Mesh(GEO.plane,new THREE.MeshBasicMaterial({
+    map:TEX._lampPool,transparent:true,opacity:withLight?.3:.18,
+    blending:THREE.AdditiveBlending,depthWrite:false}));
+  pool.scale.set(9,7,1); pool.rotation.x=-Math.PI/2;
+  pool.position.set(0,.03,side*2.1); pool.renderOrder=2;
+  g.add(pool);
+  g.position.set(x,0,z); p.add(g); return g;
+}
+function mkBillboard(p,x,z,ry){
+  const g=new THREE.Group();
+  put(g,cyl(.16,5,0x55585e),-2.6,2.5,0); put(g,cyl(.16,5,0x55585e),2.6,2.5,0);
+  put(g,bx(7.6,3.9,.2,0x2c2c30),0,6.4,0);
+  put(g,texPlane(7.2,3.5,TEX.billboard()),0,6.4,.14);
+  g.position.set(x,0,z); g.rotation.y=ry||0; p.add(g);
+}
+// פסי הפרדה כתומים-לבנים
+function mkBarrier(p,x,z,ry){
+  const g=new THREE.Group();
+  for(let i=0;i<3;i++){
+    const c=i%2? 0xf2f2f2 : 0xe8731a;   // פסים כתום-לבן לסירוגין
+    put(g,bx(.5,.55,.25,c),-.5+i*.5,.28,0);
+  }
+  g.position.set(x,0,z); g.rotation.y=ry||0; p.add(g);
+}
+function mkCrosswalk(p,x,halfW){
+  for(let i=0;i<Math.floor(halfW*2/1.0);i++){
+    const s=bx(2.6,.02,.55,0xd9d3bc); s.castShadow=false;
+    put(p,s,x,.02,-halfW+.6+i*1.0);
+  }
+}
+function mkEruv(p,x1,x2,z){
+  // חוטי עירוב — עמודים דקים וחוט ביניהם
+  const mat=new THREE.LineBasicMaterial({color:0x222222});
+  const poles=[];
+  for(let X=x1;X<=x2;X+=24){
+    put(p,cyl(.03,7.5,0x55504a),X,3.75,z);
+    poles.push(new THREE.Vector3(X,7.4,z));
+  }
+  const geo=new THREE.BufferGeometry().setFromPoints(poles);
+  p.add(new THREE.Line(geo,mat));
+}
+
+/* ---------------- כביש ומדרכות ---------------- */
+function mkRoadBase(p,map){
+  const L=G.roadLen, hw=G.roadHalfW;
+  // אספלט עם טקסטורה
+  const at=TEX.asphalt(); at.repeat.set(L/14,hw/4);
+  const road=new THREE.Mesh(GEO.plane,new THREE.MeshStandardMaterial({map:at,roughness:.96,metalness:0}));
+  road.scale.set(L,hw*2,1);
+  road.rotation.x=-Math.PI/2; road.position.y=.005; road.receiveShadow=true; p.add(road);
+  // קו הפרדה / קווי נתיב — צבע שחוק
+  const dash=(z,full)=>{
+    if(full){ const l=bx(L,.015,.14,0xcfc7a8); l.castShadow=false; put(p,l,0,.02,z); return; }
+    for(let X=-L/2;X<L/2;X+=4){ const d=bx(2,.015,.14,0xcfc7a8); d.castShadow=false; put(p,d,X+1,.02,z); }
+  };
+  if(map.lanes===1){ dash(0,false); }
+  else { dash(0,true); dash(-3.5,false); dash(3.5,false); }
+  dash(-hw+.18,true); dash(hw-.18,true);
+  // מדרכות אבן משתלבת עם אבן שפה אדום-לבן
+  const st=TEX.sidewalk(); st.repeat.set(L/5,1.6);
+  [-1,1].forEach(s=>{
+    const sw=new THREE.Mesh(GEO.plane,new THREE.MeshStandardMaterial({map:st,roughness:.92}));
+    sw.scale.set(L,5,1);
+    sw.rotation.x=-Math.PI/2; sw.position.set(0,.09,s*(hw+2.5)); sw.receiveShadow=true; p.add(sw);
+    const ct=TEX.curb(); ct.repeat.set(L/2.2,1);
+    const curb=new THREE.Mesh(GEO.box,new THREE.MeshStandardMaterial({map:ct,roughness:.9}));
+    curb.scale.set(L,.18,.28); curb.receiveShadow=true;
+    put(p,curb,0,.09,s*(hw+.12));
+  });
+  // קרקע כללית
+  const gt=TEX.asphalt(); gt.repeat.set(30,30);
+  const gnd=new THREE.Mesh(GEO.plane,new THREE.MeshStandardMaterial({map:gt,color:0x7d684a,roughness:1}));
+  gnd.scale.set(440,440,1);
+  gnd.rotation.x=-Math.PI/2; gnd.position.y=-.05; gnd.receiveShadow=true; p.add(gnd);
+}
+
+/* =========================================================================
+   שלוש המפות
+   ========================================================================= */
+function disposeDeep(root){
+  // שחרור GPU של עולם שלם. גיאומטריות/חומרים משותפים (GEO/MAT) נטענים מחדש
+  // אוטומטית ברינדור הבא — זול; הטקסטורות הן הזיכרון האמיתי.
+  if(!root) return;
+  root.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    const ms=Array.isArray(o.material)?o.material:(o.material?[o.material]:[]);
+    for(const m of ms){ if(m.map&&m.map.dispose) m.map.dispose(); m.dispose(); }
+  });
+}
+function clearWorld(){
+  if(G.world){ G.scene.remove(G.world); disposeDeep(G.world); }
+  if(G.dyn){ G.scene.remove(G.dyn); disposeDeep(G.dyn); }
+  G.world=new THREE.Group(); G.dyn=new THREE.Group();
+  G.scene.add(G.world); G.scene.add(G.dyn);
+  G.peeps=[]; G.cars=[]; G.cops=[]; G.horses=[]; G.drivers=[]; G.bubbles=[]; G.fx=[];
+  G.cannon=null; G.train=null; G.selected.clear(); G.selCops.clear();
+}
+
+function buildMap(i){
+  const map=MAPS[i];
+  clearWorld();
+  G.roadLen = i===1? 240 : 200;
+  G.roadHalfW = i===0? 3.7 : i===1? 7.2 : 6.0;
+  G.sidewalkZ = G.roadHalfW+2.5;
+  if(i===0){
+    G.laneDefs=[ {z:-1.8,dir:1,speed:map.speed}, {z:1.8,dir:-1,speed:map.speed} ];
+  }else if(i===1){
+    G.laneDefs=[ {z:-5.3,dir:1,speed:map.speed},{z:-1.8,dir:1,speed:map.speed*.9},
+                 {z:1.8,dir:-1,speed:map.speed*.9},{z:5.3,dir:-1,speed:map.speed} ];
+  }else{
+    G.laneDefs=[ {z:-3.6,dir:1,speed:map.speed}, {z:3.6,dir:-1,speed:map.speed} ];
+  }
+  mkRoadBase(G.world,map);
+  // פנסי רחוב — תאורת נתרן כתומה
+  let li=0;
+  for(let X=-72;X<=72;X+=18){
+    const side=(li%2)?1:-1;
+    mkStreetLight(G.world,X,side*(G.roadHalfW+1.1),-side,Math.abs(X)<38);
+    li++;
+  }
+  if(i===0) buildBarIlan();
+  else if(i===1) buildKvish4();
+  else buildGesher();
+}
+
+/* ---------- מפה 1: צומת בר אילן ---------- */
+function buildBarIlan(){
+  const p=G.world, hw=G.roadHalfW;
+  // כביש צדדי — צומת T (דקורטיבי)
+  const side=texPlane(8,46,null); side.material=MAT(0x3f4146);
+  side.rotation.x=-Math.PI/2; side.position.set(14,.004,hw+23); side.receiveShadow=true; p.add(side);
+  for(let Z=hw+3;Z<hw+44;Z+=4){ const d=bx(.14,.015,2,0xf0f0f0); d.castShadow=false; put(p,d,14,.02,Z+1); }
+  mkCrosswalk(p,8,hw); mkCrosswalk(p,20,hw);
+  mkStopSign(p,18.6,hw+1.2,Math.PI);
+  mkTrafficLight(p,6.5,-hw-1,0);
+  mkTrafficLight(p,21.5,hw+1,Math.PI);
+  mkStreetSign(p,7,hw+1.4,'בר אילן',0);
+  mkStreetSign(p,20.8,hw+1.6,'שמגר',Math.PI/2);
+  mkStreetSign(p,-40,-hw-1.4,'בר אילן',Math.PI);
+  mkBusStop(p,-26,hw+1.8,Math.PI);
+  // חנויות בצד דרום
+  mkShop(p,-12,-hw-5.5,'פיצה כשר למהדרין','#b3221e',0);
+  mkShop(p,-4,-hw-5.5,'ספרי קודש — מסחרי','#14387f',0);
+  mkShop(p,30,-hw-5.5,'גמ"ח חסדי אבות','#1d7a46',0);
+  mkShop(p,38,-hw-5.5,'מכולת ברכת השם','#7a4b12',0);
+  // בנייני אבן — שתי שורות
+  const rowsS=[-26,-42,4,14,46,58,72], rowsN=[-58,-44,-30,-14,-2,30,42,56,70];
+  rowsS.forEach(X=>mkBuilding(p,X+rnd(-1,1),-hw-12-rnd(0,5),irnd(8,12),9,irnd(9,16),0));
+  rowsN.forEach(X=>{ if(Math.abs(X-14)>7) mkBuilding(p,X+rnd(-1,1),hw+12+rnd(0,5),irnd(8,12),9,irnd(9,16),Math.PI); });
+  // בניינים לאורך הכביש הצדדי
+  mkBuilding(p,5,hw+18,9,9,12,Math.PI/2*3); mkBuilding(p,24,hw+20,9,9,14,Math.PI/2);
+  // חוטי עירוב מעל
+  mkEruv(p,-80,80,-hw-1.6);
+  mkEruv(p,-80,80,hw+1.6);
+  G.alleys=[{x:-12,z:-hw-2},{x:30,z:-hw-2},{x:-26,z:hw+2},{x:14,z:hw+8}];
+}
+
+/* ---------- מפה 2: כביש 4, בני ברק ---------- */
+function buildKvish4(){
+  const p=G.world, hw=G.roadHalfW;
+  // פסי הפרדה כתומים-לבנים לאורך האי
+  for(let X=-90;X<=90;X+=12) mkBarrier(p,X,0,0);
+  // גשר הולכי רגל מעל הכביש
+  const bridge=new THREE.Group();
+  put(bridge,bx(3,.35,hw*2+9,0x9aa3ad),0,5.6,0);
+  [-1,1].forEach(s=>{
+    put(bridge,bx(3,1.1,.12,0x5b8a3c),0,6.3,s*(hw+4.4)); // מעקות ירוקים
+    const rail1=bx(3,1.1,.1,0x5b8a3c); put(bridge,rail1,0,6.3,0).visible=false;
+  });
+  put(bridge,bx(.12,1.1,hw*2+9,0x5b8a3c),-1.45,6.3,0);
+  put(bridge,bx(.12,1.1,hw*2+9,0x5b8a3c),1.45,6.3,0);
+  [-1,1].forEach(s=>{
+    put(bridge,bx(1.4,5.6,1.4,0x8d949c),0,2.8,s*(hw+5.6)); // מגדלי מדרגות
+    put(bridge,bx(.6,.6,.6,0xd6c9a8),0,6,s*(hw+5.6));
+  });
+  bridge.position.x=-6; p.add(bridge);
+  // קניון איילון ברקע
+  const mall=new THREE.Group();
+  put(mall,bx(46,14,18,0x8fa3b8),0,7,0);
+  put(mall,bx(48,2,19,0x6e8094),0,15,0);
+  put(mall,texPlane(20,6,TEX.mall()),0,10,9.6);
+  const glass=bx(30,5,.3,0x224,{emissive:0x88ccff,emissiveIntensity:.35});
+  put(mall,glass,0,3.4,9.2);
+  mall.position.set(28,0,-hw-26); p.add(mall);
+  // מגרש חניה ליד הקניון
+  const lot=texPlane(50,14,null); lot.material=MAT(0x4a4c50);
+  lot.rotation.x=-Math.PI/2; lot.position.set(28,.01,-hw-12); lot.receiveShadow=true; p.add(lot);
+  // שלטי חוצות
+  mkBillboard(p,-40,-hw-10,0.15);
+  mkBillboard(p,52,hw+10,Math.PI-0.15);
+  // בנייני בני ברק בצד השני
+  [-70,-52,-34,-16,2,20,38,56,70].forEach(X=>mkBuilding(p,X,hw+14+rnd(0,6),irnd(9,13),9,irnd(12,22),Math.PI));
+  [-70,-55,-25,-10].forEach(X=>mkBuilding(p,X,-hw-14-rnd(0,4),irnd(8,12),9,irnd(10,16),0));
+  mkStreetSign(p,-30,hw+1.4,'כביש 4',Math.PI);
+  mkStreetSign(p,30,-hw-1.4,'מחלף בני ברק',0);
+  mkBusStop(p,20,hw+1.8,Math.PI);
+  mkTrafficLight(p,-14,-hw-1,0);
+  G.alleys=[{x:-20,z:hw+2},{x:14,z:hw+2},{x:-6,z:hw+9},{x:34,z:-hw-2}];
+}
+
+/* ---------- מפה 3: גשר המיתרים ---------- */
+function buildGesher(){
+  const p=G.world, hw=G.roadHalfW;
+  // מסילת רכבת קלה במרכז
+  [-1,1].forEach(s=>{
+    const rail=bx(G.roadLen,.05,.09,0xb8bcc2); rail.castShadow=false;
+    put(p,rail,0,.03,s*.72);
+  });
+  const bed=texPlane(G.roadLen,2.4,null); bed.material=MAT(0x55585e);
+  bed.rotation.x=-Math.PI/2; bed.position.y=.012; bed.receiveShadow=true; p.add(bed);
+  for(let X=-95;X<95;X+=2.2){ const tie=bx(.25,.02,1.9,0x3a3c40); tie.castShadow=false; put(p,tie,X,.02,0); }
+  // עמודי חשמל עילי למסילה
+  for(let X=-80;X<=80;X+=26){
+    put(p,cyl(.07,5.6,0x777c84),X,2.8,1.55);
+    const arm=cyl(.045,1.7,0x777c84); arm.rotation.x=Math.PI/2; put(p,arm,X,5.4,.7);
+  }
+  const wirePts=[]; for(let X=-90;X<=90;X+=10) wirePts.push(new THREE.Vector3(X,5.25,0));
+  p.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(wirePts),new THREE.LineBasicMaterial({color:0x222222})));
+  // מעקות הגשר הלבנים
+  [-1,1].forEach(s=>{
+    for(let X=-95;X<=95;X+=3) put(p,bx(.12,1.1,.12,0xf2f3f5),X,.62,s*(hw+.35));
+    const top=bx(G.roadLen,.12,.14,0xf2f3f5); put(p,top,0,1.2,s*(hw+.35));
+    const base=bx(G.roadLen,.5,.4,0xe8e9ee); put(p,base,0,.25,s*(hw+.5));
+  });
+  // ===== התורן הנטוי והכבלים — הוואו! =====
+  const mastG=new THREE.Group();
+  const mast=cyl(1.1,62,0xf5f6fa); mast.position.y=31; mastG.add(mast);
+  const tip=cyl(.4,8,0xf5f6fa); tip.position.y=64; mastG.add(tip);
+  mastG.position.set(-18,0,-hw-7);
+  mastG.rotation.z=-.38; mastG.rotation.x=.30;   // נטוי כמו במקור
+  p.add(mastG);
+  // נקודות עיגון לאורך התורן (בקואורדינטות עולם)
+  const mastTop=new THREE.Vector3(0,58,0), tmp=new THREE.Vector3();
+  const cableMat=new THREE.LineBasicMaterial({color:0xdde2ea});
+  const anchors=[];
+  for(let k=0;k<14;k++){
+    tmp.set(0,16+k*3.4,0); mastG.updateMatrixWorld(true);
+    const top=tmp.clone().applyMatrix4(mastG.matrixWorld);
+    const deck=new THREE.Vector3(-50+k*7.6,1,-1.4);
+    anchors.push(top,deck);
+  }
+  const cgeo=new THREE.BufferGeometry().setFromPoints(anchors);
+  const cables=new THREE.LineSegments(cgeo,cableMat); p.add(cables);
+  // עיר ברקע — כניסה לירושלים
+  [[-60,26,16],[-40,30,22],[-78,30,12],[40,28,18],[58,32,26],[74,26,14]].forEach(([X,Z,H])=>{
+    mkBuilding(p,X,Z+hw,irnd(10,14),10,H,Z>0?Math.PI:0);
+  });
+  [[-55,-30,20],[35,-26,24],[60,-34,30],[-30,-34,26]].forEach(([X,Z,H])=>{
+    mkBuilding(p,X,Z-hw,irnd(10,14),10,H,0);
+  });
+  // שלט כניסה לעיר
+  const wg=new THREE.Group();
+  put(wg,cyl(.14,4,0x55585e),-3.5,2,0); put(wg,cyl(.14,4,0x55585e),3.5,2,0);
+  put(wg,texPlane(8.4,1.6,TEX.shopSign('ברוכים הבאים לירושלים','#14387f')),0,4.2,0);
+  wg.position.set(60,0,hw+3); wg.rotation.y=Math.PI; p.add(wg);
+  mkStreetSign(p,-30,hw+1.4,'שד׳ הרצל',Math.PI);
+  mkBusStop(p,-40,-hw-1.8,0);
+  G.alleys=[{x:-20,z:hw+2},{x:20,z:hw+2},{x:-30,z:-hw-2},{x:28,z:-hw-2}];
+}
+
+/* =========================================================================
+   רכבים — מפעל + תנועה
+   ========================================================================= */
+const MAXCARS=40;
+// צבעי הצי הישראלי — הרבה לבן וכסוף
+const CARCOLORS=[0xf4f5f4,0xf4f5f4,0xeceded,0xc6cacd,0x9aa0a6,0x52565c,0x23262b,0x2e3b55,0x6e1f1f,0xd9d4c0];
+const CARGEO={}, CARMATC={};
+function paintM(hex){
+  return CARMATC[hex]||(CARMATC[hex]=new THREE.MeshPhysicalMaterial({
+    color:hex,metalness:.7,roughness:.32,clearcoat:1,clearcoatRoughness:.08,envMapIntensity:1.15}));
+}
+const M_GLASS=new THREE.MeshPhysicalMaterial({color:0x10181f,metalness:.1,roughness:.05,clearcoat:1,clearcoatRoughness:.04,envMapIntensity:1.8});
+const M_TRIM=new THREE.MeshStandardMaterial({color:0x1b1d21,roughness:.6,metalness:.2});
+const M_CHROME=new THREE.MeshStandardMaterial({color:0xd9dde2,metalness:1,roughness:.16});
+const M_TIRE=new THREE.MeshStandardMaterial({color:0x141619,roughness:.95});
+const M_TAIL_ON=new THREE.MeshStandardMaterial({color:0xff3024,emissive:0xff1408,emissiveIntensity:3});
+const M_TAIL_OFF=new THREE.MeshStandardMaterial({color:0x7e120c,emissive:0xff1408,emissiveIntensity:.55});
+const M_HEADLAMP=new THREE.MeshStandardMaterial({color:0xfff3d2,emissive:0xffe9b0,emissiveIntensity:1.7});
+let M_RIM=null, WGEO=null, HEADPOOL=null;
+function addPlates(g,len){
+  const tex=TEX.plate();
+  const f=texPlane(.55,.14,tex); f.rotation.y=Math.PI/2; f.position.set(len/2+.11,.45,0); g.add(f);
+  const b=texPlane(.55,.14,tex); b.rotation.y=-Math.PI/2; b.position.set(-len/2-.11,.45,0); g.add(b);
+  return tex;
+}
+// חתך צד מוקצף לרוחב עם פינות מעוגלות — פחחות אמיתית
+function profileGeo(build,W){
+  const s=new THREE.Shape(); build(s);
+  const g=new THREE.ExtrudeGeometry(s,{depth:W,bevelEnabled:true,bevelThickness:.06,
+    bevelSize:.055,bevelSegments:3,curveSegments:12,steps:1});
+  g.translate(0,0,-W/2);
+  return g;
+}
+// תחתית עם קשתות גלגלים (מסלול מ+x ל-x)
+function carBottom(s,archF,archR,r,y){
+  s.lineTo(archF+r,y);
+  s.absarc(archF,y,r,0,Math.PI,false);
+  s.lineTo(archR+r,y);
+  s.absarc(archR,y,r,0,Math.PI,false);
+}
+function mkWheel(r,w){
+  if(!M_RIM) M_RIM=new THREE.MeshStandardMaterial({map:TEX.rim(),metalness:.55,roughness:.4});
+  if(!WGEO) WGEO=new THREE.CylinderGeometry(.5,.5,1,18);
+  const axle=new THREE.Group();
+  const m=new THREE.Mesh(WGEO,[M_TIRE,M_RIM,M_RIM]);
+  m.scale.set(r*2,w,r*2); m.castShadow=true;
+  axle.add(m); axle.rotation.x=Math.PI/2;
+  return {axle,mesh:m};
+}
+function addWheelSet(g,positions,r,w){
+  g.userData.wheels=[];
+  positions.forEach(([X,Z])=>{
+    const {axle,mesh}=mkWheel(r,w);
+    axle.position.set(X,r+ .0,Z);
+    g.add(axle);
+    g.userData.wheels.push(mesh);
+  });
+}
+function addLamps(bodyG,len,w,y){
+  bodyG.userData=bodyG.userData||{};
+  const tails=[];
+  [-1,1].forEach(s=>{
+    const hl=new THREE.Mesh(GEO.box,M_HEADLAMP);
+    hl.scale.set(.07,.12,.3); hl.castShadow=false;
+    hl.position.set(len/2+.08,y,s*(w/2-.28)); bodyG.add(hl);
+    const tl=new THREE.Mesh(GEO.box,M_TAIL_OFF);
+    tl.scale.set(.07,.12,.3); tl.castShadow=false;
+    tl.position.set(-(len/2+.08),y,s*(w/2-.28)); bodyG.add(tl);
+    tails.push(tl);
+  });
+  return tails;
+}
+function addHeadPool(g,len){
+  if(!HEADPOOL) HEADPOOL=TEX.pool('255,235,190');
+  const pool=new THREE.Mesh(GEO.plane,new THREE.MeshBasicMaterial({
+    map:HEADPOOL,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false}));
+  pool.scale.set(4.6,2.6,1); pool.rotation.x=-Math.PI/2;
+  pool.position.set(len/2+2,.028,0); pool.renderOrder=2;
+  g.add(pool);
+}
+function getGeo(key,fn){ return CARGEO[key]||(CARGEO[key]=fn()); }
+function mkCarMesh(type){
+  const g=new THREE.Group();
+  const bodyG=new THREE.Group(); g.add(bodyG);
+  let len=4.36,w=1.74;
+  const addM=(geo,m,px=0,py=0,pz=0)=>{
+    const x=new THREE.Mesh(geo,m); x.position.set(px,py,pz);
+    x.castShadow=true; x.receiveShadow=true; bodyG.add(x); return x;
+  };
+  const mirror=(paint,X,Y,W2)=>{[-1,1].forEach(s=>{
+    const m=new THREE.Mesh(GEO.box,paint); m.scale.set(.1,.09,.16);
+    m.position.set(X,Y,s*(W2+.07)); m.castShadow=false; bodyG.add(m); });};
+
+  if(['sedan','mazda','corolla','taxi','police'].includes(type)){
+    len=4.36; w=1.74;
+    const paint= (type==='taxi'||type==='police'||type==='mazda')?paintM(0xf4f5f4)
+               : type==='corolla'?paintM(0xc6cacd):paintM(pick(CARCOLORS));
+    addM(getGeo('sedanB',()=>profileGeo(s=>{
+      s.moveTo(2.18,.58);
+      s.quadraticCurveTo(2.26,.4,2.08,.3);
+      carBottom(s,1.36,-1.36,.36,.3);
+      s.lineTo(-2.06,.3);
+      s.quadraticCurveTo(-2.26,.42,-2.16,.6);
+      s.quadraticCurveTo(-2.08,.72,-1.8,.78);
+      s.lineTo(1.0,.84);
+      s.quadraticCurveTo(1.72,.78,2.05,.66);
+    },w)),paint);
+    addM(getGeo('sedanG',()=>profileGeo(s=>{
+      s.moveTo(1.02,.8);
+      s.quadraticCurveTo(.6,1.06,.36,1.24);
+      s.quadraticCurveTo(.05,1.32,-.35,1.32);
+      s.lineTo(-.72,1.29);
+      s.quadraticCurveTo(-1.15,1.12,-1.42,.8);
+    },w-.26)),M_GLASS);
+    const grill=addM(GEO.box,M_TRIM,2.2,.42,0); grill.scale.set(.08,.16,1.1); grill.castShadow=false;
+    const chr=addM(GEO.box,M_CHROME,2.21,.55,0); chr.scale.set(.04,.04,1.0); chr.castShadow=false;
+    mirror(paint,.95,.9,w/2);
+    g.userData.tails=addLamps(bodyG,len,w,.58);
+    addWheelSet(g,[[1.36,-.78],[1.36,.78],[-1.36,-.78],[-1.36,.78]],.33,.24);
+    if(type==='taxi'){
+      const sign=new THREE.Group();
+      const st=TEXC('taxi');
+      const s1=texPlane(.8,.32,st); s1.position.z=.012; sign.add(s1);
+      const s2=texPlane(.8,.32,st); s2.rotation.y=Math.PI; s2.position.z=-.012; sign.add(s2);
+      const sb=new THREE.Mesh(GEO.box,M_TRIM); sb.scale.set(.85,.3,.1); sign.add(sb);
+      sign.position.set(-.2,1.48,0); bodyG.add(sign);
+    }
+    if(type==='police'){
+      const stripe=addM(GEO.box,paintM(0x0a3a8c),0,.66,0); stripe.scale.set(4.3,.22,w+.16); stripe.castShadow=false;
+      const pt=TEXC('police');
+      [-1,1].forEach(s=>{const e=texPlane(1.5,.38,pt); e.rotation.y=s>0?0:Math.PI; e.position.set(.2,.62,s*(w/2+.1)); bodyG.add(e);});
+      const bar=addM(GEO.box,M_TRIM,-.2,1.42,0); bar.scale.set(1.1,.1,.42); bar.castShadow=false;
+      const rl=new THREE.Mesh(GEO.box,new THREE.MeshStandardMaterial({color:0xff2222,emissive:0xff2222,emissiveIntensity:1.5}));
+      rl.scale.set(.4,.14,.34); rl.position.set(-.45,1.52,0); bodyG.add(rl);
+      const bl=new THREE.Mesh(GEO.box,new THREE.MeshStandardMaterial({color:0x2255ff,emissive:0x2255ff,emissiveIntensity:1.5}));
+      bl.scale.set(.4,.14,.34); bl.position.set(.05,1.52,0); bodyG.add(bl);
+      const pl=new THREE.PointLight(0x4466ff,0,18); pl.position.set(0,2.2,0); g.add(pl);
+      g.userData.flash={rl,bl,pl,t:0};
+      addPlates(g,len);
+    }
+  }else if(type==='i10'){
+    len=3.62; w=1.66;
+    const paint=paintM(pick([0xd13a3a,0x3a6bd1,0xeceded,0xf4f5f4,0x9aa0a6]));
+    addM(getGeo('hatchB',()=>profileGeo(s=>{
+      s.moveTo(1.8,.56);
+      s.quadraticCurveTo(1.9,.4,1.72,.3);
+      carBottom(s,1.12,-1.12,.34,.3);
+      s.lineTo(-1.68,.3);
+      s.quadraticCurveTo(-1.88,.44,-1.8,.72);
+      s.lineTo(-1.76,.8);
+      s.lineTo(.85,.82);
+      s.quadraticCurveTo(1.4,.76,1.68,.62);
+    },w)),paint);
+    addM(getGeo('hatchG',()=>profileGeo(s=>{
+      s.moveTo(.88,.78);
+      s.quadraticCurveTo(.5,1.06,.3,1.2);
+      s.quadraticCurveTo(0,1.28,-.4,1.28);
+      s.lineTo(-1.05,1.24);
+      s.quadraticCurveTo(-1.62,1.0,-1.7,.78);
+    },w-.24)),M_GLASS);
+    mirror(paint,.8,.86,w/2);
+    g.userData.tails=addLamps(bodyG,len,w,.56);
+    addWheelSet(g,[[1.12,-.74],[1.12,.74],[-1.12,-.74],[-1.12,.74]],.31,.22);
+  }else if(type==='suv'){
+    len=4.6; w=1.88;
+    const paint=paintM(pick(CARCOLORS));
+    addM(getGeo('suvB',()=>profileGeo(s=>{
+      s.moveTo(2.3,.68);
+      s.quadraticCurveTo(2.38,.46,2.18,.36);
+      carBottom(s,1.45,-1.45,.42,.36);
+      s.lineTo(-2.18,.36);
+      s.quadraticCurveTo(-2.36,.5,-2.3,.8);
+      s.lineTo(-2.26,1.0);
+      s.lineTo(1.15,1.02);
+      s.quadraticCurveTo(1.85,.95,2.2,.78);
+    },w)),paint);
+    addM(getGeo('suvG',()=>profileGeo(s=>{
+      s.moveTo(1.22,.98);
+      s.quadraticCurveTo(.72,1.3,.48,1.48);
+      s.quadraticCurveTo(.2,1.56,-.2,1.56);
+      s.lineTo(-1.55,1.54);
+      s.quadraticCurveTo(-2.0,1.32,-2.1,1.0);
+    },w-.28)),M_GLASS);
+    const rail1=addM(GEO.box,M_CHROME,-.4,1.62,-.55); rail1.scale.set(2.4,.04,.05); rail1.castShadow=false;
+    const rail2=addM(GEO.box,M_CHROME,-.4,1.62,.55); rail2.scale.set(2.4,.04,.05); rail2.castShadow=false;
+    const grill=addM(GEO.box,M_TRIM,2.32,.5,0); grill.scale.set(.08,.2,1.2); grill.castShadow=false;
+    mirror(paint,1.1,1.05,w/2);
+    g.userData.tails=addLamps(bodyG,len,w,.66);
+    addWheelSet(g,[[1.45,-.84],[1.45,.84],[-1.45,-.84],[-1.45,.84]],.38,.26);
+  }else if(type==='van'){
+    len=5.3; w=1.94;
+    const paint=paintM(pick([0xf4f5f4,0xf4f5f4,0xeceded,0xd9d4c0]));
+    addM(getGeo('vanB',()=>profileGeo(s=>{
+      s.moveTo(2.6,.7);
+      s.quadraticCurveTo(2.72,.45,2.5,.32);
+      carBottom(s,1.75,-1.7,.4,.32);
+      s.lineTo(-2.5,.32);
+      s.quadraticCurveTo(-2.68,.5,-2.62,1.0);
+      s.lineTo(-2.58,1.85);
+      s.quadraticCurveTo(-2.52,2.02,-2.2,2.04);
+      s.lineTo(1.2,2.04);
+      s.quadraticCurveTo(1.95,1.96,2.32,1.5);
+      s.quadraticCurveTo(2.56,1.1,2.6,.7);
+    },w)),paint);
+    const ws=addM(GEO.box,M_GLASS,2.42,1.55,0); ws.scale.set(.07,.8,1.6); ws.rotation.z=-.42; ws.castShadow=false;
+    const sw1=addM(GEO.box,M_GLASS,1.15,1.5,-1.04); sw1.scale.set(1.5,.55,.05); sw1.castShadow=false;
+    const sw2=addM(GEO.box,M_GLASS,1.15,1.5,1.04); sw2.scale.set(1.5,.55,.05); sw2.castShadow=false;
+    mirror(paint,1.9,1.1,w/2);
+    g.userData.tails=addLamps(bodyG,len,w,.7);
+    addWheelSet(g,[[1.75,-.86],[1.75,.86],[-1.7,-.86],[-1.7,.86]],.36,.26);
+  }else if(type==='pickup'){
+    len=5.1; w=1.84;
+    const paint=paintM(pick([0xf4f5f4,0x9aa0a6,0x52565c,0x2e3b55]));
+    addM(getGeo('pickB',()=>profileGeo(s=>{
+      s.moveTo(2.55,.6);
+      s.quadraticCurveTo(2.62,.42,2.45,.3);
+      carBottom(s,1.7,-1.55,.38,.3);
+      s.lineTo(-2.45,.3);
+      s.quadraticCurveTo(-2.6,.45,-2.5,.78);
+      s.lineTo(2.3,.82);
+      s.quadraticCurveTo(2.5,.74,2.55,.6);
+    },w)),paint);
+    addM(getGeo('pickG',()=>profileGeo(s=>{
+      s.moveTo(2.05,.8);
+      s.quadraticCurveTo(1.7,1.28,1.4,1.42);
+      s.lineTo(.6,1.45);
+      s.quadraticCurveTo(.42,1.2,.45,.8);
+    },w-.3)),M_GLASS);
+    const bed=addM(GEO.box,M_TRIM,-1.25,.8,0); bed.scale.set(2.3,.07,1.45); bed.castShadow=false;
+    for(let i=0;i<3;i++){
+      const crate=addM(GEO.box,MAT(0x9a6b32),-1.9+i*.8,1.05,rnd(-.35,.35));
+      crate.scale.set(.6,.5,.6);
+    }
+    mirror(paint,1.7,.95,w/2);
+    g.userData.tails=addLamps(bodyG,len,w,.6);
+    addWheelSet(g,[[1.7,-.82],[1.7,.82],[-1.55,-.82],[-1.55,.82]],.36,.26);
+  }else if(type==='bus'){
+    len=11.4; w=2.5;
+    const paint=paintM(0xf2f4f0);
+    addM(getGeo('busB',()=>profileGeo(s=>{
+      s.moveTo(5.65,.8);
+      s.quadraticCurveTo(5.78,.5,5.5,.36);
+      carBottom(s,3.5,-3.5,.5,.36);
+      s.lineTo(-5.5,.36);
+      s.quadraticCurveTo(-5.76,.5,-5.68,.95);
+      s.lineTo(-5.64,2.6);
+      s.quadraticCurveTo(-5.6,3.0,-5.2,3.02);
+      s.lineTo(5.2,3.04);
+      s.quadraticCurveTo(5.6,3.0,5.63,2.5);
+    },w)),paint);
+    const band=addM(GEO.box,M_GLASS,0,2.32,0); band.scale.set(10.2,.95,w+.16); band.castShadow=false;
+    const ws=addM(GEO.box,M_GLASS,5.76,1.9,0); ws.scale.set(.08,1.5,2.1); ws.rotation.z=-.12; ws.castShadow=false;
+    const skirt=addM(GEO.box,paintM(0x00833e),0,.72,0); skirt.scale.set(11.3,.55,w+.16); skirt.castShadow=false;
+    const route=addM(GEO.box,new THREE.MeshStandardMaterial({color:0xfff7c2,emissive:0xffefa0,emissiveIntensity:1.2}),5.78,2.72,0);
+    route.scale.set(.06,.28,1.3); route.castShadow=false;
+    const et=TEXC('egged');
+    [-1,1].forEach(s=>{const e=texPlane(.9,.9,et); e.rotation.y=s>0?0:Math.PI; e.position.set(2.6,1.5,s*(w/2+.14)); bodyG.add(e);});
+    g.userData.tails=addLamps(bodyG,len,w,.8);
+    addWheelSet(g,[[3.5,-1.06],[3.5,1.06],[-3.5,-1.06],[-3.5,1.06]],.46,.32);
+  }else if(type==='mahtaz'){
+    len=8; w=2.4;
+    const paint=paintM(0x10458c);
+    addM(getGeo('mahCab',()=>profileGeo(s=>{
+      s.moveTo(3.95,1.0);
+      s.quadraticCurveTo(4.05,.6,3.8,.55);
+      s.lineTo(2.1,.55);
+      s.lineTo(2.05,2.45);
+      s.quadraticCurveTo(2.05,2.62,2.25,2.62);
+      s.lineTo(3.6,2.6);
+      s.quadraticCurveTo(3.95,2.55,3.95,2.0);
+    },2.35)),paint);
+    const ws=addM(GEO.box,M_GLASS,3.88,1.95,0); ws.scale.set(.07,.85,2.0); ws.rotation.z=-.08; ws.castShadow=false;
+    const chassis=addM(GEO.box,M_TRIM,-.4,.7,0); chassis.scale.set(7.6,.5,2.2);
+    const tankGeo=getGeo('mahTank',()=>{ const t=new THREE.CylinderGeometry(1.05,1.05,4.7,18); t.rotateZ(Math.PI/2); return t; });
+    addM(tankGeo,paint,-.85,1.85,0);
+    const pt=TEXC('police');
+    [-1,1].forEach(s=>{const e=texPlane(2.4,.6,pt); e.rotation.y=s>0?0:Math.PI; e.position.set(-.9,1.85,s*1.08); bodyG.add(e);});
+    const tur=new THREE.Group();
+    tur.add(cyl(.5,.5,0x2b2f36));
+    const barrel=cyl(.14,2.2,0x2b2f36); barrel.rotation.z=Math.PI/2-0.35; barrel.position.set(.9,.55,0);
+    tur.add(barrel);
+    tur.position.set(-.5,3,0); g.add(tur);
+    g.userData.turret=tur; g.userData.barrel=barrel;
+    g.userData.tails=addLamps(bodyG,len,w,.7);
+    addWheelSet(g,[[2.9,-1.05],[2.9,1.05],[-.8,-1.05],[-.8,1.05],[-2.6,-1.05],[-2.6,1.05]],.5,.34);
+    addPlates(g,len);
+  }else if(type==='tram'){
+    len=23; w=2.3;
+    const paint=paintM(0xc62828);
+    addM(getGeo('tramB',()=>profileGeo(s=>{
+      s.moveTo(11.45,1.2);
+      s.quadraticCurveTo(11.5,.5,11.0,.34);
+      s.lineTo(-11.0,.34);
+      s.quadraticCurveTo(-11.5,.5,-11.45,1.2);
+      s.quadraticCurveTo(-11.35,2.6,-10.7,2.95);
+      s.lineTo(10.7,2.95);
+      s.quadraticCurveTo(11.35,2.6,11.45,1.2);
+    },w)),paint);
+    const band=addM(GEO.box,M_GLASS,0,2.1,0); band.scale.set(22.4,.95,w+.16); band.castShadow=false;
+    const skirt=addM(GEO.box,paintM(0xf2f3f5),0,.6,0); skirt.scale.set(22.8,.45,w+.16); skirt.castShadow=false;
+    for(const dx of [-8,-3.2,3.2,8]){
+      const door=addM(GEO.box,M_TRIM,dx,1.3,0); door.scale.set(1.15,1.7,w+.18); door.castShadow=false;
+    }
+    const acc=addM(GEO.box,M_TRIM,0,1.65,0); acc.scale.set(.5,2.55,w+.12); acc.castShadow=false;
+    for(const dx of [-6,6]){
+      const bog=addM(GEO.box,M_TRIM,dx,.3,0); bog.scale.set(2.0,.45,w-.2);
+      const roofbox=addM(GEO.box,MAT(0x8d949c),dx,3.06,0); roofbox.scale.set(2.6,.24,1.5);
+    }
+    const pa1=addM(GEO.box,M_TRIM,-5.6,3.5,0); pa1.scale.set(.06,.85,.06); pa1.rotation.z=.5;
+    const pa2=addM(GEO.box,M_TRIM,-6,3.5,0); pa2.scale.set(.06,.85,.06); pa2.rotation.z=-.5;
+    const paTop=addM(GEO.box,M_TRIM,-5.8,3.95,0); paTop.scale.set(1.2,.05,.1);
+  }
+  g.traverse(o=>{if(o.isMesh){o.receiveShadow=true;}});
+  if(type!=='tram') addHeadPool(g,len);
+  g.userData.len=len;
+  g.userData.halfW=w/2;
+  g.userData.body=bodyG;
+  return g;
+}
+
+/* ---------------- ניהול תנועה ---------------- */
+function laneX(lane,s){ return lane.dir*s; }
+function spawnCar(lane){
+  if(G.cars.length>=MAXCARS) return;
+  const L=G.roadLen;
+  // אל תיכנס אם הכניסה חסומה
+  for(const c of G.cars) if(c.lane===lane && c.s < -L/2+14) return;
+  const type=Math.random()<.11?'taxi':Math.random()<.08?'bus':Math.random()<.1?'pickup'
+    :Math.random()<.1?'van':Math.random()<.24?'suv':Math.random()<.22?'i10':pick(['sedan','mazda','corolla']);
+  const g=mkCarMesh(type);
+  const plateTex=addPlates(g,g.userData.len);
+  g.userData.car=null; // יקושר מיד אחרי יצירת הרשומה
+  const car={obj:g,lane,s:-L/2-rnd(2,8),v:lane.speed*rnd(.85,1),len:g.userData.len,
+    maxSpeed:lane.speed*rnd(.9,1.05),type,stoppedTime:0,honkT:rnd(2,6),driver:null,plateTex,attached:[]};
+  g.userData.car=car;          // קישור לראיקאסט — פקודת "להיצמד לרכב"
+  g.rotation.y=lane.dir===1? 0 : Math.PI;
+  G.cars.push(car); G.dyn.add(g);
+  return car;
+}
+function removeCar(car){
+  if(car.driver) removeDriver(car.driver,true);
+  car.attached.forEach(p=>{ if(p.state==='attached'){p.state='idle'; p.attachCar=null;} });
+  G.dyn.remove(car.obj);
+  if(car.plateTex) car.plateTex.dispose();
+  G.cars.splice(G.cars.indexOf(car),1);
+}
+// סריקת מכשול: רכב מוביל או מפגין על הנתיב
+function laneObstacle(car){
+  const lane=car.lane, front=car.s+car.len/2;
+  let gap=Infinity, peepHit=null;
+  for(const c of G.cars){
+    if(c===car||c.lane!==lane) continue;
+    const d=(c.s-c.len/2)-front;
+    if(d>-1&&d<gap) gap=d;
+  }
+  for(const p of G.peeps){
+    if(!p.onRoad()) continue;
+    if(Math.abs(p.obj.position.z-lane.z)>1.5) continue;
+    const ps=lane.dir*p.obj.position.x;
+    const d=ps-.45-front;
+    if(d>-2&&d<gap){ gap=d; peepHit=p; }
+  }
+  return {gap,peepHit};
+}
+const BRAKE=7, ACCEL=3.2;
+function updateCarKinematics(car,dt,brake){
+  const {gap,peepHit}=laneObstacle(car);
+  const margin=1.1;
+  if((car.driver&&car.driver.outOfCar)||car.attached.length>0){ car.v=0; }   // נהג בחוץ או מפגינים צמודים — הרכב תקוע
+  else if(gap===Infinity){ car.v=Math.min(car.v+ACCEL*dt,car.maxSpeed); }
+  else{
+    const d=gap-margin;
+    if(d<=0) car.v=Math.max(0,car.v-brake*2.2*dt);
+    else{
+      const vAllowed=Math.sqrt(2*brake*Math.max(0,d));
+      car.v=Math.min(car.v+ACCEL*dt,car.maxSpeed,Math.max(vAllowed,0));
+    }
+  }
+  car.s+=car.v*dt;
+  // דריסה — נכנסת מתחת לגלגלים כשהרכב עוד מהיר
+  if(peepHit && gap<.5 && car.v>2.5) runOver(peepHit,car);
+  if(car.v<.4){ car.stoppedTime+=dt;
+    car.honkT-=dt;
+    if(car.honkT<0){ if(Math.random()<.6) AUDIO.horn(); car.honkT=rnd(3,9); }
+  } else car.stoppedTime=0;
+  const lane=car.lane;
+  car.obj.position.set(laneX(lane,car.s),0,lane.z);
+  // ==== אנימציה פיזית ====
+  const ud=car.obj.userData;
+  if(ud.wheels){ const dth=car.v*dt/.33; for(const wm of ud.wheels) wm.rotation.y-=dth; }
+  const dec=car.prevV!==undefined? (car.prevV-car.v)/Math.max(dt,.001) : 0;
+  car.prevV=car.v;
+  car.pitch=lerp(car.pitch||0, clamp(dec*.012,-.03,.05), .18);     // צלילת חרטום
+  if(ud.body) ud.body.rotation.z=car.pitch;
+  const braking=dec>.8&&car.v>.05;
+  if(ud.tails&&braking!==car.wasBraking){
+    ud.tails.forEach(t=>t.material=braking?M_TAIL_ON:M_TAIL_OFF);
+    car.wasBraking=braking;
+  }
+  // עשן אגזוז ברכב עומד
+  car.exT=(car.exT??rnd(0,2))-dt;
+  if(car.exT<=0&&car.v<.5&&G.fx.length<130){
+    smokeFx(car.obj.position.x-lane.dir*(car.len/2+.3),.4,car.obj.position.z+.5);
+    car.exT=rnd(1.4,3);
+  }
+}
+function updateTraffic(dt){
+  const L=G.roadLen;
+  // ספאון
+  G.laneDefs.forEach((lane,i)=>{
+    G.spawnTimers[i]=(G.spawnTimers[i]||rnd(1,3))-dt;
+    if(G.spawnTimers[i]<=0){ spawnCar(lane); G.spawnTimers[i]=rnd(2.6,5.5)*(G.laneDefs.length>2?1.5:1); }
+  });
+  for(let i=G.cars.length-1;i>=0;i--){
+    const car=G.cars[i];
+    updateCarKinematics(car,dt,BRAKE);
+    if(car.s>L/2+10) removeCar(car);
+  }
+  updateTrain(dt);
+}
+function countStopped(){
+  let n=0;
+  for(const c of G.cars) if(c.v<.3 && Math.abs(c.obj.position.x)<G.roadLen/2) n++;
+  return n;
+}
+
+/* ---------------- רכבת קלה (מפה 3) ---------------- */
+function updateTrain(dt){
+  if(G.stage!==2) return;
+  if(!G.train){
+    G.trainTimer=(G.trainTimer??14)-dt;
+    if(G.trainTimer<=0){
+      const g=mkCarMesh('tram');
+      G.train={obj:g,s:-G.roadLen/2-26,v:13,len:23,blocked:false,bonusGiven:false};
+      G.dyn.add(g);
+    }
+    return;
+  }
+  const t=G.train, front=t.s+t.len/2;
+  let gap=Infinity, peepHit=null;
+  for(const p of G.peeps){
+    if(!p.onRoad()) continue;
+    if(Math.abs(p.obj.position.z)>1.6) continue;        // מסדרון המסילה
+    const d=p.obj.position.x-.45-front;
+    if(d>-2&&d<gap){ gap=d; peepHit=p; }
+  }
+  const brake=2.6, margin=2;
+  if(gap===Infinity) t.v=Math.min(t.v+1.5*dt,13);
+  else{
+    const d=gap-margin;
+    if(d<=0) t.v=Math.max(0,t.v-brake*2*dt);
+    else t.v=Math.min(t.v+1.5*dt,13,Math.sqrt(2*brake*Math.max(0,d)));
+  }
+  t.s+=t.v*dt;
+  if(peepHit && gap<.6 && t.v>2) runOver(peepHit,null);
+  const wasBlocked=t.blocked;
+  t.blocked=(t.v<.2 && gap<25);
+  if(t.blocked&&!wasBlocked){
+    $('trainBonus').textContent=G.side==='police'
+      ? '🚋 הרכבת הקלה חסומה — פנו את המסילה!'
+      : '🚋 הרכבת הקלה נעצרה! בונוס ענק!';
+    $('trainBonus').style.display='block';
+    newsFlash(G.side==='police'
+      ? '🚋 הרכבת הקלה נעצרה על גשר המיתרים — פנו את המסילה מיד!'
+      : '🚋 דרמה: הרכבת הקלה נעצרה על גשר המיתרים! בונוס ענק!');
+    AUDIO.ding();
+  }
+  if(!t.blocked&&$('trainBonus').style.display!=='none') $('trainBonus').style.display='none';
+  t.obj.position.set(t.s,0,0);
+  if(t.s>G.roadLen/2+30){ G.dyn.remove(t.obj); G.train=null; G.trainTimer=rnd(30,50); $('trainBonus').style.display='none'; }
+}
+
+/* ---------------- דריסה (לא גרפי, מינוס נקודות) ---------------- */
+function runOver(peep,car){
+  if(peep.state==='hit') return;
+  detach(peep);              // משחרר את הרכב שהוא נצמד אליו — אחרת יקפא לנצח
+  peep.state='hit'; peep.hitT=.9;
+  G.selected.delete(peep); peep.ring.visible=false;
+  addScore(-200);
+  G.runovers++;
+  AUDIO.oy(); AUDIO.thud();
+  starsFx(peep.obj.position.clone().setY(2));
+  if(G.side==='police'){
+    toast('תחקיר מח"ש: מפגין נפצע מרכב — ‎-200‎ מהתקציב','bad');
+    newsFlash('🔴 מבזק: מפגין נפצע בצומת — ביקורת ציבורית על המשטרה');
+  }else{
+    toast('מפגין נפצע! הזהירות קודמת לכל! ‎-200‎','bad');
+    newsFlash('🔴 מבזק: מפגין נפצע קל בצומת — מד"א במקום');
+  }
+}
+
+/* =========================================================================
+   דמויות — חרדים, שוטרים, נהגים, פרשים
+   ========================================================================= */
+function matC(hex,rough){ return new THREE.MeshStandardMaterial({color:hex,roughness:rough??.85,metalness:0}); }
+/* גיאומטריות בסיס לדמויות */
+const FG={
+  sph:new THREE.SphereGeometry(1,14,11),
+  hemi:new THREE.SphereGeometry(1,12,8,0,Math.PI*2,0,Math.PI/2),
+  limb:new THREE.CylinderGeometry(1,.8,1,10),
+  torso:new THREE.CylinderGeometry(1,.86,1,12),
+  skirt:new THREE.CylinderGeometry(1,1.22,1,12,1,true),
+  curl:new THREE.TorusGeometry(1,.38,6,10,Math.PI*1.4)
+};
+function mat4(px,py,pz,sx,sy,sz,rx,ry,rz){
+  return new THREE.Matrix4().compose(
+    new THREE.Vector3(px,py,pz),
+    new THREE.Quaternion().setFromEuler(new THREE.Euler(rx||0,ry||0,rz||0)),
+    new THREE.Vector3(sx,sy,sz));
+}
+// מיזוג גיאומטריות לחומר אחד — פחות קריאות ציור
+function mergeGeos(items){
+  const pos=[],norm=[],uv=[];
+  for(const [geo,m] of items){
+    const g=geo.index?geo.toNonIndexed():geo.clone();
+    g.applyMatrix4(m);
+    pos.push(...g.attributes.position.array);
+    norm.push(...g.attributes.normal.array);
+    const n=g.attributes.position.count;
+    if(g.attributes.uv) uv.push(...g.attributes.uv.array);
+    else for(let i=0;i<n*2;i++) uv.push(0);
+    g.dispose();
+  }
+  const out=new THREE.BufferGeometry();
+  out.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  out.setAttribute('normal',new THREE.Float32BufferAttribute(norm,3));
+  out.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  return out;
+}
+let GEO_FIG=null;
+function figGeos(){
+  if(GEO_FIG) return GEO_FIG;
+  GEO_FIG={
+    hat:mergeGeos([
+      [FG.sph,mat4(0,.005,0,.31,.012,.31)],            // שוליים רחבים
+      [FG.torso,mat4(0,.105,0,.175,.2,.175)]           // קודקוד
+    ]),
+    cap:mergeGeos([
+      [FG.hemi,mat4(0,0,0,.165,.12,.165)],
+      [GEO.box,mat4(0,-.005,.14,.2,.025,.13)]          // מצחייה
+    ]),
+    shin:mergeGeos([
+      [FG.limb,mat4(0,-.21,0,.062,.44,.062)],
+      [GEO.box,mat4(0,-.43,.05,.1,.07,.22)]            // נעל
+    ]),
+    head:mergeGeos([
+      [FG.sph,mat4(0,0,0,.145,.165,.14)],
+      [FG.sph,mat4(0,-.02,.135,.032,.038,.04)],        // אף
+      [FG.sph,mat4(-.14,0,0,.028,.05,.03)],            // אוזניים
+      [FG.sph,mat4(.14,0,0,.028,.05,.03)]
+    ]),
+    coat:mergeGeos([
+      [FG.torso,mat4(0,0,0,.235,.52,.195)],
+      [FG.skirt,mat4(0,-.36,0,.205,.24,.175)]          // שולי ז'קט
+    ]),
+    coatLong:mergeGeos([
+      [FG.torso,mat4(0,0,0,.25,.52,.205)],
+      [FG.skirt,mat4(0,-.44,0,.22,.42,.185)]           // מעיל ארוך
+    ])
+  };
+  return GEO_FIG;
+}
+/* בנאי דמות — שלד עם ברכיים ומרפקים */
+function mkFigure(o){
+  const FGE=figGeos();
+  const root=new THREE.Group(), inner=new THREE.Group(); root.add(inner);
+  const coatM=matC(o.coat??0x16161b,.88);
+  const pantsM=o.pants!==undefined? matC(o.pants,.9):coatM;
+  const skinM=matC(o.skin??pick([0xE2B48C,0xD9A87E,0xC99A74,0xEDC39B]),.55);
+  const mats=[coatM,skinM]; if(pantsM!==coatM) mats.push(pantsM);
+  const mesh=(geo,m,px,py,pz)=>{
+    const M=new THREE.Mesh(geo,m); M.position.set(px,py,pz);
+    M.castShadow=true; inner.add(M); return M;
+  };
+  mesh(o.longCoat?FGE.coatLong:FGE.coat,coatM,0,1.02,0);
+  if(o.shirt!==false){
+    const shirtM=matC(0xf2f1ea,.8); mats.push(shirtM);
+    const sh=mesh(GEO.box,shirtM,0,1.17,.16); sh.scale.set(.12,.23,.05); sh.castShadow=false;
+  }
+  const head=mesh(FGE.head,skinM,0,1.5,0);
+  const mkLeg=sx=>{
+    const hip=new THREE.Group(); hip.position.set(sx*.1,.84,0); inner.add(hip);
+    const th=new THREE.Mesh(FG.limb,pantsM); th.scale.set(.075,.42,.075);
+    th.position.y=-.21; th.castShadow=true; hip.add(th);
+    const knee=new THREE.Group(); knee.position.y=-.42; hip.add(knee);
+    const lo=new THREE.Mesh(FGE.shin,pantsM); lo.castShadow=true; knee.add(lo);
+    return {hip,knee};
+  };
+  const L=mkLeg(-1),R=mkLeg(1);
+  const mkArm=sx=>{
+    const sh=new THREE.Group(); sh.position.set(sx*.275,1.26,0); inner.add(sh);
+    const up=new THREE.Mesh(FG.limb,coatM); up.scale.set(.058,.32,.058);
+    up.position.y=-.16; up.castShadow=true; sh.add(up);
+    const el=new THREE.Group(); el.position.y=-.32; sh.add(el);
+    const fo=new THREE.Mesh(FG.limb,coatM); fo.scale.set(.05,.27,.05);
+    fo.position.y=-.135; fo.castShadow=true; el.add(fo);
+    const hand=new THREE.Mesh(FG.sph,skinM); hand.scale.set(.048,.055,.048);
+    hand.position.y=-.3; el.add(hand);
+    return {sh,el};
+  };
+  const AL=mkArm(-1),AR=mkArm(1);
+  if(o.hat==='fedora'){
+    const hatM=matC(0x0e0e12,.5); mats.push(hatM);
+    const h=mesh(FGE.hat,hatM,0,1.625,0);
+    h.rotation.x=.05; h.rotation.z=rnd(-.04,.04);
+    if(o.smallHat) h.scale.set(.92,.92,.92);
+  }else if(o.hat==='cap'){
+    mesh(FGE.cap,o.capMat||coatM,0,1.6,.01);
+  }else if(o.hat==='kippa'){
+    const kM=matC(pick([0x141418,0x2a2a55,0xf2f1ea]),.8);
+    const k=mesh(FG.hemi,kM,0,1.63,-.02); k.scale.set(.085,.045,.085); k.castShadow=false;
+  }
+  if(o.beard){
+    const bm=matC(o.beard,.95); mats.push(bm);
+    const bd=mesh(FG.sph,bm,0,1.41,.07);
+    bd.scale.set(.09,o.beardBig?.13:.08,.075);
+  }
+  let peyoL=null,peyoR=null;
+  if(o.peyot){
+    const pm=matC(o.beard||0x2e2118,.95); mats.push(pm);
+    const mkP=sx=>{
+      const piv=new THREE.Group(); piv.position.set(sx*.148,1.55,.02); inner.add(piv);
+      const c=new THREE.Mesh(FG.curl,pm); c.scale.set(.045,.065,.045);
+      c.position.y=-.09; c.rotation.y=sx>0?Math.PI/2:-Math.PI/2; c.castShadow=true;
+      piv.add(c); return piv;
+    };
+    peyoL=mkP(-1); peyoR=mkP(1);
+  }
+  if(o.vest){
+    const vm=new THREE.MeshStandardMaterial({color:0xf7e92a,emissive:0x8a7c0e,emissiveIntensity:.55,roughness:.7});
+    mats.push(vm);
+    const v=mesh(FG.torso,vm,0,1.07,0); v.scale.set(.26,.36,.215); v.castShadow=false;
+  }
+  let phone=null;
+  if(o.phone){ phone=mesh(GEO.box,matC(0x0c0c10,.4),.205,1.5,.1); phone.scale.set(.05,.12,.025); phone.castShadow=false; }
+  if(o.glasses){ const gl=mesh(GEO.box,matC(0x16161b,.3),0,1.52,.135); gl.scale.set(.2,.028,.02); gl.castShadow=false; }
+  const parts={legL:L.hip,legR:R.hip,kneeL:L.knee,kneeR:R.knee,
+    armL:AL.sh,armR:AR.sh,elbL:AL.el,elbR:AR.el,head,peyoL,peyoR,phone};
+  return {root,inner,parts,mats};
+}
+const UNIT_STATS={
+  bochur:{speed:4.4, grabMul:1,   fleeW:[.5,.78,.97], label:'בחור ישיבה', cost:50},
+  avrech:{speed:2.4, grabMul:3,   fleeW:[0,.5,.93],  label:'אברך ותיק', cost:150},
+  askan: {speed:3.2, grabMul:1.2, fleeW:[.3,.6,.95], label:'עסקן',      cost:250},
+  zalam: {speed:3.4, grabMul:1.4, fleeW:[.2,.5,.9],  label:'צלם',       cost:400}
+};
+// הילת התקשורת של הצלם: שוטר בקרבתו תופס וגורר לאט — "מצלמים אותך!"
+function zalamNear(x,z){
+  for(const p of G.peeps)
+    if(p.typeKey==='zalam'&&!['flee','hit','dragged'].includes(p.state)
+       &&dist2(p.obj.position.x,p.obj.position.z,x,z)<64) return true;
+  return false;
+}
+function mkPeep(typeKey,x,z,faction){
+  const st=UNIT_STATS[typeKey];
+  faction=faction||(G.side==='opposition'?'opposition':'haredi');
+  const beardC= typeKey==='avrech'?0xb9b9b9 : typeKey==='askan'?0x4a3826 : 0x2e2118;
+  const fig=mkFigure({
+    coat: faction==='opposition' ? (typeKey==='askan'?0x26364a: typeKey==='zalam'?0x35505c :0x24415a) : (typeKey==='askan'?0x23232a: typeKey==='zalam'?0x2e4a52 :0x141417),
+    hat:'fedora', smallHat:typeKey==='bochur'||typeKey==='zalam',
+    longCoat:typeKey==='avrech',
+    beard: typeKey==='zalam'?null:((typeKey!=='bochur'||Math.random()<.4)?beardC:null),
+    beardBig:typeKey==='avrech',
+    peyot:typeKey!=='zalam',   // צלם עיתונות — מראה אחר
+    phone:typeKey==='askan'||typeKey==='zalam',   // אצל הצלם זו המצלמה
+    glasses:typeKey==='askan'||typeKey==='zalam'
+  });
+  const root=fig.root, inner=fig.inner;
+  // ציציות מציצות מתחת לז'קט
+  const tzM=matC(0xf2f1ea,.85); fig.mats.push(tzM);
+  for(const sx of [-1,1]) for(const sz of [-1,1]){
+    const tz=new THREE.Mesh(GEO.box,tzM); tz.scale.set(.028,.15,.028);
+    tz.position.set(sx*.17,.6,sz*.1); tz.castShadow=false; inner.add(tz);
+  }
+  // גיוון מבנה גוף
+  const sc=rnd(.95,1.05);
+  inner.scale.set(sc*(typeKey==='bochur'?.94:typeKey==='avrech'?1.06:1),sc,sc);
+  // טבעת בחירה
+  const ring=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:0x35e08a,transparent:true,opacity:.9}));
+  ring.rotation.x=-Math.PI/2; ring.position.y=.04; ring.scale.set(1.5,1.5,1); ring.visible=false;
+  root.add(ring);
+  root.position.set(x,0,z);
+  const peep={
+    obj:root, inner, typeKey, st, mats:fig.mats,
+    parts:fig.parts,
+    faction, ai:faction!==G.playerFaction, state:'idle', target:null, phase:rnd(0,6), ring,
+    recoverT:0, attachCar:null, dragger:null, hitT:0, stain:0,
+    shoutT:0, argueT:0, argueCD:0,
+    onRoad(){ const p=this.obj.position; return Math.abs(p.z)<G.roadHalfW-.2 && Math.abs(p.x)<G.roadLen/2; },
+    selectable(){ return this.faction===G.playerFaction && !['dragged','recover','flee','hit'].includes(this.state); }
+  };
+  root.userData.peep=peep;
+  G.peeps.push(peep); G.dyn.add(root);
+  return peep;
+}
+function spawnFactionAI(faction,count){
+  for(let i=0;i<count;i++){
+    const p=mkPeep(pick(['bochur','bochur','avrech','askan']),rnd(-G.roadLen/2+8,G.roadLen/2-8),rnd(G.roadHalfW+4,G.roadHalfW+8),faction);
+    p.ai=true; p.target=new THREE.Vector3(clamp(rnd(-G.roadLen*.38,G.roadLen*.38),-G.roadLen/2+5,G.roadLen/2-5),0,rnd(-1.8,1.8));
+    p.state='moving';
+  }
+}
+function updateFactionAI(dt){
+  for(const p of G.peeps){
+    if(!p.ai || ['hit','flee','dragged','recover'].includes(p.state)) continue;
+    if(p.state==='blocking' && Math.random()<dt*.045){
+      p.target=new THREE.Vector3(rnd(-G.roadLen*.42,G.roadLen*.42),0,rnd(-2.2,2.2));
+      p.state='moving';
+    }else if(p.state==='idle' && p.onRoad()) p.state='blocking';
+    if(p.state==='moving' && p.target && steerPeep(p,dt,p.st.speed*.75)){
+      p.state=p.onRoad()?'blocking':'idle'; p.target=null;
+    }
+  }
+  // עימות לא-גרפי בין הפלגים: התקרבות, צעקות ודחיפות קלות בלבד.
+  for(let i=0;i<G.peeps.length;i++){
+    const a=G.peeps[i]; if(!a.ai && a.faction!==G.playerFaction) continue;
+    if(['hit','flee','dragged','recover','argue'].includes(a.state)) continue;
+    for(let j=i+1;j<G.peeps.length;j++){
+      const b=G.peeps[j];
+      if(a.faction===b.faction || ['hit','flee','dragged','recover','argue'].includes(b.state)) continue;
+      if(dist2(a.obj.position.x,a.obj.position.z,b.obj.position.x,b.obj.position.z)<1.8*1.8 && Math.random()<dt*.7){
+        a.state=b.state='argue'; a.argueT=b.argueT=1.2;
+        say(a.obj,'עימות!',1.1); say(b.obj,'תתרחק!',1.1); AUDIO.thud();
+        break;
+      }
+    }
+  }
+}
+function removePeep(p){
+  detach(p);
+  G.selected.delete(p);
+  G.dyn.remove(p.obj);
+  const i=G.peeps.indexOf(p); if(i>=0) G.peeps.splice(i,1);
+  p.mats.forEach(m=>m.dispose());
+  p.ring.material.dispose();
+}
+
+/* ---------------- שוטר / נהג ---------------- */
+function mkCopFig(){
+  const fig=mkFigure({coat:0x1b2a55,pants:0x16234a,hat:'cap',
+    capMat:matC(0x16234a,.6),vest:true,shirt:false});
+  return {root:fig.root,inner:fig.inner,parts:fig.parts};
+}
+function mkDriverFig(){
+  const fig=mkFigure({
+    coat:pick([0x4a7ab5,0xb54a4a,0x4ab57a,0xb5a44a,0x8a8f96,0xf0f0ec,0x36454f]),
+    pants:pick([0x33415e,0x2c2c30,0x5a5248]),
+    hat:Math.random()<.4?'kippa':null, shirt:false
+  });
+  return {root:fig.root,inner:fig.inner,parts:fig.parts,mats:fig.mats};
+}
+/* ---------------- סוס ופרש ---------------- */
+function mkHorse(){
+  const root=new THREE.Group();
+  const bodyM=matC(0x6b4626,.8), darkM=matC(0x3e2c18,.9);
+  const add=(geo,m,px,py,pz,sx,sy,sz,rz)=>{
+    const M=new THREE.Mesh(geo,m); M.position.set(px,py,pz); M.scale.set(sx,sy,sz);
+    if(rz)M.rotation.z=rz; M.castShadow=true; root.add(M); return M;
+  };
+  add(FG.sph,bodyM,0,1.3,0,.92,.5,.4);                   // גוף
+  add(FG.sph,bodyM,.6,1.34,0,.45,.46,.4);                // חזה
+  add(FG.sph,bodyM,-.62,1.32,0,.48,.46,.38);             // אחוריים
+  add(FG.torso,bodyM,1.02,1.74,0,.17,.72,.24,-.72);      // צוואר
+  add(FG.sph,bodyM,1.34,2.08,0,.15,.19,.13);             // ראש
+  add(FG.sph,bodyM,1.52,2.0,0,.1,.1,.1);                 // אף
+  add(FG.torso,darkM,1.22,2.26,-.06,.035,.14,.035);      // אוזניים
+  add(FG.torso,darkM,1.22,2.26,.06,.035,.14,.035);
+  add(GEO.box,darkM,.95,1.95,0,.08,.6,.06,-.7);          // רעמה
+  add(GEO.box,matC(0x6e1f1f,.7),-.05,1.62,0,.4,.09,.42); // אוכף
+  // רגליים דו-מפרקיות
+  const legs=[],knees=[];
+  [[-.62,-.2],[-.62,.2],[.6,-.2],[.6,.2]].forEach(([lx,lz])=>{
+    const hip=new THREE.Group(); hip.position.set(lx,1.18,lz); root.add(hip);
+    const up=new THREE.Mesh(FG.limb,bodyM); up.scale.set(.085,.55,.085);
+    up.position.y=-.27; up.castShadow=true; hip.add(up);
+    const knee=new THREE.Group(); knee.position.y=-.55; hip.add(knee);
+    const lo=new THREE.Mesh(FG.limb,darkM); lo.scale.set(.06,.52,.06);
+    lo.position.y=-.26; lo.castShadow=true; knee.add(lo);
+    const hoof=new THREE.Mesh(GEO.box,darkM); hoof.scale.set(.11,.08,.13);
+    hoof.position.y=-.55; knee.add(hoof);
+    legs.push(hip); knees.push(knee);
+  });
+  const tail=new THREE.Group(); tail.position.set(-1.04,1.5,0); root.add(tail);
+  const tm=new THREE.Mesh(FG.limb,darkM); tm.scale.set(.07,.62,.07); tm.position.y=-.31; tail.add(tm);
+  tail.rotation.x=.45;
+  // פרש
+  const cop=mkCopFig(); cop.root.scale.set(.92,.92,.92); cop.root.position.set(-.08,.92,0);
+  cop.parts.legL.rotation.x=-1.25; cop.parts.legR.rotation.x=-1.25;
+  cop.parts.kneeL.rotation.x=1.3; cop.parts.kneeR.rotation.x=1.3;
+  cop.parts.legL.position.z=-.3; cop.parts.legR.position.z=.3;
+  cop.parts.armL.rotation.x=-.5; cop.parts.armR.rotation.x=-.5;
+  cop.parts.elbL.rotation.x=-.5; cop.parts.elbR.rotation.x=-.5;
+  root.add(cop.root);
+  return {root,legs,knees,tail,riderParts:cop.parts};
+}
+
+/* ---------------- אנימציה — מפרקים מלאים ---------------- */
+function animHumanoid(parts,mode,phase,t){
+  const {legL,legR,armL,armR,kneeL,kneeR,elbL,elbR,peyoL,peyoR}=parts;
+  const amp= mode==='run'?.9 : mode==='walk'?.55 : 0;
+  const s1=Math.sin(phase), s2=-s1;
+  legL.rotation.x=s1*amp; legR.rotation.x=s2*amp;
+  if(kneeL){
+    const k=amp*1.25;
+    kneeL.rotation.x=Math.max(0,-s1)*k+(amp?.15:.04);
+    kneeR.rotation.x=Math.max(0,-s2)*k+(amp?.15:.04);
+  }
+  if(mode==='shout'){
+    armL.rotation.z=2.4+Math.sin(t*7)*.3; armR.rotation.z=-2.4-Math.cos(t*7)*.3;
+    armL.rotation.x=0; armR.rotation.x=0;
+    if(elbL){ elbL.rotation.x=-.45; elbR.rotation.x=-.45; }
+  }else if(mode==='sit'){
+    legL.rotation.x=-1.4; legR.rotation.x=-1.4;
+    if(kneeL){ kneeL.rotation.x=1.5; kneeR.rotation.x=1.5; }
+    armL.rotation.z=.3; armR.rotation.z=-.3;
+    armL.rotation.x=-.4; armR.rotation.x=-.4;
+    if(elbL){ elbL.rotation.x=-.5; elbR.rotation.x=-.5; }
+  }else if(mode==='drag'){
+    armL.rotation.x=-2.5; armR.rotation.x=-2.5;
+    armL.rotation.z=.15; armR.rotation.z=-.15;
+    if(elbL){ elbL.rotation.x=-.25; elbR.rotation.x=-.25; }
+    legL.rotation.x=.35; legR.rotation.x=.5;
+    if(kneeL){ kneeL.rotation.x=.4; kneeR.rotation.x=.6; }
+  }else if(mode==='lie'){
+    legL.rotation.x=0; legR.rotation.x=0;
+    armL.rotation.x=0; armR.rotation.x=0;
+    armL.rotation.z=.25; armR.rotation.z=-.25;
+    if(kneeL){ kneeL.rotation.x=.06; kneeR.rotation.x=.06; }
+    if(elbL){ elbL.rotation.x=0; elbR.rotation.x=0; }
+  }else{
+    armL.rotation.x=s2*amp*.65; armR.rotation.x=s1*amp*.65;
+    armL.rotation.z=.1; armR.rotation.z=-.1;
+    if(elbL){
+      elbL.rotation.x=-.3-Math.max(0,s2)*amp*.5;
+      elbR.rotation.x=-.3-Math.max(0,s1)*amp*.5;
+    }
+    if(mode==='idle'){
+      const b=Math.sin(t*1.7)*.03;
+      armL.rotation.z=.1+b; armR.rotation.z=-.1-b;
+    }
+  }
+  if(peyoL){
+    const fl=(amp||.25)*Math.sin(phase*1.05)*.55;
+    peyoL.rotation.x=fl; peyoR.rotation.x=-fl;
+    peyoL.rotation.z=.12; peyoR.rotation.z=-.12;
+  }
+}
+function faceToward(obj,tx,tz,lerpF){
+  const dx=tx-obj.position.x, dz=tz-obj.position.z;
+  if(dx*dx+dz*dz<.001) return;
+  const want=Math.atan2(dx,dz);
+  let cur=obj.rotation.y, d=want-cur;
+  while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+  obj.rotation.y=cur+d*(lerpF||.2);
+}
+
+/* ---------------- בועות דיבור ---------------- */
+function say(holder,text,dur=2.4){
+  if(G.bubbles.length>14) return;
+  const c=document.createElement('canvas'); c.width=256; c.height=88;
+  const x=c.getContext('2d'); x.direction='rtl';
+  const r=14;
+  x.fillStyle='#fff'; x.strokeStyle='#16131a'; x.lineWidth=5;
+  x.beginPath();
+  x.moveTo(r,4); x.lineTo(256-r,4); x.quadraticCurveTo(252,4,252,4+r);
+  x.lineTo(252,60-r); x.quadraticCurveTo(252,60,256-r-4,60);
+  x.lineTo(140,60); x.lineTo(124,82); x.lineTo(116,60);
+  x.lineTo(r,60); x.quadraticCurveTo(4,60,4,60-r);
+  x.lineTo(4,4+r); x.quadraticCurveTo(4,4,r,4);
+  x.closePath(); x.fill(); x.stroke();
+  x.fillStyle='#16131a'; x.textAlign='center'; x.font=`bold 26px ${SERIF}`;
+  if(x.measureText(text).width>230) x.font=`bold 20px ${SERIF}`;
+  x.fillText(text,128,42);
+  const tex=new THREE.CanvasTexture(c);
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  spr.scale.set(3.4,1.17,1); spr.renderOrder=99;
+  G.dyn.add(spr);
+  G.bubbles.push({spr,tex,holder,t:dur,total:dur});
+}
+function updateBubbles(dt){
+  for(let i=G.bubbles.length-1;i>=0;i--){
+    const b=G.bubbles[i]; b.t-=dt;
+    const pos=b.holder.position||b.holder;
+    b.spr.position.set(pos.x,(pos.y||0)+2.6,pos.z);
+    b.spr.material.opacity=clamp(b.t/.35,0,1);
+    if(b.t<=0){ G.dyn.remove(b.spr); b.tex.dispose(); b.spr.material.dispose(); G.bubbles.splice(i,1); }
+  }
+}
+
+/* ---------------- אפקטים ---------------- */
+function spriteFromCanvas(draw,w=128,h=128){
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  draw(c.getContext('2d'),w,h);
+  const tex=new THREE.CanvasTexture(c);
+  return new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+}
+function starsFx(pos){
+  const spr=spriteFromCanvas((x,w,h)=>{
+    x.font='44px Arial'; x.textAlign='center'; x.fillStyle='#ffd34d';
+    x.strokeStyle='#7a5a00'; x.lineWidth=2;
+    [[30,40,-.4],[64,76,.2],[98,38,.5]].forEach(([X,Y,r])=>{
+      x.save(); x.translate(X,Y); x.rotate(r); x.fillText('✦',0,14); x.restore();
+    });
+  });
+  spr.position.copy(pos); spr.scale.set(2.6,2.6,1); spr.renderOrder=98;
+  G.dyn.add(spr);
+  let t=0;
+  G.fx.push({update(dt){
+    t+=dt; spr.position.y+=dt*1.2;
+    spr.material.rotation=Math.sin(t*9)*.25;
+    spr.material.opacity=clamp(1-t/.9,0,1);
+    if(t>.9){ G.dyn.remove(spr); spr.material.map.dispose(); spr.material.dispose(); return false; }
+    return true;
+  }});
+}
+function smokeFx(x,y,z){
+  if(!TEX._smoke) TEX._smoke=TEX.smoke();
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:TEX._smoke,transparent:true,opacity:.38,depthWrite:false}));
+  spr.position.set(x,y,z); spr.scale.set(.5,.5,1);
+  G.dyn.add(spr);
+  let t=0;
+  G.fx.push({update(dt){
+    t+=dt; spr.position.y+=dt*.7;
+    const s=.5+t*1.3; spr.scale.set(s,s,1);
+    spr.material.opacity=Math.max(0,.38-t*.3);
+    if(t>1.25){ G.dyn.remove(spr); spr.material.dispose(); return false; }
+    return true;
+  }});
+}
+function shockwaveFx(pos){
+  const m=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:0xffe9a0,transparent:true,opacity:.95,side:THREE.DoubleSide}));
+  m.rotation.x=-Math.PI/2; m.position.set(pos.x,.1,pos.z);
+  G.dyn.add(m);
+  let t=0;
+  G.fx.push({update(dt){
+    t+=dt; const s=2+t*55; m.scale.set(s,s,1);
+    m.material.opacity=clamp(.95-t*1.4,0,1);
+    if(t>.7){ G.dyn.remove(m); m.material.dispose(); return false; }
+    return true;
+  }});
+}
+function updateFx(dt){
+  for(let i=G.fx.length-1;i>=0;i--) if(!G.fx[i].update(dt)) G.fx.splice(i,1);
+}
+
+/* =========================================================================
+   AI מפגינים
+   ========================================================================= */
+const MAXPEEPS=80;
+const SLOGANS=['גיוס שמד!','לא נתגייס!','עד מוות!','התורה קודמת!'];
+function sidewalkZ(z){ return (z>=0?1:-1)*(G.roadHalfW+3); }
+function detach(p){
+  if(p.attachCar){ const a=p.attachCar.attached; const i=a.indexOf(p); if(i>=0)a.splice(i,1); p.attachCar=null; }
+  p.dragger=null;
+  p.attachPending=null;
+}
+function makeFlee(p){
+  if(p.state==='flee'||p.state==='hit') return;
+  detach(p);
+  p.state='flee'; addScore(G.side==='police'?30:-20); G.fled++;
+  G.selected.delete(p); p.ring.visible=false;
+  p.target={x:(p.obj.position.x>=0?1:-1)*(G.roadLen/2+10), z:(Math.random()<.5?-1:1)*(G.roadHalfW+4.5)};
+  say(p.obj,pick(['אוי גוואלד!','רחמנא ליצלן!','ברחו!!']),2);
+}
+function steerPeep(p,dt,speed){
+  const t=p.target; if(!t) return true;
+  const pos=p.obj.position;
+  const dx=t.x-pos.x, dz=t.z-pos.z, d=Math.hypot(dx,dz);
+  if(d<.35) return true;
+  let vx=dx/d, vz=dz/d;
+  for(const q of G.peeps){
+    if(q===p) continue;
+    const ax=pos.x-q.obj.position.x, az=pos.z-q.obj.position.z, dd=ax*ax+az*az;
+    if(dd<.42&&dd>.0001){ const inv=.9/Math.sqrt(dd); vx+=ax*inv; vz+=az*inv; }
+  }
+  for(const c of G.cars){              // עקיפת רכבים עומדים
+    if(c.v>1.5) continue;
+    const cp=c.obj.position, ax=pos.x-cp.x, az=pos.z-cp.z;
+    if(Math.abs(ax)<c.len/2+.6 && Math.abs(az)<1.5){
+      if(Math.abs(ax)>c.len/2-.6) vx+=Math.sign(ax)*2.2; else vz+=Math.sign(az||.1)*2.2;
+    }
+  }
+  const n=Math.hypot(vx,vz)||1;
+  pos.x=clamp(pos.x+vx/n*speed*dt, -G.roadLen/2+2, G.roadLen/2-2);
+  pos.z=clamp(pos.z+vz/n*speed*dt, -G.roadHalfW-6.5, G.roadHalfW+6.5);
+  faceToward(p.obj,t.x,t.z,.25);
+  p.phase+=dt*speed*2.6;
+  return false;
+}
+function applyPose(p){
+  const inn=p.inner;
+  if(p.state==='lying'){ inn.rotation.x=-Math.PI/2; inn.position.y=.32; }
+  else if(p.state==='attached'||p.state==='recover'){ inn.rotation.x=0; inn.position.y=-.38; }
+  else if(p.state==='dragged'){ inn.rotation.x=.85; inn.position.y=.12; }
+  else { inn.rotation.x=0; inn.position.y=0; }
+}
+function updatePeeps(dt,now){
+  for(let i=G.peeps.length-1;i>=0;i--){
+    const p=G.peeps[i];
+    let mode='idle';
+    switch(p.state){
+      case 'hit':
+        p.hitT-=dt;
+        const on=Math.sin(now*30)>0;
+        p.mats.forEach(m=>{ m.emissive.setHex(on?0xff2222:0x000000); m.emissiveIntensity=on?.9:0; });
+        if(p.hitT<=0) { removePeep(p); continue; }
+        break;
+      case 'flee':
+        mode='run';
+        if(steerPeep(p,dt,p.st.speed*1.15)
+           ||Math.abs(p.obj.position.x)>G.roadLen/2-3
+           ||Math.abs(p.obj.position.z)>G.roadHalfW+5.8){ removePeep(p); continue; }
+        break;
+      case 'moving': case 'helping': case 'panic':
+        mode = p.st.speed>3?'run':'walk';
+        if(steerPeep(p,dt,p.st.speed)){
+          if(p.attachPending && p.attachPending.v<1 && G.cars.includes(p.attachPending)){
+            p.state='attached'; p.attachCar=p.attachPending;
+            p.attachCar.attached.push(p);
+            const cp=p.attachPending.obj.position;
+            faceToward(p.obj,cp.x,cp.z,1); p.obj.rotation.y+=Math.PI; // גב לרכב
+            say(p.obj,'לא זזים מפה!',2);
+          }
+          else p.state = p.onRoad()? 'blocking':'idle';
+          p.attachPending=null;
+        }
+        break;
+      case 'blocking':
+        p.shoutT-=dt;
+        if(p.shoutT<=0){ if(Math.random()<.5) say(p.obj,pick(SLOGANS),2.2); p.shoutAnim=1.2; p.shoutT=rnd(5,11); }
+        if(p.shoutAnim>0){ p.shoutAnim-=dt; mode='shout'; }
+        break;
+      case 'lying': mode='lie'; break;
+      case 'attached': case 'recover':
+        if(p.state==='recover'){ p.recoverT-=dt; if(p.recoverT<=0){ p.state='idle'; } }
+        mode='sit'; break;
+      case 'dragged': mode='drag'; break;
+      case 'argue':
+        p.argueT-=dt; mode='shout';
+        if(p.argueT<=0) p.state = p.onRoad()? 'blocking':'idle';
+        break;
+    }
+    if(p.wetCD>0) p.wetCD-=dt;
+    if(p.argueCD>0) p.argueCD-=dt;
+    if(p.cowT>0) p.cowT-=dt;
+    if(p.horseCD>0) p.horseCD-=dt;
+    // עומד באמצע הכביש = חוסם: בלי זה מפגין ששוחרר מגרר/דחיפה על הכביש
+    // נשאר 'idle' — בלתי-נראה לשוטרים ולדירקטור אבל חוסם תנועה
+    if(p.state==='idle'&&p.onRoad()) p.state='blocking';
+    animHumanoid(p.parts,mode,p.phase,now);
+    if(p.typeKey==='askan'&&p.parts.phone&&mode!=='lie'){
+      p.parts.armR.rotation.x=-2.3; p.parts.armR.rotation.z=-.35;
+      if(p.parts.elbR) p.parts.elbR.rotation.x=-1.1;
+    }
+    applyPose(p);
+    p.ring.visible=G.selected.has(p);
+  }
+}
+
+/* =========================================================================
+   נהגים זועמים
+   ========================================================================= */
+const DRIVER_SHOUTS=['נו באמת!!','יש לי עבודה!','תזוזו כבר!','אני מאחר לחתונה!','די עם השטויות!','נוווו!!'];
+function friendsNear(peep,r){
+  let n=0;
+  for(const q of G.peeps)
+    if(q!==peep && !['flee','hit','dragged','recover'].includes(q.state) &&
+       dist2(q.obj.position.x,q.obj.position.z,peep.obj.position.x,peep.obj.position.z)<r*r) n++;
+  return n;
+}
+function spawnDriver(car){
+  const fig=mkDriverFig();
+  const sideZ=car.lane.z>0? -1:1;
+  fig.root.position.set(car.obj.position.x-car.lane.dir*.8, 0, car.lane.z+sideZ*1.4);
+  G.dyn.add(fig.root);
+  const d={fig,obj:fig.root,parts:fig.parts,car,state:'walk',t:0,phase:0,target:null,
+    outOfCar:true,shoutT:0,pushP:null};
+  car.driver=d; G.drivers.push(d);
+  return d;
+}
+function removeDriver(d,instant){
+  G.dyn.remove(d.obj);
+  if(d.pushP&&d.pushP.state==='pushed') d.pushP.state=d.pushP.onRoad()?'blocking':'idle';
+  if(d.car) d.car.driver=null;
+  const i=G.drivers.indexOf(d); if(i>=0)G.drivers.splice(i,1);
+  if(d.fig.mats) d.fig.mats.forEach(m=>m.dispose());
+}
+function moveFig(d,tx,tz,speed,dt){
+  const pos=d.obj.position, dx=tx-pos.x,dz=tz-pos.z,dd=Math.hypot(dx,dz);
+  if(dd<.3) return true;
+  pos.x+=dx/dd*speed*dt; pos.z+=dz/dd*speed*dt;
+  faceToward(d.obj,tx,tz,.3); d.phase+=dt*speed*2.6;
+  return false;
+}
+function updateDrivers(dt,now){
+  // יציאת נהגים מרכבים תקועים
+  if(G.drivers.length<6){
+    for(const car of G.cars){
+      if(car.stoppedTime>7 && !car.driver && Math.random()<dt*.25 && car.type!=='bus'){
+        // רק אם באמת יש מפגין חוסם בקרבת מקום
+        let found=null,best=144;
+        for(const p of G.peeps){ if(!p.onRoad())continue;
+          const dd=dist2(p.obj.position.x,p.obj.position.z,car.obj.position.x,car.obj.position.z);
+          if(dd<best){best=dd;found=p;} }
+        if(found){ spawnDriver(car); break; }
+      }
+    }
+  }
+  for(let i=G.drivers.length-1;i>=0;i--){
+    const d=G.drivers[i]; d.t+=dt;
+    let mode='idle';
+    const front={x:d.car.obj.position.x+d.car.lane.dir*(d.car.len/2+1),z:d.car.lane.z};
+    switch(d.state){
+      case 'walk':
+        mode='walk';
+        if(moveFig(d,front.x,front.z,2.4,dt)){ d.state='shout'; d.t=0; }
+        break;
+      case 'shout':{
+        mode='shout';
+        d.shoutT-=dt;
+        if(d.shoutT<=0){ say(d.obj,pick(DRIVER_SHOUTS),2.2); d.shoutT=rnd(2.2,4); }
+        if(d.t>3){
+          let best=36,target=null;
+          for(const p of G.peeps){
+            if(!['blocking','moving','lying'].includes(p.state)||!p.onRoad()) continue;
+            if(p.state==='lying') continue;                       // שוכב — הנהג מוותר
+            const dd=dist2(p.obj.position.x,p.obj.position.z,front.x,front.z);
+            if(dd<best){best=dd;target=p;}
+          }
+          if(target){
+            if(friendsNear(target,6)>=3){
+              say(d.obj,'חוצפה!!',2); d.state='return';
+            }else{
+              d.pushP=target; target.state='pushed'; d.state='push'; d.t=0;
+              say(d.obj,'יאללה הביתה!',2);
+              // חברים רצים לעזור
+              let helpers=0;
+              for(const q of G.peeps){
+                if(helpers>=3) break;
+                if(q===target||!['blocking','idle'].includes(q.state)) continue;
+                if(dist2(q.obj.position.x,q.obj.position.z,target.obj.position.x,target.obj.position.z)<400){
+                  q.state='helping';
+                  q.target={x:target.obj.position.x+rnd(-1.5,1.5),z:target.obj.position.z+rnd(-1.5,1.5)};
+                  helpers++;
+                }
+              }
+            }
+          } else if(d.t>9) d.state='return';
+        }
+        break;}
+      case 'push':{
+        mode='walk';
+        const p=d.pushP;
+        if(!p||p.state!=='pushed'){ d.state='return'; break; }
+        if(friendsNear(p,6)>=3){                        // החברים הגיעו!
+          say(d.obj,'אוי לא...',1.6); p.state=p.onRoad()?'blocking':'idle'; d.pushP=null; d.state='return';
+          break;
+        }
+        const tz=sidewalkZ(p.obj.position.z);
+        p.obj.position.z+=Math.sign(tz-p.obj.position.z)*.55*dt;
+        d.obj.position.set(p.obj.position.x+.5,0,p.obj.position.z-Math.sign(tz)*0.7);
+        d.phase+=dt*2; p.phase+=dt*2;
+        if(Math.abs(p.obj.position.z)>G.roadHalfW+1){
+          p.state='idle'; p.target=null; d.pushP=null; d.state='return';
+        }
+        break;}
+      case 'return':
+        mode='walk';
+        if(moveFig(d,d.car.obj.position.x-d.car.lane.dir*.8,d.car.lane.z+(d.car.lane.z>0?-1.4:1.4),3,dt)
+           || d.t>30){ removeDriver(d); continue; }
+        break;
+    }
+    if(d.car.v>1||!G.cars.includes(d.car)){ removeDriver(d); continue; }
+    animHumanoid(d.parts,mode,d.phase,now);
+  }
+}
+
+/* =========================================================================
+   משטרה — שוטרים גוררים
+   ========================================================================= */
+function spawnCruiser(){
+  const ci=G.copCars.length;
+  const side=ci%2===0?1:-1;
+  const g=mkCarMesh('police');
+  const parkX=18+ci*9;
+  g.position.set(G.roadLen/2+18+ci*8,0,side*(G.roadHalfW+2.2));
+  g.rotation.y=Math.PI;
+  G.dyn.add(g);
+  G.copCars.push({obj:g,parkX,parked:false,flash:g.userData.flash,side});
+}
+function spawnPolice(){
+  AUDIO.siren(true);
+  newsFlash('🔴 המשטרה: "נערכים לפיזור ההפגנה בצומת"');
+  spawnCruiser(); spawnCruiser();
+}
+function spawnCopsFromCruiser(cr){
+  for(let k=0;k<3;k++){
+    const fig=mkCopFig();
+    fig.root.position.set(cr.obj.position.x+rnd(-1,1),0,cr.obj.position.z+rnd(-.5,.5));
+    G.dyn.add(fig.root);
+    // טבעת בחירה — במצב משטרה השחקן בוחר ומפקד על שוטרים
+    const ring=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:0x4d90ff,transparent:true,opacity:.9}));
+    ring.rotation.x=-Math.PI/2; ring.position.y=.04; ring.scale.set(1.5,1.5,1); ring.visible=false;
+    fig.root.add(ring);
+    G.cops.push({fig,obj:fig.root,parts:fig.parts,ring,state:'seek',target:null,grabT:0,
+      frozenT:0,phase:0,home:{x:cr.obj.position.x,z:cr.obj.position.z},argueT:0});
+  }
+}
+function copValidTarget(p){
+  return ['blocking','lying','moving','helping'].includes(p.state) && p.onRoad() && !p.copLock;
+}
+function updateCops(dt,now){
+  // ניידות נכנסות
+  for(const cr of G.copCars){
+    if(!cr.parked){
+      cr.obj.position.x-=10*dt;
+      if(cr.obj.position.x<=cr.parkX){ cr.parked=true; spawnCopsFromCruiser(cr); }
+    }
+    // צ'קלקה
+    const f=cr.flash; f.t+=dt;
+    const ph=Math.sin(f.t*10)>0;
+    f.rl.material.emissiveIntensity=ph?2:.15; f.bl.material.emissiveIntensity=ph?.15:2;
+    f.pl.color.setHex(ph?0xff3333:0x3355ff); f.pl.intensity=1.1;
+  }
+  for(const cop of G.cops){
+    let mode='idle';
+    if(cop.ring) cop.ring.visible=G.selCops.has(cop);
+    if(cop.frozenT>0){ cop.frozenT-=dt; animHumanoid(cop.parts,'idle',0,now); continue; }
+    switch(cop.state){
+      case 'seek':{
+        let best=1e9,t=null;
+        const R=G.rally, O=cop.orderPt;   // פקודה אישית גוברת על דגל הריכוז
+        for(const p of G.peeps){
+          if(!copValidTarget(p)) continue;
+          let dd=dist2(p.obj.position.x,p.obj.position.z,cop.obj.position.x,cop.obj.position.z);
+          if(O){ if(dist2(p.obj.position.x,p.obj.position.z,O.x,O.z)>144) continue; }   // רק מטרות סביב היעד שהוקצה
+          else if(R&&dist2(p.obj.position.x,p.obj.position.z,R.x,R.z)<196) dd*=.15;
+          if(dd<best){best=dd;t=p;}
+        }
+        if(t){ cop.target=t; t.copLock=cop; cop.state='walk'; }
+        else if(O){ mode='walk'; if(moveFig(cop,O.x,O.z,3.0,dt)) mode='idle'; }   // מתייצב ושומר על הנקודה
+        else { mode='walk'; if(moveFig(cop,cop.home.x,cop.home.z,2.6,dt)) mode='idle'; }
+        break;}
+      case 'walk':{
+        const p=cop.target;
+        if(!p||!G.peeps.includes(p)||['dragged','recover','flee','hit','attached'].includes(p.state)){
+          if(p)p.copLock=null; cop.target=null; cop.state='seek'; break;
+        }
+        mode='run';
+        if(moveFig(cop,p.obj.position.x+.5,p.obj.position.z,3.2,dt)){
+          if(p.typeKey==='askan'&&p.argueCD<=0&&p.state!=='lying'){
+            cop.state='argue'; cop.argueT=15; p.state='argue'; p.argueT=15;
+            p.argueCD=G.side==='police'?9999:40;   // מול המפקד — "יש לי אישור" עובד פעם אחת
+            say(p.obj,'יש לי אישור!',3);
+            const rid=G.runId;
+            gameTimeout(()=>{ if(G.runId===rid&&cop.state==='argue') say(cop.obj,'אדוני, פנה את הציר!',3); },1600);
+          }else{
+            cop.state='grab';
+            const zn=zalamNear(cop.obj.position.x,cop.obj.position.z);
+            cop.grabT=1.6*p.st.grabMul*(p.state==='lying'?2:1)*(zn?1.7:1);
+            if(zn&&Math.random()<.35) say(p.obj,'תצלם! תצלם!',1.6);
+          }
+        }
+        break;}
+      case 'argue':{
+        mode='shout';
+        cop.argueT-=dt;
+        if(cop.argueT<=0||!cop.target||!G.peeps.includes(cop.target)){
+          if(cop.target&&G.peeps.includes(cop.target)){
+            cop.state='grab';
+            cop.grabT=1.6*cop.target.st.grabMul*(cop.target.state==='lying'?2:1)
+                      *(zalamNear(cop.obj.position.x,cop.obj.position.z)?1.7:1);
+          }else{ cop.state='seek'; cop.target=null; }
+        } else if(Math.random()<dt*.4) say(cop.obj===undefined?cop.fig.root:cop.obj,pick(['להתפנות מיד!','זה צו חוקי!','אדוני!!']),2);
+        break;}
+      case 'grab':{
+        const p=cop.target;
+        // אימות מחדש — המטרה ברחה, נצמדה לרכב (חסינות!) או התרחקה
+        if(!p||!G.peeps.includes(p)
+           ||!['blocking','lying','moving','helping','argue'].includes(p.state)
+           ||dist2(p.obj.position.x,p.obj.position.z,cop.obj.position.x,cop.obj.position.z)>9){
+          if(p)p.copLock=null; cop.target=null; cop.state='seek'; break;
+        }
+        mode='drag';
+        cop.grabT-=dt;
+        faceToward(cop.obj,p.obj.position.x,p.obj.position.z,.4);
+        if(cop.grabT<=0){
+          p.state='dragged'; p.dragger=cop; detachFromLie(p);
+          G.selected.delete(p);
+          cop.state='drag';
+        }
+        break;}
+      case 'drag':{
+        const p=cop.target;
+        if(!p||!G.peeps.includes(p)){ cop.target=null; cop.state='seek'; break; }
+        mode='walk';
+        const tz=sidewalkZ(cop.obj.position.z||1);
+        const done=moveFig(cop,cop.obj.position.x,tz+Math.sign(tz)*1.2,
+          zalamNear(cop.obj.position.x,cop.obj.position.z)?0.8:1.3,dt);   // מצלמים — גוררים בעדינות
+        p.obj.position.set(cop.obj.position.x-.4,0,cop.obj.position.z-.6*Math.sign(tz));
+        p.phase+=dt*2;
+        if(done||Math.abs(cop.obj.position.z)>G.roadHalfW+2.2){
+          p.dragger=null; p.copLock=null;
+          if(G.side==='police'){
+            p.dragN=(p.dragN||0)+1;
+            addScore(p.dragN>=2?30:60);   // פינוי חוזר שווה פחות
+          }
+          if(G.side==='police'&&p.dragN>=2){
+            // בפעם השנייה — נשבר והולך הביתה (שחיקה אמיתית; בלי בונוס הברחה)
+            p.state='flee'; G.selected.delete(p); p.ring.visible=false;
+            p.target={x:(p.obj.position.x>=0?1:-1)*(G.roadLen/2+10), z:(Math.random()<.5?-1:1)*(G.roadHalfW+4.5)};
+            say(p.obj,pick(['נמאס לי, אני הביתה!','די, נשבר לי!']),2);
+          }else{
+            p.state='recover'; p.recoverT=10;
+            say(p.obj,pick(['עוד נשוב!','זה לא נגמר!']),2);
+          }
+          cop.target=null; cop.state='seek';
+        }
+        break;}
+    }
+    animHumanoid(cop.parts,mode,cop.phase,now);
+  }
+}
+function detachFromLie(p){ detach(p); }
+
+/* =========================================================================
+   פרשים
+   ========================================================================= */
+function spawnHorses(n){
+  n=n||3;
+  newsFlash('🔴 פרשי משטרה נכנסים לזירת ההפגנה');
+  for(let k=0;k<n;k++){
+    const h=mkHorse();
+    h.root.position.set(-G.roadLen/2-12-k*8,0,G.laneDefs[k%G.laneDefs.length].z);
+    G.dyn.add(h.root);
+    G.horses.push({...h,obj:h.root,dir:1,phase:rnd(0,6),frozenT:0,waitT:0});
+  }
+}
+function updateHorses(dt,now){
+  for(const h of G.horses){
+    if(h.frozenT>0){ h.frozenT-=dt; continue; }
+    if(h.waitT>0){ h.waitT-=dt; continue; }
+    const sp=8.5;
+    h.obj.position.x+=h.dir*sp*dt;
+    h.obj.position.z=Math.sin(h.obj.position.x*.06+h.phase)*Math.max(.5,G.roadHalfW-1.6);
+    h.obj.rotation.y=h.dir>0?Math.PI/2:-Math.PI/2;
+    h.phase+=dt*9;
+    h.legs.forEach((leg,i)=>{
+      const sw=Math.sin(h.phase+i*1.7);
+      leg.rotation.x=sw*.7;
+      if(h.knees&&h.knees[i]) h.knees[i].rotation.x=Math.max(0,-sw)*1.2+.12;
+    });
+    h.obj.position.y=Math.abs(Math.sin(h.phase*.5))*.12;
+    h.tail.rotation.x=.5+Math.sin(h.phase)*.2;
+    const lim=G.roadLen/2-4;   // היפוך כיוון רק כשמגיעים לקצה בכיוון הנסיעה (לא בלידה מחוץ למסך)
+    if(h.dir>0 && h.obj.position.x>lim){ h.dir=-1; h.waitT=rnd(1,3); }
+    else if(h.dir<0 && h.obj.position.x<-lim){ h.dir=1; h.waitT=rnd(1,3); }
+    // AI פחד — עומדים בורחים; שוכבים נשברים ב-60% לכל מעבר; צמודים לא מושפעים
+    for(const p of G.peeps){
+      if(!['blocking','moving','idle','helping','lying'].includes(p.state)) continue;
+      if(!p.onRoad()||p.horseCD>0) continue;
+      if(dist2(p.obj.position.x,p.obj.position.z,h.obj.position.x,h.obj.position.z)<36){
+        p.horseCD=2;   // ניסיון הפחדה אחד לכל מעבר סוס
+        if(p.state==='lying'&&Math.random()>=.6) continue;
+        p.state='panic'; p.attachPending=null;
+        p.target={x:p.obj.position.x+rnd(-3,3),z:sidewalkZ(p.obj.position.z)+Math.sign(p.obj.position.z||1)*rnd(0,2)};
+        if(Math.random()<.4) say(p.obj,pick(['אִיייי!','סוס!!','שמע ישראל!']),1.6);
+      }
+    }
+  }
+}
+
+/* =========================================================================
+   מכת"זית — שלוש רמות
+   ========================================================================= */
+const CANNON_LEVELS=[
+  {name:'מים',        color:0xdaf0ff, fleeIx:0, css:'linear-gradient(90deg,#cfeaff,#7fb8e8)'},
+  {name:'מים כחולים', color:0x2451d6, fleeIx:1, css:'linear-gradient(90deg,#7fa0ff,#2451d6)'},
+  {name:'בואש',       color:0x6b7a1f, fleeIx:2, css:'linear-gradient(90deg,#aab35e,#5a661a)'}
+];
+function spawnCannon(){
+  newsFlash('🔴 מכת"זית בדרך לצומת — "נפעל בכל האמצעים"');
+  const g=mkCarMesh('mahtaz');
+  g.position.set(G.roadLen/2+25,0,0); g.rotation.y=Math.PI;
+  G.dyn.add(g);
+  G.cannon={obj:g,turret:g.userData.turret,level:1,sprayLvlT:0,tank:25,refillT:0,
+    state:'arrive',impact:new THREE.Vector3(),target:null,hitT:0,frozenT:0,pts:null,ptData:[]};
+  // חלקיקי סילון
+  const N=260, pos=new Float32Array(N*3);
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const mat=new THREE.PointsMaterial({color:CANNON_LEVELS[0].color,size:.4,transparent:true,opacity:.85,depthWrite:false});
+  const pts=new THREE.Points(geo,mat); pts.frustumCulled=false; pts.visible=false;
+  G.dyn.add(pts);
+  G.cannon.pts=pts;
+  for(let i=0;i<N;i++) G.cannon.ptData.push({t:Math.random(),spread:[rnd(-.5,.5),rnd(-.4,.4)]});
+  $('tankWrap').style.display='block';
+  updateTankHUD();
+}
+function updateTankHUD(){
+  const c=G.cannon; if(!c) return;
+  const lv=CANNON_LEVELS[c.level-1];
+  // נקרא כל פריים בזמן ריסוס — כותבים ל-DOM רק כשמשהו באמת השתנה
+  const key=(c.refillT>0?'r':'t'+c.level)+'|'+Math.round((c.refillT>0?(1-c.refillT/15):c.tank/25)*100);
+  if(key===G._tankKey) return;
+  G._tankKey=key;
+  if(c.refillT>0){
+    $('tankLabel').textContent=G.side==='police'?'מיכל המכת"זית — ממלא!':`מיכל המכת"זית — ממלא! (חלון זהב!)`;
+    $('tankBar').style.width=((1-c.refillT/15)*100)+'%';
+    $('tankBar').style.background='linear-gradient(90deg,#ffd34d,#ff9a3c)';
+  }else{
+    $('tankLabel').textContent=`מיכל המכת"זית — ${lv.name}`;
+    $('tankBar').style.width=(c.tank/25*100)+'%';
+    $('tankBar').style.background=lv.css;
+  }
+}
+const _nozV=new THREE.Vector3(), _midV=new THREE.Vector3();   // וקטורי עזר — בלי הקצאות פר-פריים
+function cannonNozzle(){
+  return _nozV.set(-1.2,3.6,0).applyMatrix4(G.cannon.obj.matrixWorld);
+}
+function updateCannon(dt,now){
+  const c=G.cannon; if(!c) return;
+  if(c.frozenT>0){ c.frozenT-=dt; c.pts.visible=false; AUDIO.spray(false); return; }
+  if(c.state==='arrive'){
+    c.obj.position.x-=8*dt;
+    let cx=0,n=0;
+    for(const p of G.peeps) if(p.onRoad()){cx+=p.obj.position.x;n++;}
+    const tx=(n? cx/n:0)+26;
+    if(c.obj.position.x<=tx){ c.state='work'; }
+    return;
+  }
+  // מילוי / ריקון
+  if(c.refillT>0){
+    c.refillT-=dt; c.pts.visible=false; AUDIO.spray(false);
+    if(c.refillT<=0){ c.tank=25; toast('המיכל התמלא — המכת"זית חוזרת לפעולה!',G.side==='police'?'good':'bad'); }
+    updateTankHUD(); return;
+  }
+  // בחירת מטרה — הקרוב לדגל הריכוז (מצב משטרה, "ריכוז אש") או למכת"זית עצמה
+  let best=1e9,t=null;
+  const RC=(G.side==='police'&&G.rally)?G.rally:null;
+  for(const p of G.peeps){
+    if(!p.onRoad()||['hit','flee','dragged','pushed'].includes(p.state)) continue;   // לא לנעול על מטרות שאסור לפגוע בהן
+    const dd=RC
+      ? dist2(p.obj.position.x,p.obj.position.z,RC.x,RC.z)
+      : dist2(p.obj.position.x,p.obj.position.z,c.obj.position.x,c.obj.position.z);
+    if(dd<best){best=dd;t=p;}
+  }
+  if(t&&dist2(t.obj.position.x,t.obj.position.z,c.obj.position.x,c.obj.position.z)>3600) t=null;   // מחוץ לטווח התותח
+  if(!t){ c.pts.visible=false; AUDIO.spray(false); return; }
+  // ריסוס!
+  c.tank-=dt; c.sprayLvlT+=dt;
+  if(c.tank<=0){ c.refillT=15;
+    toast(G.side==='police'?'המיכל ריק! 15 שניות מילוי — עמדו בפרץ':'המיכל ריק! 15 שניות — חלון זהב לחזור לכביש!',G.side==='police'?'bad':'good');
+    AUDIO.ding(); updateTankHUD(); return; }
+  if(c.sprayLvlT>40&&c.level<3){
+    c.level++; c.sprayLvlT=0;
+    c.pts.material.color.setHex(CANNON_LEVELS[c.level-1].color);
+    toast(G.side==='police'
+      ? (c.level===2?'עוברים למים כחולים — סימון מפגינים':'בואש הופעל — פיזור מיידי!')
+      : (c.level===2?'המשטרה עברה למים כחולים!':'בואש!!! תברחו!!'),
+      G.side==='police'?'good':'bad');
+    newsFlash(c.level===2?'🔴 המשטרה מתיזה מים כחולים לסימון מפגינים':'🔴 ריח הבואש מורגש עד שכונת גאולה');
+  }
+  updateTankHUD();
+  AUDIO.spray(true);
+  // עדכון נקודת פגיעה — מתכנסת אל המטרה
+  c.impact.lerp(t.obj.position,clamp(dt*2.2,0,1));
+  const noz=cannonNozzle();
+  faceToward(c.turret,c.impact.x-c.obj.position.x,0,0); // הצריח מסתובב
+  c.turret.rotation.y=Math.atan2(c.impact.x-c.obj.position.x,c.impact.z-c.obj.position.z)-c.obj.rotation.y+Math.PI/2;
+  // חלקיקים לאורך קשת
+  c.pts.visible=true;
+  const posAttr=c.pts.geometry.attributes.position;
+  const mid=_midV.set((noz.x+c.impact.x)/2,Math.max(noz.y,4.5)+3,(noz.z+c.impact.z)/2);
+  for(let i=0;i<c.ptData.length;i++){
+    const d=c.ptData[i]; d.t+=dt*1.8; if(d.t>1)d.t-=1;
+    const a=d.t, inv=1-a;
+    const X=inv*inv*noz.x+2*inv*a*mid.x+a*a*c.impact.x + d.spread[0]*a*2;
+    const Y=Math.max(.1,inv*inv*noz.y+2*inv*a*mid.y+a*a*.3);
+    const Z=inv*inv*noz.z+2*inv*a*mid.z+a*a*c.impact.z + d.spread[1]*a*2;
+    posAttr.setXYZ(i,X,Y,Z);
+  }
+  posAttr.needsUpdate=true;
+  // פגיעות
+  c.hitT-=dt;
+  if(c.hitT<=0){
+    c.hitT=.14;
+    const lv=CANNON_LEVELS[c.level-1];
+    for(const p of G.peeps){
+      if(['hit','flee','dragged','pushed'].includes(p.state)) continue;   // נגררים/נדחפים — בידי שוטר/נהג
+      if(dist2(p.obj.position.x,p.obj.position.z,c.impact.x,c.impact.z)>6.5) continue;
+      if(p.wetCD>0) continue;
+      p.wetCD=1;
+      if(G.bagT>0){ if(Math.random()<.12) say(p.obj,pick(['יש שקיות!','לא נרטבים!','מוגנים!']),1.3); continue; }  // שקיות ניילון — חסינות מלאה
+      // הדיפה — תמיד הרחק מהמכת"זית (לא לשוכבים/צמודים)
+      if(!['lying','attached'].includes(p.state)){
+        p.obj.position.x+=(p.obj.position.x>c.obj.position.x?1:-1)*2.2;
+        p.obj.position.z+=rnd(-.5,.5);
+      }
+      // צביעה
+      if(c.level===2&&p.stain<2){ p.stain=2; p.mats.forEach(m=>m.color.lerp(new THREE.Color(0x2451d6),.65)); }
+      if(c.level===3&&p.stain<3){ p.stain=3; p.mats.forEach(m=>m.color.lerp(new THREE.Color(0x5a661a),.6));
+        fliesFx(p); }
+      if(c.level===3) stinkFx(c.impact);
+      // בריחה
+      let prob=p.st.fleeW[lv.fleeIx];
+      if(p.typeKey==='avrech'&&c.level===1) prob=0;        // עמיד למים רגילים
+      if(Math.random()<prob*.45) makeFlee(p);
+      else if(Math.random()<.3) say(p.obj,pick(['קר!!','אוי!','געוואלד!']),1.4);
+    }
+  }
+}
+let _stinkTex=null;   // הגרדיאנט זהה בכל פעם — טקסטורה משותפת אחת במקום canvas חדש לכל ענן
+function stinkFx(pos){
+  if(Math.random()>.25) return;
+  if(!_stinkTex){
+    const c=document.createElement('canvas'); c.width=128; c.height=128;
+    const x=c.getContext('2d'), g=x.createRadialGradient(64,64,8,64,64,60);
+    g.addColorStop(0,'rgba(150,165,60,.55)'); g.addColorStop(1,'rgba(120,140,40,0)');
+    x.fillStyle=g; x.fillRect(0,0,128,128);
+    _stinkTex=new THREE.CanvasTexture(c);
+  }
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:_stinkTex,transparent:true,depthTest:false}));
+  spr.position.set(pos.x+rnd(-1,1),1.5,pos.z+rnd(-1,1)); spr.scale.set(3,3,1);
+  G.dyn.add(spr);
+  let t=0;
+  G.fx.push({update(dt){
+    t+=dt; spr.position.y+=dt*.5; const s=3+t*2.5; spr.scale.set(s,s,1);
+    spr.material.opacity=clamp(.8-t*.4,0,1);
+    if(t>2){ G.dyn.remove(spr); spr.material.dispose(); return false; }   // המפה משותפת — לא לשחרר
+    return true;
+  }});
+}
+function fliesFx(peep){
+  const spr=spriteFromCanvas((x,w,h)=>{
+    x.fillStyle='#111';
+    for(let i=0;i<7;i++){ x.beginPath(); x.arc(rnd(20,108),rnd(20,108),3.2,0,7); x.fill(); }
+  });
+  spr.scale.set(1.6,1.6,1);
+  G.dyn.add(spr);
+  let t=0;
+  G.fx.push({update(dt){
+    t+=dt;
+    if(!G.peeps.includes(peep)||t>12){ G.dyn.remove(spr); spr.material.map.dispose(); spr.material.dispose(); return false; }
+    spr.position.set(peep.obj.position.x+Math.sin(t*5)*.4,1.8+Math.sin(t*8)*.2,peep.obj.position.z+Math.cos(t*4)*.4);
+    spr.material.rotation=t*2;
+    return true;
+  }});
+}
+
+/* =========================================================================
+   הסלמה — גלים
+   ========================================================================= */
+const WAVES=[
+  {t:0,   name:'נהגים זועמים'},
+  {t:60,  name:'משטרה'},
+  {t:150, name:'פרשים'},
+  {t:240, name:'מכת"זית'}
+];
+function updateWaves(dt){
+  if(G.bagT>0) G.bagT-=dt;   // טיימר הגנת שקיות הניילון
+  if(countStopped()>0||G.peeps.some(p=>p.onRoad())){ G.escTime+=dt; G.protestStarted=true; }
+  G.totalBlockTime=G.escTime;
+  if(G.side==='police') return;   // ההסלמה בידי השחקן; גלי המפגינים והתווית — ב-updateDirector
+  let w=0;
+  if(G.protestStarted) for(let i=0;i<WAVES.length;i++) if(G.escTime>=WAVES[i].t) w=i+1;
+  if(w>G.wave){
+    G.wave=w;
+    if(w===2){ spawnPolice(); COPS.play(); }   // גל השוטרים — מנגן את הסאונד
+    if(w===3) spawnHorses();
+    if(w===4) spawnCannon();
+    if(w===1) newsFlash('🔴 נהגים תקועים מאבדים סבלנות בצומת');
+  }
+  const cur=WAVES[Math.max(0,w-1)], next=WAVES[w];
+  let txt='שלב: '+(w>0?cur.name:'התארגנות');
+  if(next&&w>0) txt+=` (עוד ${Math.max(0,Math.ceil(next.t-G.escTime))} שנ' לבא)`;
+  if(txt!==G._waveTxt){ G._waveTxt=txt; $('waveName').textContent=txt; }
+}
+
+/* =========================================================================
+   מצב משטרה — גלי מפגינים אוטונומיים + כלי המפקד
+   ========================================================================= */
+const PWAVES=[
+  {delay:6,  mix:['bochur','bochur','bochur','bochur','bochur','bochur','avrech','avrech']},
+  {delay:35, mix:['bochur','bochur','bochur','bochur','avrech','avrech','avrech','askan']},
+  {delay:40, mix:['bochur','bochur','bochur','bochur','bochur','avrech','avrech','avrech','askan','askan']},
+  {delay:45, mix:['bochur','bochur','bochur','bochur','bochur','bochur','avrech','avrech','avrech','avrech','askan','askan']}
+];
+function ensureRallyFlag(){
+  if(G.rallyFlag) return G.rallyFlag;
+  const g=new THREE.Group();
+  const pole=new THREE.Mesh(GEO.box,MAT(0x8a8f96)); pole.scale.set(.06,2.2,.06);
+  pole.position.y=1.1; pole.castShadow=false; g.add(pole);
+  const flag=new THREE.Mesh(GEO.box,new THREE.MeshBasicMaterial({color:0x4488ff}));
+  flag.scale.set(.75,.45,.03); flag.position.set(.42,1.85,0); flag.castShadow=false; g.add(flag);
+  G.dyn.add(g); G.rallyFlag=g;
+  return g;
+}
+function updateDirector(dt){
+  const D=G.pw; if(!D) return;
+  if(G.megCD>0) G.megCD=Math.max(0,G.megCD-dt);
+  if(G.rally){
+    G.rally.t-=dt;
+    if(G.rallyFlag&&G.rallyFlag.visible) G.rallyFlag.children[1].rotation.y=Math.sin(G.gameTime*4)*.3;
+    if(G.rally.t<=0){ G.rally=null; if(G.rallyFlag) G.rallyFlag.visible=false; }
+  }
+  // שיגור גלים
+  if(D.idx<PWAVES.length){
+    D.timer-=dt;
+    if(D.timer<=0){
+      const wv=PWAVES[D.idx], rid=G.runId;
+      newsFlash(`🔴 גל מפגינים ${D.idx+1}/${PWAVES.length} יוצא מהסמטאות אל הציר!`);
+      wv.mix.forEach((tk,i)=>{
+        gameTimeout(()=>{
+          if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
+          const al=pick(G.alleys);
+          const p=mkPeep(tk,al.x+rnd(-2,2),al.z+rnd(-1,1));
+          p.ai=true; p.state='moving';
+          p.target={x:rnd(-G.roadLen*.22,G.roadLen*.22), z:rnd(-G.roadHalfW+1,G.roadHalfW-1)};
+        },i*650);
+      });
+      D.idx++;
+      if(D.idx<PWAVES.length) D.timer=PWAVES[D.idx].delay;
+      if(D.idx===3&&D.visitAt===undefined) D.visitAt=G.gameTime+rnd(8,20);   // ביקורת המפכ"ל לקראת הגל השלישי
+    }
+  }
+  // ביקורת המפכ"ל — חלון בונוס/קנס
+  if(D.visitAt!==undefined&&!D.visit&&!D.visitDone&&G.gameTime>=D.visitAt){
+    D.visit={t:20};
+    newsFlash('🔴 המפכ"ל בדרך לצומת — הציר חייב להיות פתוח!');
+    toast('ביקורת המפכ"ל! 20 שניות — ציר פתוח = בונוס משולש','good');
+  }
+  if(D.visit){
+    D.visit.t-=dt;
+    if(D.visit.t<=0){
+      // בורחים/נגררים לא נספרים כחסימה — אלה הצלחות של המפקד
+      const blocked=G.peeps.some(p=>p.onRoad()&&!['flee','hit','dragged'].includes(p.state))||countStopped()>0;
+      if(blocked){ addScore(-150); toast('המפכ"ל נתקע בפקק! ‎-150‎','bad');
+        newsFlash('🔴 המפכ"ל נתקע בפקק בדרך לצומת — מחדל'); }
+      else{ addScore(200); toast('המפכ"ל עבר בציר פתוח! ‎+200‎','good');
+        newsFlash('🟢 המפכ"ל עבר בציר פתוח — צל"ש למפקד'); }
+      D.visit=null; D.visitDone=true;
+    }
+  }
+  // התנהגות אוטונומית — כל 2.5 שניות מקבלים "החלטות"
+  D.aiT-=dt;
+  if(D.aiT<=0){
+    D.aiT=2.5;
+    for(const p of G.peeps){
+      if(!p.ai) continue;
+      if(p.state==='blocking'&&p.onRoad()){
+        if(p.typeKey!=='askan'&&Math.random()<.15){ detach(p); p.state='lying'; p.target=null; }
+        else if(Math.random()<.15&&!p.attachCar){
+          let best=null,bd=64;   // הצמדות לרכב עומד קרוב
+          for(const c of G.cars){
+            if(c.v>.4) continue;
+            const dd=dist2(p.obj.position.x,p.obj.position.z,c.obj.position.x,c.obj.position.z);
+            if(dd<bd){bd=dd;best=c;}
+          }
+          if(best){
+            // מכסת 3 כולל אלה שכבר בדרך; יעד באגף הרכב (כמו commandAttach) — יעד במרכז לא מושג
+            const k=best.attached.length+G.peeps.filter(q=>q.attachPending===best).length;
+            if(k<3){
+              const side=(k%2===0)?1:-1, along=-best.len/2+1+Math.floor(k/2)*1.1;
+              const lx=best.lane? best.lane.dir*along : along;
+              p.attachPending=best; p.state='moving';
+              p.target={x:best.obj.position.x+lx, z:best.obj.position.z+side*1.45};
+            }
+          }
+        }
+      }else if((p.state==='idle'||p.state==='blocking')&&!p.onRoad()&&!(p.cowT>0)&&Math.random()<.5){
+        p.state='moving';   // מתאוששים (ומי שנתקע על המדרכה) חוזרים לכביש
+        p.target={x:rnd(-G.roadLen*.2,G.roadLen*.2), z:rnd(-G.roadHalfW+1,G.roadHalfW-1)};
+      }
+    }
+  }
+  // לחץ אובדן שליטה: 6+ על הכביש ברציפות (גרירה פעילה לא נספרת — היא הצלחה)
+  const onN=G.peeps.filter(p=>p.onRoad()&&p.state!=='dragged').length;
+  if(onN>=6) D.overT+=dt; else D.overT=Math.max(0,D.overT-dt*2);
+  if(D.overT<50) D.warned=false;
+  if(D.overT>=60&&!D.warned){
+    D.warned=true;
+    toast('⚠️ הצומת יוצא משליטה! לפנות את הכביש — 30 שניות','bad');
+    newsFlash('🔴 מפקדת המחוז: "אם הציר לא ייפתח — המבצע ייכשל"');
+  }
+  if(D.overT>=90){ endStage('overrun'); return; }
+  // תווית שלב
+  let wt;
+  if(D.idx===0) wt=`שלב: המפגינים מתארגנים (${Math.max(1,Math.ceil(D.timer))} שנ')`;
+  else if(D.idx<PWAVES.length) wt=`שלב: גל ${D.idx}/${PWAVES.length} (הבא בעוד ${Math.max(1,Math.ceil(D.timer))} שנ')`;
+  else wt=`שלב: הגל האחרון — לפנות את הציר!`;
+  if(D.visit) wt+=` 🎖 המפכ"ל: ${Math.ceil(D.visit.t)} שנ'`;
+  if(D.overT>=60) wt+=` ⚠️ ${Math.ceil(90-D.overT)}`;
+  if(wt!==G._waveTxt){ G._waveTxt=wt; $('waveName').textContent=wt; }
+  // ניצחון: כל הגלים שוגרו וכל מפגין הוסר/בורח (שחיקת הגרירה-הכפולה מבטיחה התכנסות)
+  if(D.idx>=PWAVES.length&&D.timer<=0){
+    const active=G.peeps.some(p=>!['flee','hit'].includes(p.state));
+    D.winT=active?0:D.winT+dt;
+    if(D.winT>=4) endStage('cleared');
+  }
+}
+function ptCruiser(){
+  if(!G.running||G.score<300) return;
+  addScore(-300);
+  if(!G.copCars.length){ COPS.play(); newsFlash('🔴 המשטרה: "כוחותינו בדרך לצומת"'); }
+  else newsFlash('🚔 ניידת נוספת הוזעקה לציר');
+  AUDIO.siren(true); spawnCruiser(); AUDIO.ding();
+}
+function ptHorse(){ if(!G.running||G.score<500) return; addScore(-500); spawnHorses(2); AUDIO.ding(); }
+function ptCannon(){ if(!G.running||G.score<1500||G.cannon) return; addScore(-1500); spawnCannon(); AUDIO.ding(); }
+/* רכב-שוליים גנרי: נכנס מקצה הכביש, עוצר, מבצע, יוצא ומתנקה.
+   משרת גם את הגרר (משטרה) וגם את ההסעות (מפגינים). */
+function shoulderVehicleFx(type,targetX,sideZ,pauseT,onPause,onDone){
+  const v=mkCarMesh(type);
+  v.position.set(G.roadLen/2+15,0,sideZ*(G.roadHalfW+2.2));
+  v.rotation.y=Math.PI;
+  G.dyn.add(v);
+  let phase=0,pt=0,follow=null;
+  G.fx.push({update(dt){
+    if(!G.running) return true;   // קופא מאחורי מסך סיכום — לא משלים מאחורי הקלעים
+    if(phase===0){
+      v.position.x-=12*dt;
+      if(v.position.x<=targetX) phase=1;
+    }else if(phase===1){
+      pt+=dt;
+      if(pt>=pauseT){ follow=onPause(v)||null; phase=2; }
+    }else{
+      v.position.x-=12*dt;
+      if(follow) follow(v,dt);
+      if(v.position.x<-G.roadLen/2-20){
+        G.dyn.remove(v); disposeDeep(v);
+        if(onDone) onDone();
+        return false;
+      }
+    }
+    return true;
+  }});
+  return v;
+}
+function ptTow(){
+  if(!G.running||G.score<600||G.towBusy) return;
+  let best=null;
+  for(const c of G.cars)
+    if(c.attached.length&&(!best||c.attached.length>best.attached.length
+       ||(c.attached.length===best.attached.length&&c.stoppedTime>best.stoppedTime))) best=c;
+  if(!best){ toast('אין רכב עם מפגינים צמודים','bad'); return; }
+  addScore(-600); G.towBusy=true;
+  const car=best, sideZ=car.obj.position.z>=0?1:-1;
+  newsFlash('🪝 גרר משטרתי בדרך לרכב החסום');
+  AUDIO.ding();
+  shoulderVehicleFx('pickup',car.obj.position.x+4,sideZ,1.5,(truck)=>{
+    if(!G.cars.includes(car)) return null;   // הרכב שוחרר/הוסר בינתיים
+    G.cars.splice(G.cars.indexOf(car),1);    // יוצא מהתנועה — לא לקרוא removeCar אחר-כך!
+    [...car.attached].forEach(p=>{
+      detach(p); p.state='recover'; p.recoverT=8;
+      p.obj.position.z+=(p.obj.position.z>=car.obj.position.z?1.2:-1.2);
+    });
+    car.attached.length=0;   // הנהג (אם בחוץ) יוסר אוטומטית ב-updateDrivers
+    newsFlash('🪝 הגרר פינה את הרכב — הצמודים פוזרו');
+    AUDIO.horn();
+    const tv=new THREE.Vector3();
+    return (t,dt)=>{   // התקרבות רכה אל וו הגרירה — בלי טלפורט
+      car.obj.position.lerp(tv.set(t.position.x+6,0,t.position.z),Math.min(1,(dt||.016)*4));
+      car.obj.rotation.y=Math.PI;
+    };
+  },()=>{
+    if(G.cars.indexOf(car)<0&&car.obj.parent){ G.dyn.remove(car.obj); disposeDeep(car.obj); }
+    G.towBusy=false;
+  });
+}
+function ptMeg(){
+  if(!G.running||G.score<250||G.megCD>0) return;
+  const c=G.rally?{x:G.rally.x,z:G.rally.z}:{x:0,z:0};
+  const hit=[];
+  for(const p of G.peeps){
+    if(!['blocking','moving','idle','lying'].includes(p.state)) continue;
+    if(dist2(p.obj.position.x,p.obj.position.z,c.x,c.z)>100) continue;
+    if(p.state==='lying'&&Math.random()>=.3) continue;
+    hit.push(p);
+  }
+  if(!hit.length){ toast('אין מפגינים בטווח המגפון','bad'); return; }   // בלי חיוב על כרוז לריק
+  addScore(-250); G.megCD=25;
+  for(const p of hit){
+    detach(p); p.state='moving'; p.cowT=8;   // הדירקטור מכבד cowT — לא שולח חזרה מיד
+    p.target={x:p.obj.position.x+rnd(-2,2), z:sidewalkZ(p.obj.position.z)};
+  }
+  pingFx(c,0xffd34d); AUDIO.horn();
+  toast('המגפון פיזר '+hit.length+' מפגינים — זמנית!','good');
+  newsFlash('📢 "להתפנות מיד! זו התקהלות בלתי חוקית!"');
+}
+function ptDet(){
+  if(!G.running||G.score<700) return;
+  addScore(-700);
+  const al=pick(G.alleys);
+  const fig=mkFigure({coat:0x141417,hat:'fedora',beard:0x2e2118,peyot:true});   // מחופש למפגין
+  fig.root.position.set(al.x+rnd(-1,1),0,al.z+rnd(-1,1));
+  G.dyn.add(fig.root);
+  newsFlash('🕵 דמות לא מזוהה מסתננת אל תוך ההפגנה...');
+  AUDIO.ding();
+  const det={obj:fig.root,parts:fig.parts,phase:0};
+  const rid=G.runId;
+  G.fx.push({update(dt){
+    if(!G.running||G.runId!==rid) return false;   // השלב הוחלף — הדמות מסולקת עם ה-dyn
+    let best=1e9,t=null;
+    for(const p of G.peeps){
+      if(!copValidTarget(p)) continue;
+      const dd=dist2(p.obj.position.x,p.obj.position.z,det.obj.position.x,det.obj.position.z);
+      if(dd<best){best=dd;t=p;}
+    }
+    if(!t){ animHumanoid(det.parts,'idle',det.phase,G.gameTime); return true; }
+    if(moveFig(det,t.obj.position.x+.4,t.obj.position.z,2.4,dt)){
+      // חשיפה! מעצר בזק — בלי זמן תפיסה, בלי "יש לי אישור"
+      say(det.obj,'משטרה! את/ה עצור!',2.5);
+      newsFlash('🕵 בלש סמוי נחשף בלב ההפגנה — מעצר בזק!');
+      AUDIO.ding();
+      detach(t); G.selected.delete(t); t.ring.visible=false;
+      const cop={fig,obj:det.obj,parts:det.parts,state:'drag',target:t,grabT:0,frozenT:0,
+        phase:det.phase,home:{x:al.x,z:al.z},argueT:0};
+      t.state='dragged'; t.dragger=cop; t.copLock=cop;
+      G.cops.push(cop);   // מכאן והלאה — שוטר רגיל (בבגדים אזרחיים)
+      return false;
+    }
+    animHumanoid(det.parts,'walk',det.phase,G.gameTime);
+    return true;
+  }});
+}
+
+/* =========================================================================
+   כלים מיוחדים
+   ========================================================================= */
+function toolPashkevil(){
+  if(G.score<500||G.peeps.length>=MAXPEEPS) return;
+  addScore(-500);
+  newsFlash('🔴 פשקווילים חדשים על הקירות — מאות בדרך לצומת');
+  AUDIO.ding();
+  let cx=0,cz=0,n=0;
+  for(const p of G.peeps) if(p.onRoad()){cx+=p.obj.position.x;cz+=p.obj.position.z;n++;}
+  const tx=n?cx/n:0, tzr=n?cz/n:0;
+  const types=['bochur','bochur','bochur','bochur','bochur','bochur','avrech','avrech','avrech','askan'];
+  const rid=G.runId;
+  types.forEach((tk,i)=>{
+    gameTimeout(()=>{
+      if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
+      const al=pick(G.alleys);
+      const p=mkPeep(tk,al.x+rnd(-2,2),al.z+rnd(-1,1));
+      p.state='moving';
+      p.target={x:tx+rnd(-5,5),z:clamp(tzr+rnd(-2,2),-G.roadHalfW+1,G.roadHalfW-1)};
+      say(p.obj,'גיוס שמד!',2);
+    },i*350);
+  });
+}
+function toolShofar(){
+  if(G.score<1000||G.shofarUsed) return;
+  addScore(-1000); G.shofarUsed=true;
+  AUDIO.shofar();
+  let cx=0,cz=0,n=0;
+  for(const p of G.peeps){cx+=p.obj.position.x;cz+=p.obj.position.z;n++;}
+  shockwaveFx(n?{x:cx/n,z:cz/n}:{x:0,z:0});
+  G.cops.forEach(c=>c.frozenT=5);
+  G.horses.forEach(h=>h.frozenT=5);
+  if(G.cannon) G.cannon.frozenT=5;
+  newsFlash('🔴 קול שופר אדיר נשמע בצומת — השוטרים קפאו במקומם');
+  toast('תקיעה גדולה! כוחות הביטחון קפואים 5 שניות!','good');
+}
+function toolBag(){
+  if(G.score<2000||G.bagT>0) return;
+  addScore(-2000); G.bagT=30;
+  AUDIO.ding();
+  newsFlash('🛍 המפגינים לובשים שקיות ניילון — חסינות מהמכת"זית!');
+  toast('שקיות ניילון! המפגינים מוגנים מהמכת"זית ל-30 שניות','good');
+}
+function toolSummon(typeKey){
+  const st=UNIT_STATS[typeKey];
+  if(G.score<st.cost||G.peeps.length>=MAXPEEPS) return;
+  if(typeKey==='zalam'&&G.peeps.filter(p=>p.typeKey==='zalam').length>=2){
+    toast('שני צלמים בשטח — זה המקסימום','bad'); return;
+  }
+  addScore(-st.cost);
+  const al=pick(G.alleys);
+  const p=mkPeep(typeKey,al.x+rnd(-2,2),al.z+rnd(-1,1));
+  say(p.obj,typeKey==='zalam'?'מצלמים הכל!':'באתי לחזק!',2);
+  AUDIO.ding();
+}
+function toolBus(){
+  if(G.score<800||G.peeps.length>=MAXPEEPS||G.busBusy) return;
+  addScore(-800); G.busBusy=true;
+  // האוטובוס פורק ליד יעד הפקודה האחרונה — שליטה מרחבית, בניגוד לפיזור הפשקווילים
+  const tx=clamp(G.lastMoveX===null||G.lastMoveX===undefined?0:G.lastMoveX,-G.roadLen*.3,G.roadLen*.3);
+  const sideZ=Math.random()<.5?1:-1;
+  newsFlash('🚌 הסעות מאורגנות יצאו לדרך — "כולם לציר!"');
+  AUDIO.ding();
+  const rid=G.runId;
+  shoulderVehicleFx('bus',tx,sideZ,2.5,(bus)=>{
+    const types=['bochur','bochur','bochur','bochur','bochur','avrech','avrech','askan'];
+    types.forEach((tk,i)=>{
+      gameTimeout(()=>{
+        if(!G.running||G.runId!==rid||G.peeps.length>=MAXPEEPS) return;
+        const p=mkPeep(tk,bus.position.x+rnd(-1.5,1.5),bus.position.z+(sideZ>0?-1.4:1.4));
+        p.state='moving';
+        p.target={x:tx+rnd(-4,4), z:rnd(-G.roadHalfW+1,G.roadHalfW-1)};
+        if(i===0) say(p.obj,'הגענו!',1.6);
+      },i*400);
+    });
+    return null;
+  },()=>{ G.busBusy=false; });
+}
+
+/* =========================================================================
+   מצלמה — איזומטרית עם סיבוב/זום/הזזה + מגע
+   ========================================================================= */
+const CAM={ target:new THREE.Vector3(0,0,0), dist:42, theta:.55, phi:.62, follow:false };
+function setCamMode(mode){
+  G.camMode=mode; CAM.follow=(mode==='follow');
+  if(mode==='top'){ CAM.phi=.45; CAM.dist=44; CAM.target.set(0,0,0); }
+  if(mode==='street'){ CAM.phi=1.22; CAM.dist=15; }
+}
+function updateCamera(dt){
+  if(CAM.follow){
+    // מרכז האקשן: התזה > פרשים > מרכז החוסמים
+    let pt=null;
+    if(G.cannon&&G.cannon.pts&&G.cannon.pts.visible) pt=G.cannon.impact;
+    else{
+      let cx=0,cz=0,n=0;
+      for(const p of G.peeps) if(p.onRoad()){cx+=p.obj.position.x;cz+=p.obj.position.z;n++;}
+      if(n) pt={x:cx/n,z:cz/n};
+      else if(G.horses.length) pt=G.horses[0].obj.position;
+    }
+    if(pt){ G.followPt.set(pt.x,0,pt.z); CAM.target.lerp(G.followPt,clamp(dt*2,0,1)); }
+  }
+  CAM.target.x=clamp(CAM.target.x,-G.roadLen/2,G.roadLen/2);
+  CAM.target.z=clamp(CAM.target.z,-60,60);
+  CAM.dist=clamp(CAM.dist,10,100);
+  CAM.phi=clamp(CAM.phi,.18,1.35);
+  const sp=Math.sin(CAM.phi), x=CAM.target.x+CAM.dist*sp*Math.sin(CAM.theta),
+        y=CAM.dist*Math.cos(CAM.phi)+1.5, z=CAM.target.z+CAM.dist*sp*Math.cos(CAM.theta);
+  G.camera.position.set(x,y,z);
+  G.camera.lookAt(CAM.target.x,1,CAM.target.z);
+}
+function panCam(dx,dy){
+  const fwd=new THREE.Vector3(); G.camera.getWorldDirection(fwd); fwd.y=0; fwd.normalize();
+  const right=new THREE.Vector3().crossVectors(fwd,new THREE.Vector3(0,1,0));
+  const k=CAM.dist*.0017;
+  CAM.target.addScaledVector(right,-dx*k);
+  CAM.target.addScaledVector(fwd,dy*k);
+  CAM.follow=false; if(G.camMode==='follow')G.camMode='free';
+}
+
+/* =========================================================================
+   קלט RTS — בחירה ופקודות
+   ========================================================================= */
+const raycaster=new THREE.Raycaster(), ndcV=new THREE.Vector2();
+function groundPoint(cx,cy){
+  ndcV.set(cx/innerWidth*2-1, -(cy/innerHeight)*2+1);
+  raycaster.setFromCamera(ndcV,G.camera);
+  const o=raycaster.ray.origin, d=raycaster.ray.direction;
+  if(Math.abs(d.y)<1e-5) return null;
+  const t=-o.y/d.y; if(t<0) return null;
+  return new THREE.Vector3(o.x+d.x*t,0,o.z+d.z*t);
+}
+function pickPeep(cx,cy){
+  let best=26,found=null; const v=new THREE.Vector3();
+  for(const p of G.peeps){
+    if(!p.selectable()) continue;
+    v.copy(p.obj.position); v.y=1; v.project(G.camera);
+    const sx=(v.x+1)/2*innerWidth, sy=(-v.y+1)/2*innerHeight;
+    const d=Math.hypot(sx-cx,sy-cy);
+    if(d<best){best=d;found=p;}
+  }
+  return found;
+}
+function pickCar(cx,cy){
+  ndcV.set(cx/innerWidth*2-1,-(cy/innerHeight)*2+1);
+  raycaster.setFromCamera(ndcV,G.camera);
+  const objs=G.cars.map(c=>c.obj);
+  const hits=raycaster.intersectObjects(objs,true);
+  if(!hits.length) return null;
+  let o=hits[0].object;
+  while(o&&!o.userData.car) o=o.parent;
+  return o?o.userData.car:null;
+}
+function dangerAt(x,z){
+  for(const c of G.cars){
+    const lane=c.lane;
+    if(Math.abs(z-lane.z)>1.7) continue;
+    const d=lane.dir*x-(c.s+c.len/2);
+    if(d>-1 && d < c.v*c.v/(2*BRAKE)+4) { if(c.v>1) return true; }
+  }
+  if(G.train&&Math.abs(z)<1.7){
+    const d=x-(G.train.s+G.train.len/2);
+    if(d>-1 && d<G.train.v*G.train.v/(2*2.6)+9 && G.train.v>1) return true;
+  }
+  return false;
+}
+/* סמן עזר — ירוק/אדום */
+let MARKER=null;
+function ensureMarker(){
+  if(MARKER) return MARKER;
+  const g=new THREE.Group();
+  const ring=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color:0x35e08a,transparent:true,opacity:.9,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2; ring.position.y=.06; ring.scale.set(2.2,2.2,1);
+  const beam=new THREE.Mesh(GEO.box,new THREE.MeshBasicMaterial({color:0x35e08a,transparent:true,opacity:.4}));
+  beam.scale.set(.12,3,.12); beam.position.y=1.5;
+  g.add(ring); g.add(beam); g.visible=false;
+  G.scene.add(g);
+  MARKER={g,ring,beam};
+  return MARKER;
+}
+function showMarker(pt){
+  const m=ensureMarker();
+  m.g.visible=true; m.g.position.set(pt.x,0,pt.z);
+  const danger = Math.abs(pt.z)<G.roadHalfW && dangerAt(pt.x,pt.z);
+  const col=danger?0xff4433:0x35e08a;
+  m.ring.material.color.setHex(col); m.beam.material.color.setHex(col);
+}
+function hideMarker(){ if(MARKER) MARKER.g.visible=false; }
+
+function clearSel(){
+  G.selected.forEach(p=>p.ring.visible=false); G.selected.clear();
+  G.selCops.forEach(c=>{ if(c.ring) c.ring.visible=false; }); G.selCops.clear();
+  updateSelInfo();
+}
+function updateSelInfo(){
+  const pol=G.side==='police';
+  const n=pol?G.selCops.size:G.selected.size;
+  $('selInfo').style.display=n?'block':'none';
+  $('selInfo').textContent=(pol?'שוטרים: ':'נבחרו: ')+n;
+}
+function commandMove(gp){
+  let i=0;
+  G.lastMoveX=gp.x;   // יעד ההסעות המאורגנות
+  const danger=Math.abs(gp.z)<G.roadHalfW&&dangerAt(gp.x,gp.z);
+  G.selected.forEach(p=>{
+    if(!p.selectable()) return;
+    detach(p);
+    if(p.state==='lying'||p.state==='attached') p.state='idle';
+    const r=.9*Math.sqrt(i), a=i*2.39996;       // פיזור טבעי — ספירלת זהב
+    p.state='moving'; p.attachPending=null;
+    p.target={x:gp.x+r*Math.cos(a), z:clamp(gp.z+r*Math.sin(a),-G.roadHalfW-6,G.roadHalfW+6)};
+    i++;
+  });
+  if(i){ pingFx(gp,danger?0xff4433:0x35e08a); if(danger) toast('זהירות! רכב מתקרב — מסוכן!','bad'); }
+}
+function commandAttach(car){
+  if(car.v>=1){ toast('אפשר להיצמד רק לרכב עומד','bad'); return; }
+  let k=0;
+  G.selected.forEach(p=>{
+    if(!p.selectable()) return;
+    detach(p); if(p.state==='lying') p.state='idle';
+    const side=(k%2===0)?1:-1, along=-car.len/2+1+Math.floor(k/2)*1.1;
+    const lx=car.lane? car.lane.dir*along : along;
+    p.state='moving'; p.attachPending=car;
+    p.target={x:car.obj.position.x+lx, z:car.obj.position.z+side*1.45};
+    k++;
+  });
+  if(k) pingFx(car.obj.position,0xffd34d);
+}
+function commandLie(){
+  G.selected.forEach(p=>{
+    if(!p.selectable()) return;
+    detach(p);
+    p.state='lying'; p.target=null;
+  });
+  if(G.selected.size) toast('שוכבים על הכביש! פינוי איטי פי 2','good');
+}
+function commandStand(){
+  G.selected.forEach(p=>{
+    if(!['lying','attached'].includes(p.state)) return;
+    detach(p);
+    p.state=p.onRoad()?'blocking':'idle';
+  });
+}
+function pingFx(pos,color){
+  const m=new THREE.Mesh(GEO.ring,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.9,side:THREE.DoubleSide}));
+  m.rotation.x=-Math.PI/2; m.position.set(pos.x,.08,pos.z);
+  G.dyn.add(m);   // ב-dyn ולא ב-scene — כדי ש-clearWorld יאסוף אותו אם שלב מתחלף באמצע
+  let t=0;
+  G.fx.push({update(dt){
+    t+=dt; const s=1+t*7; m.scale.set(s,s,1);
+    m.material.opacity=clamp(.9-t*1.8,0,1);
+    if(t>.55){ G.dyn.remove(m); m.material.dispose(); return false; }
+    return true;
+  }});
+}
+function clickAt(cx,cy,additive){
+  if(!G.running) return;
+  if(G.side==='police'){
+    const gp=groundPoint(cx,cy);
+    if(!(gp&&Math.abs(gp.z)<G.roadHalfW+6&&Math.abs(gp.x)<G.roadLen/2)) return;
+    if(G.selCops.size){
+      // יש שוטרים נבחרים — פקודת תנועה אישית (כמו אצל המפגינים)
+      let i=0;
+      G.selCops.forEach(cp=>{
+        if(cp.state==='drag') return;   // מסיים קודם את המעצר הנוכחי
+        const r=.8*Math.sqrt(i), a=i*2.39996;
+        cp.orderPt={x:gp.x+r*Math.cos(a), z:clamp(gp.z+r*Math.sin(a),-G.roadHalfW-4,G.roadHalfW+4)};
+        if((cp.state==='walk'||cp.state==='grab')&&cp.target){ cp.target.copLock=null; cp.target=null; }
+        if(cp.state!=='argue') cp.state='seek';
+        i++;
+      });
+      pingFx(gp,0x35e08a); AUDIO.ding();
+      return;
+    }
+    // בלי בחירה — קליק מציב דגל ריכוז כללי
+    G.rally={x:gp.x,z:gp.z,t:14};
+    const f=ensureRallyFlag(); f.visible=true; f.position.set(gp.x,0,gp.z);
+    pingFx(gp,0x4488ff);
+    if(!G._rallyTip){ G._rallyTip=true; toast('דגל ריכוז! השוטרים והמכת"זית מתעדפים את האזור. גררו מלבן כדי לבחור שוטרים ולפקד ישירות','good'); }
+    return;
+  }
+  const peep=pickPeep(cx,cy);
+  if(peep){
+    if(!additive) clearSel();
+    G.selected.add(peep); peep.ring.visible=true; updateSelInfo();
+    return;
+  }
+  if(G.selected.size){
+    const car=pickCar(cx,cy);
+    if(car){ commandAttach(car); return; }
+    const gp=groundPoint(cx,cy);
+    if(gp) commandMove(gp);
+  }
+}
+
+/* ---------------- אירועי עכבר ומגע ---------------- */
+const PTR={down:false,button:0,sx:0,sy:0,lx:0,ly:0,mode:null,moved:false,
+  touches:new Map(),pinchD:0,selectMode:false,lastTap:0};
+function initInput(){
+  const cv=$('c');
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+  cv.addEventListener('pointerdown',e=>{
+    AUDIO.init(); AUDIO.resume();
+    cv.setPointerCapture(e.pointerId);
+    if(e.pointerType==='touch'){
+      PTR.touches.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY});
+      if(PTR.touches.size>=2){
+        PTR.multi=true;        // מחווה מרובת אצבעות — לא קליק
+        const a=[...PTR.touches.values()];
+        PTR.pinchD=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
+      }
+      PTR.moved=false;
+      return;
+    }
+    PTR.down=true; PTR.button=e.button; PTR.moved=false;
+    PTR.sx=PTR.lx=e.clientX; PTR.sy=PTR.ly=e.clientY;
+    PTR.mode = e.button===2? 'pan' : (e.button===1||e.altKey)? 'rotate' : 'select';
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(e.pointerType==='touch'){
+      const t=PTR.touches.get(e.pointerId); if(!t) {
+        // ריחוף לא רלוונטי במגע
+        return;
+      }
+      const dx=e.clientX-t.x, dy=e.clientY-t.y;
+      t.x=e.clientX; t.y=e.clientY;
+      if(Math.hypot(e.clientX-t.sx,e.clientY-t.sy)>9) PTR.moved=true;
+      if(PTR.touches.size===1){
+        if(PTR.selectMode){ if(PTR.moved) drawRect(t.sx,t.sy,e.clientX,e.clientY); }
+        else { CAM.theta-=dx*.0055; CAM.phi-=dy*.004; }
+      }else if(PTR.touches.size===2){
+        const a=[...PTR.touches.values()];
+        const d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
+        if(PTR.pinchD>0) CAM.dist*=PTR.pinchD/d;
+        PTR.pinchD=d;
+        panCam((a[0].x+a[1].x)/2 - (PTR.midX??(a[0].x+a[1].x)/2), (a[0].y+a[1].y)/2 - (PTR.midY??(a[0].y+a[1].y)/2));
+        PTR.midX=(a[0].x+a[1].x)/2; PTR.midY=(a[0].y+a[1].y)/2;
+      }
+      return;
+    }
+    // ריחוף — סמן בטיחות
+    if(!PTR.down){
+      if(G.running&&G.selected.size){
+        const gp=groundPoint(e.clientX,e.clientY);
+        if(gp&&Math.abs(gp.z)<G.roadHalfW+6) showMarker(gp); else hideMarker();
+      } else hideMarker();
+      return;
+    }
+    const dx=e.clientX-PTR.lx, dy=e.clientY-PTR.ly;
+    PTR.lx=e.clientX; PTR.ly=e.clientY;
+    if(Math.hypot(e.clientX-PTR.sx,e.clientY-PTR.sy)>6) PTR.moved=true;
+    if(PTR.mode==='pan') panCam(dx,dy);
+    else if(PTR.mode==='rotate'){ CAM.theta-=dx*.005; CAM.phi-=dy*.0035; }
+    else if(PTR.mode==='select'&&PTR.moved) drawRect(PTR.sx,PTR.sy,e.clientX,e.clientY);
+  });
+  cv.addEventListener('pointerup',e=>{
+    if(e.pointerType==='touch'){
+      const t=PTR.touches.get(e.pointerId);
+      PTR.touches.delete(e.pointerId);
+      PTR.midX=PTR.midY=undefined; PTR.pinchD=0;
+      if(t&&!PTR.moved&&PTR.touches.size===0&&!PTR.multi){
+        const now=performance.now();
+        if(now-PTR.lastTap<350){ commandLie(); PTR.lastTap=0; }
+        else { clickAt(e.clientX,e.clientY,false); PTR.lastTap=now; }
+      }else if(t&&PTR.selectMode&&PTR.moved&&PTR.touches.size===0&&!PTR.multi){
+        finishRect(t.sx,t.sy,e.clientX,e.clientY,false);
+      }
+      if(PTR.touches.size===0) PTR.multi=false;
+      hideRect();
+      return;
+    }
+    if(!PTR.down) return;
+    PTR.down=false;
+    if(PTR.mode==='select'){
+      if(!PTR.moved) clickAt(e.clientX,e.clientY,e.shiftKey);
+      else finishRect(PTR.sx,PTR.sy,e.clientX,e.clientY,e.shiftKey);
+    }
+    hideRect();
+  });
+  cv.addEventListener('pointercancel',e=>{
+    PTR.touches.delete(e.pointerId);
+    PTR.down=false; PTR.pinchD=0; PTR.midX=PTR.midY=undefined;
+    if(PTR.touches.size===0) PTR.multi=false;
+    hideRect();
+  });
+  cv.addEventListener('wheel',e=>{
+    e.preventDefault();
+    CAM.dist*=1+Math.sign(e.deltaY)*.09;
+  },{passive:false});
+  cv.addEventListener('dblclick',e=>{
+    if(G.selected.size) commandLie();
+  });
+  addEventListener('keydown',e=>{
+    if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')) return;
+    const c=e.code;
+    if(e.key==='Escape'){
+      if(G.running&&!G.paused&&G.selected.size){ clearSel(); return; }   // Esc ראשון — ניקוי בחירה
+      if(G.running) setPaused(!G.paused);
+      return;
+    }
+    if(c==='KeyP'||c==='Space'){ if(G.running){ e.preventDefault(); setPaused(!G.paused); } return; }
+    if(c==='KeyM'){ $('tMute').click(); return; }
+    if(c==='Tab'){ e.preventDefault(); if(G.running) toggleMinimap(); return; }   // בתפריט אין מה להחליף בשקט
+    if(c==='F11'&&!IS_ELECTRON){ e.preventDefault(); toggleFullscreen(); return; }   // ב-EXE העטיפה מטפלת
+    if(!G.running||G.paused) return;
+    if((e.ctrlKey||e.metaKey)&&c==='KeyA'){   // בחר-הכל: מפגינים או שוטרים לפי הצד
+      e.preventDefault();
+      if(G.side==='police') G.cops.forEach(cp=>{ if(cp.state!=='drag') G.selCops.add(cp); });
+      else G.peeps.forEach(p=>{ if(p.selectable()){ G.selected.add(p); p.ring.visible=true; } });
+      updateSelInfo(); return;
+    }
+    if(e.key==='l'||e.key==='ל'||c==='KeyL') commandLie();
+    if(c==='KeyK') commandStand();
+    if(/^Digit[1-8]$/.test(c)) hotkeyTool(+c.slice(5));
+    if(KEYCAM_CODES.includes(c)){ KEYPAN[c]=true; e.preventDefault(); }
+  });
+  addEventListener('keyup',e=>{ delete KEYPAN[e.code]; });
+  // השהיה אוטומטית כשהחלון מאבד פוקוס — נימוס דסקטופי; וגם שחרור כל מקש "תקוע"
+  // (ה-keyup של מקש שהוחזק ב-Alt+Tab נמסר לחלון האחר — בלעדי זה המצלמה נסחפת לנצח)
+  addEventListener('blur',()=>{
+    for(const k in KEYPAN) delete KEYPAN[k];
+    if(G.running&&!G.paused) setPaused(true);
+  });
+  // מצב בחירה במובייל
+  if('ontouchstart' in window) $('selModeBtn').style.display='block';
+  $('selModeBtn').addEventListener('click',()=>{
+    PTR.selectMode=!PTR.selectMode;
+    $('selModeBtn').classList.toggle('on',PTR.selectMode);
+  });
+}
+function drawRect(x1,y1,x2,y2){
+  const r=$('selrect');
+  r.style.display='block';
+  r.style.left=Math.min(x1,x2)+'px'; r.style.top=Math.min(y1,y2)+'px';
+  r.style.width=Math.abs(x2-x1)+'px'; r.style.height=Math.abs(y2-y1)+'px';
+}
+function hideRect(){ $('selrect').style.display='none'; }
+function finishRect(x1,y1,x2,y2,additive){
+  if(!G.running) return;
+  if(!additive) clearSel();
+  const v=new THREE.Vector3();
+  const minX=Math.min(x1,x2),maxX=Math.max(x1,x2),minY=Math.min(y1,y2),maxY=Math.max(y1,y2);
+  const pol=G.side==='police';
+  const pool=pol?G.cops:G.peeps;   // במצב משטרה בוחרים שוטרים
+  for(const u of pool){
+    if(pol){ if(u.state==='drag') continue; }   // באמצע גרירת עצור — לא מפריעים
+    else if(!u.selectable()) continue;
+    v.copy(u.obj.position); v.y=1; v.project(G.camera);
+    const sx=(v.x+1)/2*innerWidth, sy=(-v.y+1)/2*innerHeight;
+    if(sx>=minX&&sx<=maxX&&sy>=minY&&sy<=maxY){
+      (pol?G.selCops:G.selected).add(u);
+      if(u.ring) u.ring.visible=true;
+    }
+  }
+  updateSelInfo();
+}
+
+/* =========================================================================
+   ניקוד, HUD, מבזקים
+   ========================================================================= */
+G.copCars=[];
+function addScore(d){
+  G.score=Math.max(0,G.score+d);
+  $('score').textContent=Math.round(G.score).toLocaleString('he-IL');
+  // הבזק ירוק על שורת התקציב כשמגיע תגמול אמיתי — שיהיה ברור ממה מרוויחים
+  if(G.side==='police'&&d>=30&&G.running){
+    const ch=$('score').parentElement;
+    ch.classList.remove('budgetFlash'); void ch.offsetWidth; ch.classList.add('budgetFlash');
+  }
+}
+let toastTimer=null;
+function toast(msg,kind){
+  const t=$('toast');
+  t.textContent=msg; t.className=kind==='good'?'good':'';
+  t.style.opacity=1;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.opacity=0,2600);
+}
+const NEWS_STATIC=[
+  '🔴 המשטרה: "נערכים לפיזור ההפגנה"',
+  '🔴 אלפי נהגים תקועים בכניסה לעיר',
+  '🔴 דובר ההפגנה: "לא זזים עד ביטול הגזירה"',
+  '🔴 ועד הישיבות: "כל בחור — לצומת!"',
+  '🟠 מזג האוויר: ערב נאה בירושלים — מושלם להפגנה',
+  '🔴 ראש העיר: "הפקקים בלתי נסבלים"',
+  '🔴 איגוד המוניות: "הפסדנו אלפי שקלים"'
+];
+let newsQ=[],newsT=0;
+function newsFlash(msg){ newsQ.push(msg); newsT=Math.min(newsT,1); }
+function dynamicNews(){
+  const km=(countStopped()/10).toFixed(1);
+  const dyn=[
+    `🔴 מבזק: פקק של ${km} ק"מ ב${MAPS[G.stage].name} — עיכובים של שעה`,
+    `🔴 ${MAPS[G.stage].name}: עומסים חריגים, שוטרים במקום`,
+    ...NEWS_STATIC
+  ];
+  return pick(dyn);
+}
+function updateNews(dt){
+  newsT-=dt;
+  if(newsT>0) return;
+  newsT=6;
+  const el=$('tickerText');
+  el.style.opacity=0;
+  setTimeout(()=>{ el.textContent=newsQ.length?newsQ.shift():dynamicNews(); el.style.opacity=1; },380);
+}
+let scoreAcc=0;
+function scoreTick(dt){
+  scoreAcc+=dt;
+  if(scoreAcc<1) return;
+  scoreAcc-=1;
+  const stopped=countStopped();
+  if(G.side==='police'){
+    addScore(8);   // תקציב שוטף למפקד
+    // בונוס ציר-פתוח: בלי דרישת אפס-פקק (שריד הפקק מתפזר לאט) — משולש בביקורת המפכ"ל
+    if(G.protestStarted&&!G.peeps.some(p=>p.onRoad())) addScore(G.pw&&G.pw.visit?30:10);
+  }else{
+    if(stopped) addScore(10*stopped);
+    if(G.train&&G.train.blocked) addScore(50);
+  }
+  // חוק (צד מפגינים): הכביש ריק לגמרי והפקק ירד ל-0 — ההפגנה הסתיימה והניקוד נקבע
+  if(G.side!=='police'&&G.protestStarted){
+    const onRoadN=G.peeps.filter(p=>p.onRoad()).length;
+    if(onRoadN===0&&stopped===0){
+      G.emptyT=(G.emptyT||0)+1;
+      if(G.emptyT===1) toast('הכביש ריק והפקק התפזר! ההפגנה תסתיים בעוד 5 שניות','bad');
+      if(G.emptyT>=6){ endStage('empty'); return; }
+    } else G.emptyT=0;
+  }
+  const km=stopped/10;
+  G.jamPeak=Math.max(G.jamPeak,km);
+  $('jam').innerHTML='פקק: <b>'+km.toFixed(1)+'</b> ק"מ';
+  if(km>=1&&!G.bigJamNews){ G.bigJamNews=true; newsFlash(`🔴 פקק ענק ב${MAPS[G.stage].name} — עיכובים של שעה`); }
+  $('peepCount').textContent='מפגינים: '+G.peeps.length;
+  $('timer').textContent=fmtTime(G.gameTime);
+  // זמינות כפתורים
+  $('tPash').disabled=G.score<500||G.peeps.length>=MAXPEEPS;
+  $('tShofar').disabled=G.score<1000||G.shofarUsed;
+  $('tBag').disabled=G.score<2000||G.bagT>0;
+  $('tBag').querySelector('small').textContent = G.bagT>0 ? ('מוגן! '+Math.ceil(G.bagT)+' שנ\'') : 'הגנה ממכת"זית — 2000 נק\'';
+  $('tBochur').disabled=G.score<50||G.peeps.length>=MAXPEEPS;
+  $('tAvrech').disabled=G.score<150||G.peeps.length>=MAXPEEPS;
+  $('tAskan').disabled=G.score<250||G.peeps.length>=MAXPEEPS;
+  $('pCruiser').disabled=G.score<300;
+  $('pHorse').disabled=G.score<500;
+  $('pCannon').disabled=G.score<1500||!!G.cannon;
+  $('pTow').disabled=G.score<600||!!G.towBusy;
+  $('pMeg').disabled=G.score<250||G.megCD>0;
+  $('pMeg').querySelector('small').textContent=G.megCD>0?('נטען... '+Math.ceil(G.megCD)+' שנ\''):'פיזור אזורי — 250';
+  $('pDet').disabled=G.score<700;
+  $('tBus').disabled=G.score<800||G.peeps.length>=MAXPEEPS||!!G.busBusy;
+  $('tZalam').disabled=G.score<400||G.peeps.length>=MAXPEEPS;
+  AUDIO.setCrowd(G.peeps.filter(p=>p.onRoad()).length);
+  updateSelInfo();
+  // איכות אדפטיבית — יחסית לקצב הרענון הנמדד של המסך (לא 60 קבוע), עם היסטרזיס:
+  // מכשיר שנעול על 30Hz (חיסכון סוללה) לא ייחשב "איטי", וכל ירידה מקשיחה את ההעלאה הבאה — בלי פינג-פונג חד/מטושטש
+  const fps=G._fr||0; G._fr=0;
+  const maxDpr=Math.min(devicePixelRatio,2);
+  if(G._dpr===undefined) G._dpr=maxDpr;
+  if(fps>0&&fps<150){
+    G._fpsMax=Math.max(G._fpsMax||0,fps);          // הערכת קצב-רענון
+    const ref=G._fpsMax;
+    if(fps<ref*.72) G._low=(G._low||0)+1; else G._low=Math.max(0,(G._low||0)-1);
+    if(G._low>=4 && G._dpr>1){
+      G._dpr=Math.max(1,+(G._dpr-0.25).toFixed(2)); G.renderer.setPixelRatio(G._dpr);
+      G._low=0; G._good=0; G._raiseNeed=Math.min(60,(G._raiseNeed||8)*2);
+    } else if(G._dpr<maxDpr && fps>=ref*.92){
+      G._good=(G._good||0)+1;
+      if(G._good>=(G._raiseNeed||8)){ G._dpr=Math.min(maxDpr,+(G._dpr+0.25).toFixed(2)); G.renderer.setPixelRatio(G._dpr); G._good=0; }
+    } else G._good=0;
+  }
+}
+
+/* =========================================================================
+   זרימת משחק — שלבים, סיכום, היכל התהילה
+   ========================================================================= */
+function showScr(id){
+  ['loading','menu','howto','fameScr','entryScr','summary'].forEach(s=>$(s).classList.add('hidden'));
+  if(id) $(id).classList.remove('hidden');
+}
+/* ---------------- הפסקה, מיני-מפה והעדפות (דסקטופ) ---------------- */
+function setPaused(on){
+  if(!G.running&&on) return;
+  if(!!G.paused===!!on) return;
+  G.paused=on;
+  $('pauseOv').classList.toggle('hidden',!on);
+  if(on){
+    G._copsWasOn=!!(COPS.el&&!COPS.el.paused&&!COPS.el.ended);
+    AUDIO.siren(false); AUDIO.spray(false); AUDIO.setCrowd(0); BGM.stop(); COPS.stop();
+  }else{
+    G._fr=0;   // פריימים של ההשהיה לא נספרו — איפוס למדידת FPS נקייה
+    if(G.side!=='police') BGM.resume();
+    if(G._copsWasOn){ COPS.resume(); G._copsWasOn=false; }
+  }
+}
+// תור טיימרים בשעון-משחק: שורד השהיה עם שמירת המרווחים המקוריים,
+// ומתנקה אוטומטית בהחלפת שלב (runId).
+const GTQ=[];
+function gameTimeout(fn,ms){ GTQ.push({fn, at:G.gameTime+ms/1000, rid:G.runId}); }
+function runGTQ(){
+  for(let i=GTQ.length-1;i>=0;i--){
+    const t=GTQ[i];
+    if(t.rid!==G.runId){ GTQ.splice(i,1); continue; }
+    if(G.gameTime>=t.at){ GTQ.splice(i,1); t.fn(); }
+  }
+}
+const MM={on:true,acc:0};
+function mmSync(){ $('minimap').style.display=(MM.on&&G.running)?'block':'none'; }
+function toggleMinimap(){ MM.on=!MM.on; savePrefs(); mmSync(); }
+function drawMinimap(){
+  const cv=$('minimap'),x=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=G.roadLen,hw=G.roadHalfW+8;
+  const mx=v=>(v+L/2)/L*W, mz=v=>(v+hw)/(hw*2)*H;
+  x.fillStyle='rgba(16,13,28,.92)'; x.fillRect(0,0,W,H);
+  x.fillStyle='#3b3f4a'; x.fillRect(0,mz(-G.roadHalfW),W,mz(G.roadHalfW)-mz(-G.roadHalfW));
+  for(const c of G.cars){ x.fillStyle=c.v<.3?'#c8b25a':'#7d838f';
+    x.fillRect(mx(c.obj.position.x)-1.5,mz(c.obj.position.z)-1,3,2); }
+  for(const cr of G.copCars){ x.fillStyle='#2b4bd8';
+    x.fillRect(mx(cr.obj.position.x)-2,mz(cr.obj.position.z)-1.5,4,3); }
+  if(G.train){ x.fillStyle='#c62828'; x.fillRect(mx(G.train.obj.position.x)-5,mz(0)-1.5,10,3); }
+  if(G.cannon){ x.fillStyle='#5b8cff';
+    x.fillRect(mx(G.cannon.obj.position.x)-2.5,mz(G.cannon.obj.position.z)-2.5,5,5); }
+  for(const h of G.horses){ x.fillStyle='#8a5c2e';
+    x.fillRect(mx(h.obj.position.x)-1.5,mz(h.obj.position.z)-1.5,3,3); }
+  for(const c2 of G.cops){ x.fillStyle='#4d79ff';
+    x.fillRect(mx(c2.obj.position.x)-1,mz(c2.obj.position.z)-1,2.5,2.5); }
+  for(const p of G.peeps){
+    x.fillStyle=p.state==='lying'?'#ff5544':p.state==='attached'?'#ffd34d':'#f2ead8';
+    x.fillRect(mx(p.obj.position.x)-1,mz(p.obj.position.z)-1,2.5,2.5);
+  }
+  if(G.rally){ x.strokeStyle='#37d5ff'; x.lineWidth=1.5;
+    x.strokeRect(mx(G.rally.x)-4,mz(G.rally.z)-4,8,8); }
+}
+function setVolume(v){
+  G.vol=clamp(v,0,1);
+  if(AUDIO.master) AUDIO.master.gain.value=.5*G.vol;
+  if(BGM.el) BGM.el.volume=G.vol;
+  if(COPS.el) COPS.el.volume=.9*G.vol;
+}
+const PREFS_KEY='hosmim-prefs';
+function savePrefs(){
+  try{ localStorage.setItem(PREFS_KEY,JSON.stringify(
+    {muted:!!G.muted, minimap:!!MM.on, vol:G.vol===undefined?1:G.vol})); }catch(e){}
+}
+function loadPrefs(){
+  try{
+    const p=JSON.parse(localStorage.getItem(PREFS_KEY)||'{}');
+    if(p.muted){ G.muted=true; $('tMute').textContent='🔇 מושתק'; }
+    if(p.minimap===false) MM.on=false;
+    if(typeof p.vol==='number'){ G.vol=clamp(p.vol,0,1); $('volSlider').value=Math.round(G.vol*100); }
+  }catch(e){}
+}
+function startRun(mapIdx){
+  BGM.init(); COPS.prime();   // בתוך מחוות הקליק עצמה — שחרור autoplay במובייל (iOS)
+  setVolume(G.vol===undefined?1:G.vol);   // מחיל את ההעדפה על האלמנטים שנוצרו הרגע
+  G.score=G.side==='police'?500:0;   // תקציב פתיחה למפקד
+  addScore(0);
+  startStage(mapIdx);
+}
+function startStage(i){
+  G.running=false;   // עוצר את השלב הישן כבר בחלון הטעינה — שלא ירוץ מאחורי המסך
+  G.stageStartScore=G.score;   // ל"התחל את המפה מחדש" — משחזר את הניקוד של תחילת השלב
+  showScr('loading');
+  $('loadMsg').textContent='בונים את '+MAPS[i].name+'...';
+  setTimeout(()=>{
+    G.stage=i;
+    G.runId=(G.runId||0)+1;    // מזהה-דור: מבטל callbacks תלויים משלב/ריצה קודמים
+    GTQ.length=0;
+    buildMap(i);
+    G.escTime=0; G.wave=0; G.gameTime=0; G.shofarUsed=false; G.bagT=0; G._fr=0;
+    G.runovers=0; G.fled=0; G.jamPeak=0; G.bigJamNews=false;
+    G.protestStarted=false; G.emptyT=0;\n    G.playerFaction=G.side==='opposition'?'opposition':(G.side==='peeps'?'haredi':null);
+    G.spawnTimers=[]; G.trainTimer=14; G.copCars=[]; G.drivers=[];
+    scoreAcc=0; newsQ=['🔴 מבזק: הפגנה מתארגנת ב'+MAPS[i].name]; newsT=0;
+    $('tankWrap').style.display='none';    // בכל משחק קיימים שני מחנות אזרחיים; השחקן בוחר מי מהם או משטרה.\n    if(G.side==='police'){ spawnFactionAI('haredi',7); spawnFactionAI('opposition',7); }\n    else spawnFactionAI(G.playerFaction==='haredi'?'opposition':'haredi',7);\n
+    $('trainBonus').style.display='none';
+    AUDIO.siren(false); AUDIO.spray(false);
+    hideMarker(); clearSel();
+    // מיתוג ממשק לפי צד
+    const pol=G.side==='police';
+    $('toolsBtn').parentElement.style.display=pol?'none':'';
+    $('tLie').style.display=pol?'none':'';
+    $('tStand').style.display=pol?'none':'';
+    document.querySelectorAll('.pTool').forEach(b=>{ b.style.display=pol?'':'none'; });
+    $('scoreLbl').textContent=pol?'תקציב':'נקודות';
+    $('score').parentElement.title=pol
+      ? 'התקציב גדל: ‎+8/ש׳ קבוע · מעצר ‎+60 (חוזר ‎+30) · הברחה במים ‎+30 · ציר פתוח ‎+10/ש׳'
+      : 'נקודות: ‎+10/ש׳ לכל רכב תקוע · רכבת חסומה ‎+50/ש׳ · שורד ‎+100 בסיום';
+    $('tEnd').childNodes[0].textContent=pol?'🏁 סיום מבצע':'🏁 סיום הפגנה';
+    $('selModeBtn').style.display=pol?'none':(('ontouchstart' in window)?'block':'none');
+    G.pw=pol?{idx:0,timer:PWAVES[0].delay,winT:0,aiT:0,overT:0,warned:false}:null;
+    G.rally=null; G._rallyTip=false;
+    G.rallyFlag=null;                 // הישן נהרס עם ה-dyn הקודם ב-clearWorld
+    G.towBusy=false; G.busBusy=false; G.megCD=0; G.lastMoveX=null;
+    if(pol){ PTR.selectMode=false; $('selModeBtn').classList.remove('on'); }
+    if(pol){
+      // המפקד מתחיל מול ציר שקט; המפגינים יגיעו בגלים מהדירקטור
+      newsQ=['🔴 מבזק: התארגנות חרדית לחסימת '+MAPS[i].name+' — המשטרה נערכת',
+             '💰 התקציב: ‎8/ש׳ קבוע · מעצר ‎+60 · הברחה במים ‎+30 · ציר פתוח ‎+10/ש׳'];
+    }else{
+      // מפגינים פותחים על המדרכה
+      const startTypes=['bochur','bochur','bochur','bochur','bochur','bochur','bochur','bochur',
+                        'avrech','avrech','avrech','avrech','askan','askan'];
+      startTypes.forEach((tk,k)=>{
+        mkPeep(tk, -12+ (k%7)*3.6+rnd(-.8,.8), (G.roadHalfW+2.6)+(k>6?1.6:0)+rnd(-.4,.4));
+      });
+    }
+    // תנועה ראשונית על הציר (מתחילים מעבר לאזור הכניסה כדי לא לחסום ספאון)
+    G.laneDefs.forEach(lane=>{
+      for(let s=-G.roadLen/2+17; s<G.roadLen/2-10; s+=rnd(20,34)){
+        const c=spawnCar(lane); if(c) c.s=s;
+      }
+    });
+    setCamMode('top');
+    CAM.theta=.55;
+    showScr(null);
+    $('hud').style.display='block';
+    G.running=true;
+    G.paused=false; $('pauseOv').classList.add('hidden'); mmSync();
+    if(!pol) BGM.play();         // הקלטת רקע — רק לצד המפגינים
+    COPS.prime();                // משחרר את סאונד השוטרים לניגון מאוחר יותר (מובייל)
+    toast(pol?'גלי מפגינים בדרך! קנו כוחות 🧰 וקבעו נקודת ריכוז בקליק על הכביש'
+             :'בחרו מפגינים (גרירה) ושלחו אותם לכביש!','good');
+  },350);
+}
+function endStage(reason){
+  if(!G.running) return;
+  G.running=false;
+  G.paused=false; $('pauseOv').classList.add('hidden'); mmSync();
+  AUDIO.siren(false); AUDIO.spray(false); AUDIO.setCrowd(0); BGM.stop(); COPS.stop();
+  hideMarker(); hideRect();
+  const survivors=G.peeps.length;
+  const pol=G.side==='police';
+  if(!pol) addScore(survivors*100);
+  if(G.rallyFlag) G.rallyFlag.visible=false;
+  $('sumTitle').textContent= pol
+    ? (reason==='cleared'?'הציר פונה בהצלחה!'
+      : reason==='overrun'?'הצומת אבוד — המפגינים ניצחו!' : 'המבצע הסתיים')
+    : (reason==='cleared'? 'ההפגנה פוזרה!'
+      : reason==='empty'? 'הכביש התרוקן — ההפגנה הסתיימה' : 'ההפגנה הסתיימה!');
+  $('sumSub').textContent= MAPS[G.stage].name+' • '+(pol
+    ? (reason==='cleared'?'כל הגלים פוזרו והתנועה זורמת'
+      :reason==='overrun'?'ההמון החזיק בציר 90 שניות ברציפות'
+      :'סיום יזום בהוראת המפקד')
+    : (reason==='cleared'?'כל המפגינים פונו מהשטח'
+      :reason==='empty'?'התנועה זורמת שוב — הניקוד נקבע סופית'
+      :'סיום יזום בהוראת העסקנים'));
+  $('sumScoreL').textContent=pol?'תקציב סופי':'ניקוד כולל';
+  $('sumJamL').textContent=pol?'שיא הפקק שנגרם (ק"מ)':'שיא אורך פקק (ק"מ)';
+  $('sumTimeL').textContent=pol?'זמן שהציר היה חסום':'זמן חסימה';
+  $('sumSurvL').textContent=pol?'מפגינים שנותרו בשטח':'מפגינים ששרדו (‎+100‎)';
+  $('sumFledL').textContent=pol?'נמלטו מהמים (‎+30‎)':'ברחו מהמים (‎-20‎)';
+  $('btnFinish').textContent=pol?'חזרה לתפריט':'סיים ושמור בהיכל התהילה';
+  $('sumScore').textContent=Math.round(G.score).toLocaleString('he-IL');
+  $('sumJam').textContent=G.jamPeak.toFixed(1);
+  $('sumTime').textContent=fmtTime(G.totalBlockTime);
+  $('sumSurv').textContent=survivors;
+  $('sumInj').textContent=G.runovers;
+  $('sumFled').textContent=G.fled;
+  // מפגינים: כביש ריק = סוף סופי. משטרה: מתקדמים רק אחרי פינוי מוצלח
+  $('btnNext').style.display = (G.stage<2 && (pol? reason==='cleared' : reason!=='empty')) ? 'block':'none';
+  $('hud').style.display='none';
+  showScr('summary');        // הסיכום מופיע מיד — בלי השהיה
+}
+function confetti(){
+  const em=['🎉','🎊','✨','📜','🎩'];
+  for(let i=0;i<70;i++){
+    const d=document.createElement('div');
+    d.className='confetti'; d.textContent=pick(em);
+    d.style.left=rnd(0,100)+'vw';
+    d.style.animationDuration=rnd(1.8,4)+'s';
+    d.style.animationDelay=rnd(0,1.2)+'s';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),5500);
+  }
+}
+async function finishGame(){
+  if(G.side==='police'){ showScr('menu'); return; }   // היכל התהילה שמור לחוסמים בלבד 😉
+  // תופסים את הניקוד הסופי כאן — לא קוראים את G.score החי בזמן השמירה
+  const finalScore=Math.round(G.score)||0;
+  G.finalScore=finalScore;
+  let rank=0;
+  try{ rank=await Fame.rankOf(finalScore); }catch(e){}
+  if(rank>0&&finalScore>0){
+    $('entryRank').textContent='מקום '+rank+' בכל הזמנים • '+finalScore.toLocaleString('he-IL')+' נקודות';
+    showScr('entryScr');
+    $('nameIn').value=''; $('nameIn').focus();
+    confetti();
+    AUDIO.ding();
+  }else{
+    await showFame();
+  }
+}
+async function showFame(){
+  let list=[];
+  try{ list=await Fame.load(); }catch(e){}
+  const body=$('fameBody');
+  const banner = '<div style="font-weight:900;color:#6b5b2a;margin-bottom:6px">📜 ספר הזהב — השיאים נשמרים במכשיר הזה</div>';
+  if(!list.length){
+    body.innerHTML=banner+'<div style="padding:20px;font-weight:700">עדיין אין שיאים בהיכל — היה הראשון לחסום!</div>';
+  }else{
+    let html=banner+'<table id="fameTable"><tr><th>מקום</th><th>שם</th><th>ניקוד</th><th>תאריך</th></tr>';
+    list.forEach((e,i)=>{
+      const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html+=`<tr class="${i<3?'gold':''}"><td>${i+1}${i===0?' 👑':''}</td><td>${esc(e.name)}</td><td>${Number(e.score).toLocaleString('he-IL')}</td><td>${esc(e.date||'')}</td></tr>`;
+    });
+    body.innerHTML=html+'</table>';
+  }
+  showScr('fameScr');
+}
+
+/* =========================================================================
+   לולאה ראשית
+   ========================================================================= */
+const IS_ELECTRON=navigator.userAgent.includes('Electron');
+const KEYPAN={};
+const KEYCAM_CODES=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD',
+  'KeyQ','KeyE','Equal','Minus','NumpadAdd','NumpadSubtract'];
+function applyKeyCam(dt){
+  const px=300*dt;
+  if(KEYPAN.ArrowRight||KEYPAN.KeyD) panCam(-px,0);
+  if(KEYPAN.ArrowLeft ||KEYPAN.KeyA) panCam(px,0);
+  if(KEYPAN.ArrowUp   ||KEYPAN.KeyW) panCam(0,px);
+  if(KEYPAN.ArrowDown ||KEYPAN.KeyS) panCam(0,-px);
+  if(KEYPAN.KeyQ) CAM.theta+=dt*1.6;
+  if(KEYPAN.KeyE) CAM.theta-=dt*1.6;
+  if(KEYPAN.Equal||KEYPAN.NumpadAdd)      CAM.dist*=(1-dt*.9);
+  if(KEYPAN.Minus||KEYPAN.NumpadSubtract) CAM.dist*=(1+dt*.9);
+}
+function hotkeyTool(n){
+  if(G.side==='police') [ptCruiser,ptHorse,ptCannon,ptTow,ptMeg,ptDet][n-1]?.();
+  else [toolPashkevil,toolShofar,toolBag,
+        ()=>toolSummon('bochur'),()=>toolSummon('avrech'),()=>toolSummon('askan'),
+        toolBus,()=>toolSummon('zalam')][n-1]?.();
+}
+function toggleFullscreen(){
+  try{
+    if(document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }catch(e){}
+}
+let lastT=0;
+function loop(tms){
+  requestAnimationFrame(loop);
+  const now=tms/1000;
+  let dt=Math.min(now-lastT,.05); lastT=now;
+  if(!G.paused) G._fr=(G._fr||0)+1;   // פריימים בהשהיה לא נספרים — שלא ינפחו את מדידת ה-FPS
+  if(G.running&&!G.paused){
+    applyKeyCam(dt);
+    G.gameTime+=dt;
+    runGTQ();
+    updateTraffic(dt);
+    updateFactionAI(dt);\n    updatePeeps(dt,now);
+    updateDrivers(dt,now);
+    updateCops(dt,now);
+    updateHorses(dt,now);
+    updateCannon(dt,now);
+    updateWaves(dt);
+    scoreTick(dt);
+    updateNews(dt);
+    if(G.side==='police') updateDirector(dt);
+    else if(G.peeps.length===0&&G.gameTime>6) endStage('cleared');
+  }else if(!G.running&&!$('menu').classList.contains('hidden')){
+    CAM.theta+=dt*.05;   // סיבוב עדין מאחורי התפריט
+  }
+  if(!G.paused){
+    updateBubbles(dt);
+    updateFx(dt);
+    updateCamera(dt);
+    if(MM.on&&G.running){ MM.acc+=dt; if(MM.acc>=.12){ MM.acc=0; drawMinimap(); } }
+  }
+  // כל המסכים אטומים — רינדור מאחוריהם הוא בזבוז סוללה (כולל shadow pass מלא)
+  const scrOpen=['loading','menu','howto','fameScr','entryScr','summary'].some(id=>!$(id).classList.contains('hidden'));
+  if(!scrOpen&&G.scene) G.renderer.render(G.scene,G.camera);
+}
+
+/* =========================================================================
+   חיווט ואתחול
+   ========================================================================= */
+function wireUI(){
+  // כפתורי המפות = בורר (כמו בורר הצד); "התחל" משגר את הבחירה
+  G.mapSel=0;
+  function updateStartBtn(){
+    const mapName=document.querySelector('.mapBtn[data-map="'+G.mapSel+'"]').textContent;
+    $('btnStart').textContent=(G.side==='police'?'פתח במבצע פינוי':'התחל הפגנה')+' — '+mapName;
+  }
+  G._updStart=updateStartBtn;
+  $('btnStart').onclick=()=>{ AUDIO.init(); startRun(G.mapSel); };
+  document.querySelectorAll('.mapBtn').forEach(b=>{
+    b.onclick=()=>{
+      G.mapSel=+b.dataset.map;
+      document.querySelectorAll('.mapBtn').forEach(x=>x.classList.toggle('active',x===b));
+      updateStartBtn();
+    };
+  });
+  updateStartBtn();
+  $('btnFame').onclick=()=>showFame();
+  $('btnFameBack').onclick=()=>showScr('menu');
+  $('btnHow').onclick=()=>showScr('howto');
+  $('btnHowBack').onclick=()=>showScr('menu');
+  $('btnNext').onclick=()=>startStage(G.stage+1);
+  $('btnFinish').onclick=()=>finishGame();
+  $('btnSaveName').onclick=async()=>{
+    $('btnSaveName').disabled=true;
+    const sc=G.finalScore||Math.round(G.score)||0;   // ניקוד שנתפס בסיום, לא החי
+    try{ if(sc>0) await Fame.submit($('nameIn').value,sc); }catch(e){}
+    $('btnSaveName').disabled=false;
+    await showFame();
+  };
+  $('tPash').onclick=()=>toolPashkevil();
+  $('tShofar').onclick=()=>toolShofar();
+  $('tBag').onclick=()=>toolBag();
+  $('tBochur').onclick=()=>toolSummon('bochur');
+  $('tAvrech').onclick=()=>toolSummon('avrech');
+  $('tAskan').onclick=()=>toolSummon('askan');
+  $('tLie').onclick=()=>commandLie();
+  $('tStand').onclick=()=>commandStand();
+  $('tEnd').onclick=()=>endStage('manual');
+  // תפריט כלים נפתח — פתיחה/סגירה
+  const toolsBtn=$('toolsBtn'), toolsPop=$('toolsPop');
+  toolsBtn.onclick=(e)=>{ e.stopPropagation(); toolsPop.classList.toggle('hidden'); };
+  toolsPop.querySelectorAll('.tool').forEach(b=> b.addEventListener('click',()=>toolsPop.classList.add('hidden')) );
+  document.addEventListener('click',(e)=>{ if(!toolsBtn.parentElement.contains(e.target)) toolsPop.classList.add('hidden'); });
+  document.querySelectorAll('#camBtns [data-cam]').forEach(b=>{
+    b.onclick=()=>setCamMode(b.dataset.cam);
+  });
+  // בורר צד
+  document.querySelectorAll('.sideBtn').forEach(b=>{
+    b.onclick=()=>{
+      G.side=b.dataset.side;
+      G.playerFaction=G.side==='opposition'?'opposition':(G.side==='peeps'?'haredi':null);
+      document.querySelectorAll('.sideBtn').forEach(x=>x.classList.toggle('active',x===b));
+      G._updStart();   // מרענן את הכיתוב כולל שם המפה הנבחרת
+    };
+  });
+  // כלי המפקד
+  $('pCruiser').onclick=ptCruiser;
+  $('pHorse').onclick=ptHorse;
+  $('pCannon').onclick=ptCannon;
+  $('pTow').onclick=ptTow;
+  $('pMeg').onclick=ptMeg;
+  $('pDet').onclick=ptDet;
+  $('tBus').onclick=toolBus;
+  $('tZalam').onclick=()=>toolSummon('zalam');
+  // עוצמת קול — נגרר בתפריט ההפסקה, נשמר בהעדפות
+  $('volSlider').oninput=e=>{ setVolume(+e.target.value/100); savePrefs(); };
+  // קליק על המיני-מפה מקפיץ את המצלמה לנקודה
+  $('minimap').addEventListener('pointerdown',e=>{
+    if(!G.running) return;
+    const r=e.currentTarget.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+    const hw=G.roadHalfW+8;
+    CAM.target.set(px*G.roadLen-G.roadLen/2, 0, py*hw*2-hw);
+    CAM.follow=false; if(G.camMode==='follow') G.camMode='free';
+    e.stopPropagation();
+  });
+  // איפוס היכל התהילה — אישור כפול
+  $('btnFameReset').onclick=async ()=>{
+    const b=$('btnFameReset');
+    if(b.dataset.arm!=='1'){
+      b.dataset.arm='1';
+      b.textContent='בטוחים? לחיצה נוספת מוחקת את הכל!';
+      setTimeout(()=>{ b.dataset.arm=''; b.textContent='🗑 איפוס הספר'; },4000);
+      return;
+    }
+    b.dataset.arm=''; b.textContent='🗑 איפוס הספר';
+    Fame.clear();
+    await showFame();
+  };
+  $('tMute').onclick=()=>{
+    G.muted=!G.muted;
+    $('tMute').textContent=G.muted?'🔇 מושתק':'🔊 צליל';
+    AUDIO.setCrowd(0);
+    if(G.muted){ AUDIO.siren(false); AUDIO.spray(false); BGM.stop(); COPS.stop(); }
+    else if(G.running&&!G.paused&&G.side!=='police'){ BGM.resume(); }   // לא מאחורי מסך השהיה; למשטרה אין מוזיקת מפגינים
+    savePrefs();
+  };
+  // תפריט ההפסקה
+  $('pauseResume').onclick=()=>setPaused(false);
+  $('pauseRestart').onclick=()=>{   // רק המפה הנוכחית — הניקוד שנצבר בשלבים קודמים נשמר
+    setPaused(false);
+    BGM.init(); COPS.prime();
+    G.score=G.stageStartScore!==undefined?G.stageStartScore:(G.side==='police'?500:0);
+    addScore(0);
+    startStage(G.stage);
+  };
+  $('pauseQuit').onclick=()=>{
+    G.paused=false; $('pauseOv').classList.add('hidden');
+    G.running=false;
+    AUDIO.siren(false); AUDIO.spray(false); AUDIO.setCrowd(0); BGM.stop(); COPS.stop();
+    hideMarker(); hideRect(); mmSync();
+    $('hud').style.display='none';
+    showScr('menu');
+  };
+  // טולטיפים עם קיצורי מקלדת (דסקטופ)
+  const tips={tPash:'1',tShofar:'2',tBag:'3',tBochur:'4',tAvrech:'5',tAskan:'6',tBus:'7',tZalam:'8',
+    pCruiser:'1',pHorse:'2',pCannon:'3',pTow:'4',pMeg:'5',pDet:'6',tLie:'L',tStand:'K',tMute:'M'};
+  for(const id in tips){ const el=$(id); if(el) el.title='קיצור מקלדת: '+tips[id]; }
+  loadPrefs();
+}
+window.addEventListener('load',()=>{
+  // מפצלים את האתחול כדי שה־WebView2 יצייר כל שלב ולא ייראה קפוא.
+  const progress=(msg)=>{
+    const el=$('loadMsg');
+    if(el) el.textContent=msg;
+  };
+  const fail=(err)=>{
+    progress('שגיאה בטעינה: '+(err&&err.message?err.message:String(err)));
+    console.error(err);
+  };
+  try{
+    progress('מאתחלים את מנוע התלת־ממד...');
+    initThree();
+  }catch(err){ fail(err); return; }
+
+  setTimeout(()=>{
+    try{
+      progress('מאתחלים את השליטה...');
+      initInput();
+      wireUI();
+    }catch(err){ fail(err); return; }
+
+    setTimeout(()=>{
+      try{
+        progress('בונים את הצומת...');
+        buildMap(0);            // רקע חי לתפריט
+        progress('מסיימים טעינה...');
+        requestAnimationFrame(loop);
+        setTimeout(()=>{ showScr('menu'); },250);
+      }catch(err){ fail(err); }
+    },0);
+  },0);
+});
+</script>
 </body>
 </html>
