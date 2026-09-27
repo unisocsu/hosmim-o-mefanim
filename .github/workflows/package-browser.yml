@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'launcher.html'
+      - 'הפעלה.html'
       - 'index.html'
       - 'three.min.js'
       - 'fonts.css'
